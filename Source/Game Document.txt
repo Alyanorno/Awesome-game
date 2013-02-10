@@ -1,0 +1,42 @@
+Graphic
+	Load textures
+	Draw rectangles
+	Draw lines
+	Zoom in/out
+	--transparent textures
+	--Draw text
+	--Select highlight
+Input
+	W/A/S/D -> move
+	Scroll	-> zoom/scale
+	Left	  -> confirm	--/select
+	Right	  -> regret	--/order
+	Numbers
+	--	1 -> select
+		2 -> build road (must start from center of farm)
+		3 -> build farm (must be on end of road)
+		4 -> build city (must be on center of a farm)
+--Logic
+	Entitys
+		City/Village/Farm
+			Farm field
+				Food storage
+			City field
+				Food and Money storage
+		Road
+		Farmers
+		Units
+			Soldiers
+			Carts
+				Food or Money storage
+	Food
+	Money
+
+
+Rules
+	Farm generate Food
+	City generate Money
+	City consume Food
+	Farmer/Soldier consume Food
+	Soldier consume Money
+	Building Road/Farm/City/Soldier consume Money

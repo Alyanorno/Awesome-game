@@ -1,0 +1,10 @@
+#version 150
+
+in vec3 position;
+
+out vec4 fragmentColour;
+
+void main() {
+	fragmentColour = vec4( 255, 255, 255, 0 );
+}
+

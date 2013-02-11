@@ -15,11 +15,11 @@ float Distance( float _x, float _y, float __x, float __y )
 }
 std::pair<int,float> ClosestRectangle( float _x, float _y )
 {
-	float distance = Distance( _x, _y, rectangles[0].x, rectangles[0].y );
+	float distance = Distance( _x, _y, rectangles.v[0].x, rectangles.v[0].y );
 	int closest = 0;
-	for( int i(1); i < rectangles.size(); i++ )
+	for( int i(1); i < rectangles.v.size(); i++ )
 	{
-		float t = Distance( _x, _y, rectangles[i].x, rectangles[i].y );
+		float t = Distance( _x, _y, rectangles.v[i].x, rectangles.v[i].y );
 		if( t < distance )
 		{
 			distance = t;
@@ -125,10 +125,10 @@ void Input::Update()
 			if( create )
 			{
 				closest = ClosestRectangle( t_x, t_y );
-				if( closest.second < ( rectangles[closest.first].scale / 2.f ) * ( rectangles[closest.first].scale / 2.f ) )
+				if( closest.second < ( rectangles.v[closest.first].scale / 2.f ) * ( rectangles.v[closest.first].scale / 2.f ) )
 				{
-					t_x = rectangles[closest.first].x;
-					t_y = rectangles[closest.first].y;
+					t_x = rectangles.v[closest.first].x;
+					t_y = rectangles.v[closest.first].y;
 				}
 				logic.MoveTopLine( t_x, t_y );
 			}
@@ -149,7 +149,7 @@ void Input::Update()
 				if( !create )
 				{
 					closest = ClosestRectangle( t_x, t_y );
-					logic.AddLine( rectangles[closest.first].x, rectangles[closest.first].y, 0, 0 );
+					logic.AddLine( rectangles.v[closest.first].x, rectangles.v[closest.first].y, 0, 0 );
 				}
 				create = true;
 			}
@@ -178,8 +178,8 @@ void Input::Update()
 		case build_city:
 			// Draw not completed city
 			closest = ClosestRectangle( t_x, t_y );
-			t_x = rectangles[closest.first].x;
-			t_y = rectangles[closest.first].y;
+			t_x = rectangles.v[closest.first].x;
+			t_y = rectangles.v[closest.first].y;
 			logic.MoveTopRectangle( t_x, t_y );
 
 			if( glfwGetMouseButton( GLFW_MOUSE_BUTTON_1 ) )

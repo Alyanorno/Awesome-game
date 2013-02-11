@@ -5,7 +5,7 @@ Graphic
 	Zoom in/out
 	--transparent textures
 	--Draw text
-	--Select highlight
+	--Select highlightning
 Input
 	W/A/S/D -> move
 	Scroll	-> zoom/scale
@@ -13,7 +13,7 @@ Input
 	Right	  -> regret	--/order
 	Numbers
 	--	1 -> select
-		2 -> build road (must start from center of farm)
+		2 -> build road (must start from center of city)
 		3 -> build farm (must be on end of road)
 		4 -> build city (must be on center of a farm)
 --Logic

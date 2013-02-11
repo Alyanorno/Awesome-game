@@ -268,9 +268,11 @@ void Graphic::Update()
 	glUseProgram( shaderProgram );
 	glUniformMatrix4fv( glGetUniformLocation(shaderProgram, "projectionMatrix"), 1, GL_FALSE, &projectionMatrix[0][0] );
 
-	for( int i(rectangles.size()-1); i >= 0; i-- )
+	for( int i(rectangles.v.size()-1); i >= 0; i-- )
 	{
-		Rectangle r = rectangles[i];
+		if( rectangles.v[i].used == false )
+			continue;
+		Rectangle r = rectangles.v[i];
 		glBindTexture( GL_TEXTURE_2D, glTexture[r.texture] );
 		DrawRectangle( r.x, r.y, r.scale );
 	}

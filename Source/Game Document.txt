@@ -26,7 +26,7 @@ Input
 		2 -> build road (must start from center of city)
 		3 -> build farm (must be on end of road)
 		4 -> build city (must be on center of a farm)
---Logic
+Logic
 	Entitys
 		City/Village/Farm
 			Farm field
@@ -34,7 +34,7 @@ Input
 			City field
 				Food and Money storage
 		Road
-		Units
+		--Units
 			Soldiers
 			Carts
 				Food or Money storage
@@ -46,6 +46,6 @@ Rules
 	Farm generate Food
 	City generate Money
 	City consume Food
-	Farmer/Soldier consume Food
+	Soldier consume Food
 	Soldier consume Money
 	Building Road/Farm/City/Soldier consume Money

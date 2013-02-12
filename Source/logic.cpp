@@ -5,11 +5,6 @@ Logic::Road::Road( int _line, int _from, int _to ) : line(_line), from(_from), t
 {
 	Calculate();
 }
-Logic::Road::~Road()
-{
-	// TODO: Not possible right now, must be changed to be using rectangles.
-	//lines.erase( lines.begin() + line );
-}
 void Logic::Road::Calculate()
 {
 	float x = lines[line].start.x - lines[line].end.x;
@@ -21,10 +16,6 @@ Logic::Farm::Farm( int _rectangle ) : rectangle(_rectangle), food_contained(0)
 {
 	Calculate();
 }
-Logic::Farm::~Farm()
-{
-	rectangles.erase( rectangle );
-}
 void Logic::Farm::Calculate()
 {
 	float size = rectangles.v[rectangle].scale;
@@ -32,13 +23,9 @@ void Logic::Farm::Calculate()
 	food_production = size;
 }
 
-Logic::City::City( int _rectangle, int _farm_rectangle ) : rectangle(_rectangle), farm_rectangle(_farm_rectangle), money_contained(0)
+Logic::City::City( int _rectangle, int _farm_rectangle ) : rectangle(_rectangle), farm_rectangle(_farm_rectangle), money_contained(0), carts(0), cart_production_time(1), cart_money(1), soldiers(0), soldier_production_time(1), soldier_money(1)
 {
 	Calculate();
-}
-Logic::City::~City()
-{
-	rectangles.erase( rectangle );
 }
 void Logic::City::Calculate()
 {
@@ -70,9 +57,24 @@ Logic::Structure::Structure( int _rectangle, Type _type ) : rectangle(_rectangle
 			break;
 	}
 }
-Logic::Structure::~Structure()
+
+Logic::Army::Army( int _soldiers, int _carts, float _x, float _y ) : soldiers(_soldiers), carts(_carts), x(_x), y(_y), stationary(true)
+{}
+
+
+
+void Logic::BuildCarts( int _rectangle, int _amount )
 {
-	rectangles.erase( rectangle );
+	for each( City c in cities )
+		if( c.rectangle == _rectangle )
+			c.carts += _amount;
+}
+
+void Logic::BuildSoldiers( int _rectangle, int _amount )
+{
+	for each( City c in cities )
+		if( c.rectangle == _rectangle )
+			c.soldiers += _amount;
 }
 
 
@@ -206,6 +208,7 @@ void Logic::Update()
 			f.food_contained = f.food_storage;
 	}
 	for each ( City c in cities )
+	{
 		for each ( Farm f in farms )
 			if( f.rectangle == c.farm_rectangle )
 			{
@@ -218,10 +221,55 @@ void Logic::Update()
 					c.money_contained = c.money_storage;
 				break;
 			}
+		if( c.money_contained <= 0 )
+			continue;
+		if( c.carts )
+		{
+			c.money_contained -= c.cart_production_time / time * c.cart_money;
+			c.current_cart_production -= c.cart_production_time / time;
+			if( c.current_cart_production <= 0 )
+			{
+				float x = rectangles.v[c.rectangle].x;
+				float y = rectangles.v[c.rectangle].y;
+				bool army_in_city = false;
+				for each( Army a in armies )
+					if( a.x == x && a.y == y )
+					{
+						army_in_city = true;
+						a.carts += 1;
+						break;
+					}
+
+				if( !army_in_city )
+					armies.push_back( Army( 0, 1, x, y ) );
+			}
+		}
+		if( c.soldiers )
+		{
+			c.money_contained -= c.soldier_production_time / time * c.soldier_money;
+			c.current_soldier_production -= c.soldier_production_time / time;
+			if( c.current_soldier_production <= 0 )
+			{
+				float x = rectangles.v[c.rectangle].x;
+				float y = rectangles.v[c.rectangle].y;
+				bool army_in_city = false;
+				for each( Army a in armies )
+					if( a.x == x && a.y == y )
+					{
+						army_in_city = true;
+						a.soldiers += 1;
+						break;
+					}
+
+				if( !army_in_city )
+					armies.push_back( Army( 0, 1, x, y ) );
+			}
+		}
+	}
 	for( int i(0); i < structures.size(); i++ )
 	{
 		Structure* s = &structures[i];
-		if( s->money_supplied <= 0 )
+		if( s->money_supplied <= 0.0 )
 			continue;
 		s->production_time -= time;
 		s->money_supplied -= s->money_per_second * time;
@@ -235,17 +283,12 @@ void Logic::Update()
 					// TODO: Add later when road have been changed to using texture.
 					break;
 				case farm:
-					r = rectangles.v[ s->rectangle ];
-					r.texture = 1; // TODO: Change
-					rectangles.push_back( r );
+					rectangles.v[ s->rectangle ].texture = 1; // TODO: Change
 					break;
 				case city:
-					r = rectangles.v[ s->rectangle ];
-					r.texture = 0; // TODO: Change
-					rectangles.push_back( r );
+					rectangles.v[ s->rectangle ].texture = 0; // TODO: Change
 					break;
 			}
-			rectangles.erase( s->rectangle );
 			structures.erase( structures.begin() + i );
 			i--;
 		}

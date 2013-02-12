@@ -28,38 +28,6 @@ std::pair<int,float> ClosestRectangle( float _x, float _y )
 	}
 	return std::make_pair( closest, distance );
 }
-std::pair<float,float> ClosestLineEnd( float _x, float _y )
-{
-	float x, y, distance, t;
-	distance = Distance( _x, _y, lines[2].start.x, lines[2].start.y );
-	t = Distance( _x, _y, lines[2].end.x, lines[2].end.y );
-	if( t > distance )
-	{
-		x = lines[2].start.x;
-		y = lines[2].start.y;
-	}
-	else
-	{
-		x = lines[2].end.x;
-		y = lines[2].end.y;
-	}
-	for( int i(3); i < lines.size(); i++ )
-	{
-		t = Distance( _x, _y, lines[i].start.x, lines[i].start.y );
-		if( t < distance )
-		{
-			x = lines[i].start.x;
-			y = lines[i].start.y;
-		}
-		t = Distance( _x, _y, lines[i].end.x, lines[i].end.y );
-		if( t < distance )
-		{
-			x = lines[i].end.x;
-			y = lines[i].end.y;
-		}
-	}
-	return std::make_pair( x, y );
-}
 void Input::Update()
 {
 	if( glfwGetKey( GLFW_KEY_ESC ) )
@@ -125,11 +93,8 @@ void Input::Update()
 			if( create )
 			{
 				closest = ClosestRectangle( t_x, t_y );
-				if( closest.second < ( rectangles.v[closest.first].scale / 2.f ) * ( rectangles.v[closest.first].scale / 2.f ) )
-				{
-					t_x = rectangles.v[closest.first].x;
-					t_y = rectangles.v[closest.first].y;
-				}
+				t_x = rectangles.v[closest.first].x;
+				t_y = rectangles.v[closest.first].y;
 				logic.MoveTopLine( t_x, t_y );
 			}
 
@@ -161,9 +126,6 @@ void Input::Update()
 			break;
 		case build_farm:
 			// Draw not completed farm
-			closest_line = ClosestLineEnd( t_x, t_y );
-			t_x = closest_line.first;
-			t_y = closest_line.second;
 			logic.MoveTopRectangle( t_x, t_y );
 
 			if( glfwGetMouseButton( GLFW_MOUSE_BUTTON_1 ) )

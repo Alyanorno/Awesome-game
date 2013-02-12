@@ -15,7 +15,6 @@ private:
 	struct Road
 	{
 		Road( int _line, int _from, int _to );
-		~Road();
 		void Calculate();
 		int line;
 		float length;
@@ -26,7 +25,6 @@ private:
 	struct Farm
 	{
 		Farm( int _rectangle );
-		~Farm();
 		void Calculate();
 		int rectangle;
 		float food_storage;
@@ -38,20 +36,28 @@ private:
 	struct City
 	{
 		City( int _rectangle, int _farm_rectangle );
-		~City();
 		void Calculate();
 		int rectangle, farm_rectangle;
 		float money_storage;
 		float money_contained;
 		float money_production;
 		float food_consumed;
+
+		int carts;
+		float cart_production_time;
+		float current_cart_production;
+		float cart_money;
+
+		int soldiers;
+		float soldier_production_time;
+		float current_soldier_production;
+		float soldier_money;
 	};
 	std::vector< City > cities;
 
 	struct Structure
 	{
 		Structure( int _rectangle, Type _type );
-		~Structure();
 		Type type;
 		int rectangle;
 		float money_needed, money_supplied;
@@ -60,8 +66,22 @@ private:
 	};
 	std::vector< Structure > structures;
 
+	struct Army
+	{
+		Army( int _soldiers, int _carts, float _x, float _y );
+		int soldiers;
+		int carts;
+		float x, y;
+		int from, to;
+		bool stationary;
+	};
+	std::vector< Army > armies;
+
 	double last_time;
 public:
+	void BuildCarts( int _rectangle, int _amount );
+	void BuildSoldiers( int _rectangle, int _amount );
+
 	void BuildRoad( int _line, int _from, int _to );
 	void BuildFarm( int _x, int _y, int _scale, int _texture );
 	void BuildCity( int _x, int _y, int _scale, int _texture );

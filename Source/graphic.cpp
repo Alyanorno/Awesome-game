@@ -50,15 +50,22 @@ void Graphic::DrawLines( glm::mat4& projectionMatrix )
 
 	glUseProgram( 0 );
 }
-void Graphic::DrawRectangle( float x, float y, float scale )
+void Graphic::DrawRectangle( Rectangle& r )
 {
-	glm::mat4 modelMatrix( glm::mat4( 1.0f ) );
-	modelMatrix[3][0] = x;
-	modelMatrix[3][1] = y;
+	if( r.used == false )
+		return;
 
-	modelMatrix[0][0] *= scale;
-	modelMatrix[1][1] *= scale;
-	modelMatrix[2][2] *= scale;
+	glBindTexture( GL_TEXTURE_2D, glTexture[r.texture] );
+
+	glm::mat4 modelMatrix( glm::mat4( 1.0f ) );
+	modelMatrix[3][0] = r.x;
+	modelMatrix[3][1] = r.y;
+	if( r.texture == 1 )
+		modelMatrix[3][2] = 0.001; // TODO: Remove temporary code.
+
+	modelMatrix[0][0] *= r.scale;
+	modelMatrix[1][1] *= r.scale;
+	modelMatrix[2][2] *= r.scale;
 
 	glm::mat4 modelViewMatrix = viewMatrix * modelMatrix;
 	glUniformMatrix4fv( glGetUniformLocation( shaderProgram, "modelViewMatrix" ), 1, GL_FALSE, &modelViewMatrix[0][0] );
@@ -183,9 +190,11 @@ void Graphic::Initialize()
 
 	glEnable( GL_DEPTH_TEST ); 
 	glEnable( GL_CULL_FACE );
+	glEnable( GL_BLEND );
 
 	glCullFace( GL_BACK );
 	glFrontFace( GL_CCW );
+	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 
 	glClearColor( 0.0f, 0.0f, 0.0f, 0.5f );
 	glDepthFunc( GL_LESS );
@@ -269,13 +278,7 @@ void Graphic::Update()
 	glUniformMatrix4fv( glGetUniformLocation(shaderProgram, "projectionMatrix"), 1, GL_FALSE, &projectionMatrix[0][0] );
 
 	for( int i(rectangles.v.size()-1); i >= 0; i-- )
-	{
-		if( rectangles.v[i].used == false )
-			continue;
-		Rectangle r = rectangles.v[i];
-		glBindTexture( GL_TEXTURE_2D, glTexture[r.texture] );
-		DrawRectangle( r.x, r.y, r.scale );
-	}
+		DrawRectangle( rectangles.v[i] );
 
 	glUseProgram(0);
 

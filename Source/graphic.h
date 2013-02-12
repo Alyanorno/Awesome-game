@@ -36,7 +36,7 @@ private:
 	glm::mat4 viewMatrix;
 	GLuint Vbo[3];
 	void DrawLines( glm::mat4& projectionMatrix );
-	void DrawRectangle( float x, float y, float scale = 1 );
+	void DrawRectangle( Rectangle& r );
 
 	enum ShaderType { Vertex, Fragment, Geometry };
 	GLuint shaderProgram, shaderLine;

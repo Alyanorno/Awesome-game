@@ -24,6 +24,7 @@ struct buffer
 
 struct Rectangle
 {
+	Rectangle() {}
 	Rectangle( float _x, float _y, float _scale, int _texture )
 		: x(_x), y(_y), scale(_scale), texture(_texture), used(true) {}
 	float x, y, scale;

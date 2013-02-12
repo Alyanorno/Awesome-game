@@ -1,3 +1,13 @@
+Change roads to use rectangles with textures
+Add possibility for transparent textures
+Add ability to draw text
+Add select highlightning
+Add units
+	select units
+	move units
+	construction of units
+
+
 Graphic
 	Load textures
 	Draw rectangles
@@ -24,7 +34,6 @@ Input
 			City field
 				Food and Money storage
 		Road
-		Farmers
 		Units
 			Soldiers
 			Carts

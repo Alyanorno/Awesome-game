@@ -1,6 +1,9 @@
 #pragma once
 
 #include <vector>
+#define GLFW_DLL
+#include "..\GL\include\glew.h"
+#include "..\GL\include\glfw.h"
 #include "globals.h"
 
 
@@ -34,13 +37,14 @@ private:
 
 	struct City
 	{
-		City( int _rectangle );
+		City( int _rectangle, int _farm_rectangle );
 		~City();
 		void Calculate();
-		int rectangle;
+		int rectangle, farm_rectangle;
 		float money_storage;
 		float money_contained;
 		float money_production;
+		float food_consumed;
 	};
 	std::vector< City > cities;
 
@@ -52,13 +56,15 @@ private:
 		int rectangle;
 		float money_needed, money_supplied;
 		int production_time;
-		float money_per_time_cost;
+		float money_per_second;
 	};
 	std::vector< Structure > structures;
+
+	double last_time;
 public:
 	void BuildRoad( int _line, int _from, int _to );
-	void BuildFarm( int _rectangle );
-	void BuildCity( int _rectangle );
+	void BuildFarm( int _x, int _y, int _scale, int _texture );
+	void BuildCity( int _x, int _y, int _scale, int _texture );
 
 	void ExpandFarm( int _rectangle, int _size );
 	void ExpandCity( int _rectangle, int _size );
@@ -75,13 +81,8 @@ public:
 	void AddLine( float _x, float _y, float __x, float __y );
 	void AddRectangle( float _x, float _y, float _scale, int _texture = 1 );
 
-	void RemoveLine( int _i );
-	void RemoveRectangle( int _i );
-
 	void RemoveTopLine();
 	void RemoveTopRectangle();
-
-	void ResizeRectangle( int _i, float _scale );
 
 	void MoveTopLine( float _x, float _y );
 	void MoveTopRectangle( float _x, float _y );

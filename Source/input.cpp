@@ -169,7 +169,7 @@ void Input::Update()
 			if( glfwGetMouseButton( GLFW_MOUSE_BUTTON_1 ) )
 			{
 				if( !create )
-					logic.AddRectangle( t_x, t_y, scale );
+					logic.BuildFarm( t_x, t_y, scale, 1 );
 				create = true;
 			}
 			else
@@ -185,7 +185,7 @@ void Input::Update()
 			if( glfwGetMouseButton( GLFW_MOUSE_BUTTON_1 ) )
 			{
 				if( !create )
-					logic.AddRectangle( t_x, t_y, scale, 0 );
+					logic.BuildCity( t_x, t_y, scale, 0 );
 				create = true;
 			}
 			else

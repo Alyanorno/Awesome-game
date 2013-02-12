@@ -32,7 +32,7 @@ void Logic::Farm::Calculate()
 	food_production = size;
 }
 
-Logic::City::City( int _rectangle ) : rectangle(_rectangle), money_contained(0)
+Logic::City::City( int _rectangle, int _farm_rectangle ) : rectangle(_rectangle), farm_rectangle(_farm_rectangle), money_contained(0)
 {
 	Calculate();
 }
@@ -45,6 +45,7 @@ void Logic::City::Calculate()
 	float size = rectangles.v[rectangle].scale;
 	money_storage = size * 10;
 	money_production = size;
+	food_consumed = size;
 }
 
 Logic::Structure::Structure( int _rectangle, Type _type ) : rectangle(_rectangle), type(_type), money_supplied(0)
@@ -59,13 +60,13 @@ Logic::Structure::Structure( int _rectangle, Type _type ) : rectangle(_rectangle
 			size = rectangles.v[rectangle].scale;
 			money_needed = 100 * size;
 			production_time = 100 * size;
-			money_per_time_cost = 1;
+			money_per_second = 1;
 			break;
 		case city:
 			size = rectangles.v[rectangle].scale;
 			money_needed = 100 * size;
 			production_time = 100 * size;
-			money_per_time_cost = 1;
+			money_per_second = 1;
 			break;
 	}
 }
@@ -79,19 +80,35 @@ void Logic::BuildRoad( int _line, int _from, int _to )
 {
 	roads.push_back( Road( _line, _from, _to ) );
 }
-void Logic::BuildFarm( int _rectangle )
+void Logic::BuildFarm( int _x, int _y, int _scale, int _texture )
 {
-	structures.push_back( Structure( _rectangle, farm ) );
+	rectangles.push_back( Rectangle( _x, _y, _scale, _texture ) );
+	structures.push_back( Structure( rectangles.v.size()-1, farm ) );
 }
-void Logic::BuildCity( int _rectangle )
+void Logic::BuildCity( int _x, int _y, int _scale, int _texture )
 {
-	structures.push_back( Structure( _rectangle, city ) );
+	rectangles.push_back( Rectangle( _x, _y, _scale, _texture ) );
+	structures.push_back( Structure( rectangles.v.size()-1, city ) );
 }
 void Logic::ExpandFarm( int _rectangle, int _size )
 {
+	// TODO: Add construction before expanding.
+	for each( Farm f in farms )
+		if( f.rectangle == _rectangle )
+		{
+			f.Calculate();
+			break;
+		}
 }
 void Logic::ExpandCity( int _rectangle, int _size )
 {
+	// TODO: Add construction before expanding.
+	for each( City c in cities )
+		if( c.rectangle == _rectangle )
+		{
+			c.Calculate();
+			break;
+		}
 }
 void Logic::DestroyRoad( int _line )
 {
@@ -145,14 +162,6 @@ void Logic::AddRectangle( float _x, float _y, float _scale, int _texture )
 { 
 	rectangles.push_back( Rectangle( _x, _y, _scale, _texture ) );
 }
-void Logic::RemoveLine( int _i )
-{
-	lines.erase( lines.begin() + _i );
-}
-void Logic::RemoveRectangle( int _i )
-{
-	rectangles.erase( _i );
-}
 void Logic::RemoveTopLine()
 {
 	if( lines.size() <= 2 ) return; lines.pop_back();
@@ -160,10 +169,6 @@ void Logic::RemoveTopLine()
 void Logic::RemoveTopRectangle()
 {
 	rectangles.v.pop_back();
-}
-void Logic::ResizeRectangle( int _i, float _scale )
-{
-	rectangles.v[_i].scale = _scale;
 }
 void Logic::MoveTopLine( float _x, float _y )
 {
@@ -181,10 +186,69 @@ void Logic::ResizeTopRectangle( float _scale )
 
 void Logic::Initialize()
 {
+	last_time = glfwGetTime();
 	rectangles.push_back( Rectangle( 0, 0, 1, 1 ) );
 }
 
 void Logic::Update()
 {
+	double time = glfwGetTime();
+	if( last_time + 0.01 < time )
+	{
+		return;
+	}
+	last_time = time;
+
+	for each ( Farm f in farms )
+	{
+		f.food_contained += f.food_production * time;
+		if( f.food_contained > f.food_storage )
+			f.food_contained = f.food_storage;
+	}
+	for each ( City c in cities )
+		for each ( Farm f in farms )
+			if( f.rectangle == c.farm_rectangle )
+			{
+				if( f.food_storage <= 0 )
+					break;
+				f.food_storage -= c.food_consumed * time;
+				
+				c.money_contained += c.money_production * time;
+				if( c.money_contained > c.money_storage )
+					c.money_contained = c.money_storage;
+				break;
+			}
+	for( int i(0); i < structures.size(); i++ )
+	{
+		Structure* s = &structures[i];
+		if( s->money_supplied <= 0 )
+			continue;
+		s->production_time -= time;
+		s->money_supplied -= s->money_per_second * time;
+
+		Rectangle r;
+		if( s->production_time <= 0 )
+		{
+			switch( s->type )
+			{
+				case road:
+					// TODO: Add later when road have been changed to using texture.
+					break;
+				case farm:
+					r = rectangles.v[ s->rectangle ];
+					r.texture = 1; // TODO: Change
+					rectangles.push_back( r );
+					break;
+				case city:
+					r = rectangles.v[ s->rectangle ];
+					r.texture = 0; // TODO: Change
+					rectangles.push_back( r );
+					break;
+			}
+			rectangles.erase( s->rectangle );
+			structures.erase( structures.begin() + i );
+			i--;
+		}
+	}
 }
 

@@ -58,8 +58,14 @@ Logic::Structure::Structure( int _rectangle, Type _type ) : rectangle(_rectangle
 	}
 }
 
-Logic::Army::Army( int _soldiers, int _carts, float _x, float _y ) : soldiers(_soldiers), carts(_carts), x(_x), y(_y), stationary(true)
-{}
+Logic::Army::Army( int _soldiers, int _carts, float _x, float _y ) : soldiers(_soldiers), carts(_carts), x(_x), y(_y), food_stored(0), money_stored(0), food_consumed(0.1), money_consumed(0.1), speed(0.5), stationary(true)
+{
+	Calculate();
+}
+void Logic::Army::Calculate()
+{
+	storage_capacity = soldiers * 1 + carts * 10;
+}
 
 
 
@@ -233,7 +239,7 @@ void Logic::Update()
 				float y = rectangles.v[c.rectangle].y;
 				bool army_in_city = false;
 				for each( Army a in armies )
-					if( a.x == x && a.y == y )
+					if( a.x == x && a.y == y && a.stationary )
 					{
 						army_in_city = true;
 						a.carts += 1;
@@ -268,29 +274,72 @@ void Logic::Update()
 	}
 	for( int i(0); i < structures.size(); i++ )
 	{
-		Structure* s = &structures[i];
-		if( s->money_supplied <= 0.0 )
+		Structure& s = structures[i];
+		if( s.money_supplied <= 0.0 )
 			continue;
-		s->production_time -= time;
-		s->money_supplied -= s->money_per_second * time;
+		s.production_time -= time;
+		s.money_supplied -= s.money_per_second * time;
 
 		Rectangle r;
-		if( s->production_time <= 0 )
+		if( s.production_time <= 0 )
 		{
-			switch( s->type )
+			switch( s.type )
 			{
 				case road:
 					// TODO: Add later when road have been changed to using texture.
 					break;
 				case farm:
-					rectangles.v[ s->rectangle ].texture = 1; // TODO: Change
+					rectangles.v[ s.rectangle ].texture = 1; // TODO: Change
 					break;
 				case city:
-					rectangles.v[ s->rectangle ].texture = 0; // TODO: Change
+					rectangles.v[ s.rectangle ].texture = 0; // TODO: Change
 					break;
 			}
 			structures.erase( structures.begin() + i );
 			i--;
+		}
+	}
+	for each( Army a in armies )
+	{
+		// Movement
+		if( !a.stationary )
+		{
+			Rectangle& r = rectangles.v[a.to];
+			float distance = a.speed * time;
+			float d_x = r.x - a.x;
+			float d_y = r.y - a.y;
+			if( d_y == 0 )
+				d_y = 0.0001;
+			float t = (d_x < 0 ? -d_x : d_x) / (d_y < 0 ? -d_y : d_y);
+			float x = (r.x > a.x ? distance : -distance) * t;
+			float y = (r.y > a.y ? distance : -distance) * (1-t); // Possibly wrong, needs to be tested.
+			if( r.x - a.x <= x )
+				a.x = r.x;
+			if( r.y - a.y <= y )
+				a.y = r.y;
+			
+			if( a.x == r.x && a.y == r.x )
+			{
+				a.from = a.to;
+				a.stationary = true;
+			}
+			else
+			{
+				a.x += x;
+				a.y += y;
+			}
+		}
+
+		// TODO: If in city or on farm, take food from city or farm instead.
+		a.food_stored -= a.food_consumed * time;
+		a.money_stored -= a.money_consumed * time;
+		if( a.food_stored <= 0 )
+		{
+			// TODO: Start the starving... muahahahaha.
+		}
+		if( a.money_stored <= 0 )
+		{
+			// TODO: They dont like you... MUTINY.
 		}
 	}
 }

@@ -1,11 +1,12 @@
 Change roads to use rectangles with textures
-Add possibility for transparent textures
+DONE: Add possibility for transparent textures
 Add ability to draw text
 Add select highlightning
-Add units
+Add interface for
 	select units
 	move units
 	construction of units
+Add pathfinding and faster movement if on road
 
 
 Graphic
@@ -34,10 +35,13 @@ Logic
 			City field
 				Food and Money storage
 		Road
-		--Units
+		Units
 			Soldiers
+				Food and/or Money storage
 			Carts
-				Food or Money storage
+				Food and/or Money storage
+		Army
+			Contains units
 	Food
 	Money
 

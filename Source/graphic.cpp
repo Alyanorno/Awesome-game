@@ -50,6 +50,25 @@ void Graphic::DrawLines( glm::mat4& projectionMatrix )
 
 	glUseProgram( 0 );
 }
+
+float vertexs[] = {
+	0.5f, -0.5f, 0.0f,
+	0.5f, 0.5f, 0.0f,
+	-0.5f, -0.5f, 0.0f,
+	-0.5f, 0.5f, 0.0f
+};
+float normals[] = {
+	0.0f, 0.0f, 1.0f,
+	0.0f, 0.0f, 1.0f,
+	0.0f, 0.0f, 1.0f,
+	0.0f, 0.0f, 1.0f
+};
+float textureCoordinates[] = {
+	1.0f, 0.0f, 
+	1.0f, 1.0f, 
+	0.0f, 0.0f,
+	0.0f, 1.0f
+};
 void Graphic::DrawRectangle( Rectangle& r )
 {
 	if( r.used == false )
@@ -74,6 +93,48 @@ void Graphic::DrawRectangle( Rectangle& r )
 	glUniformMatrix3fv( glGetUniformLocation( shaderProgram, "normalInverseTranspose"), 1, GL_FALSE, &tempMatrix[0][0] );
 
 	glDrawArrays( GL_TRIANGLE_STRIP, 0, 4 );
+}
+void Graphic::DrawText( glm::mat4& projectionMatrix )
+{
+	glUseProgram( shaderText );
+
+	glUniformMatrix4fv( glGetUniformLocation(shaderText, "projectionMatrix"), 1, GL_FALSE, &projectionMatrix[0][0] );
+
+	glEnableVertexAttribArray(3);
+	glDisableVertexAttribArray(1);
+
+	for each( Text t in texts )
+	{
+		const char* c = t.s.c_str();
+		glm::mat4 modelMatrix( glm::mat4( 1.0f ) );
+		modelMatrix[3][2] = 0.002;
+		for( int i(0), next_char(0), new_line(0); i < t.s.size(); i++ )
+		{
+			if( c[i] == '\n' )
+			{
+				next_char = 0;
+				new_line++;
+				continue;
+			}
+			glBindTexture( GL_TEXTURE_2D, glTexture[2] );
+
+			modelMatrix[3][0] = t.x + next_char * t.size;
+			modelMatrix[3][1] = t.y - new_line * t.size;
+			next_char++;
+
+			modelMatrix[0][0] = modelMatrix[1][1] = modelMatrix[2][2] = t.size;
+
+			glm::mat4 modelViewMatrix = viewMatrix * modelMatrix;
+			glUniformMatrix4fv( glGetUniformLocation( shaderText, "modelViewMatrix" ), 1, GL_FALSE, &modelViewMatrix[0][0] );
+
+			glDrawArrays( GL_TRIANGLE_STRIP, 0, 4 );
+		}
+	}
+
+	glEnableVertexAttribArray(1);
+	glDisableVertexAttribArray(3);
+
+	glUseProgram( 0 );
 }
 
 GLuint Graphic::LoadShader( std::string name, ShaderType type )
@@ -157,24 +218,6 @@ std::pair< float, float > Graphic::GetIngameCoordinates( float _x, float _y )
 void Graphic::Initialize()
 {
 	GLuint Vao;
-	float vertexs[] = {
-		0.5f, -0.5f, 0.0f,
-		0.5f, 0.5f, 0.0f,
-		-0.5f, -0.5f, 0.0f,
-		-0.5f, 0.5f, 0.0f
-	};
-	float normals[] = {
-		0.0f, 0.0f, 1.0f,
-		0.0f, 0.0f, 1.0f,
-		0.0f, 0.0f, 1.0f,
-		0.0f, 0.0f, 1.0f
-	};
-	float textureCoordinates[] = {
-		1.0f, 0.0f, 
-		1.0f, 1.0f, 
-		0.0f, 0.0f,
-		0.0f, 1.0f
-	};
 
 	glfwInit();
 
@@ -205,9 +248,10 @@ void Graphic::Initialize()
 
 	shaderProgram = CreateShader( "Source/shader.vertex", "Source/shader.fragment" );
 	shaderLine = CreateShader( "Source/line.vertex", "Source/line.fragment" );
+	shaderText = CreateShader( "Source/text.vertex", "Source/text.fragment" );
 
 	Texture t;
-	glGenTextures( 2, glTexture );
+	glGenTextures( 40, glTexture );
 
 	t.LoadBmp( "test.bmp" );
 	glBindTexture( GL_TEXTURE_2D, glTexture[0] );
@@ -221,13 +265,25 @@ void Graphic::Initialize()
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
 
+	// TODO: Add one for each letter.
+	for( int i(1); i <= 7; i++ )
+	{
+		t.LoadBmp( "Font/" + std::to_string(i) + ".bmp" );
+		glBindTexture( GL_TEXTURE_2D, glTexture[i+1] );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
+	}
+
 
 	lines.push_back( Line( vertexs[0], vertexs[1], vertexs[3], vertexs[4] ) );
 	lines.push_back( Line( vertexs[6], vertexs[7], vertexs[9], vertexs[10] ) );
 
+	texts.push_back( Text( "Hej\nDa", 1, 1, .5f ) );
 
 
-	// Vertex, normal, texture
+
+	// Vertex, normal, texture, text
 	glGenBuffers( 3, Vbo );
 	int size = 4 * sizeof(float);
 
@@ -239,6 +295,7 @@ void Graphic::Initialize()
 
 	glBindBuffer(GL_ARRAY_BUFFER, Vbo[2]);
 	glBufferData(GL_ARRAY_BUFFER, size * 2, &textureCoordinates[0], GL_STATIC_DRAW);
+
 
 	glGenVertexArrays(1, &Vao);
 	glBindVertexArray(Vao);
@@ -257,6 +314,7 @@ void Graphic::Initialize()
 
 	glBindBuffer(GL_ARRAY_BUFFER, Vbo[2]);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, null);
+
 
 	glBindVertexArray(Vao);
 }
@@ -279,6 +337,8 @@ void Graphic::Update()
 
 	for( int i(rectangles.v.size()-1); i >= 0; i-- )
 		DrawRectangle( rectangles.v[i] );
+
+	DrawText( projectionMatrix );
 
 	glUseProgram(0);
 

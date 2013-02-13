@@ -1,0 +1,15 @@
+#version 150
+
+uniform sampler2D textureSampler;
+
+in vec3 position;
+in vec2 textureCoordinate; 
+
+out vec4 fragmentColour;
+
+void main() {
+	fragmentColour = texture2D( textureSampler, textureCoordinate );
+	if( fragmentColour == vec4( 1, 0, 1, 1 ) )
+		fragmentColour[3] = 0;
+}
+

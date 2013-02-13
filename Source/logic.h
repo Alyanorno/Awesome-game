@@ -69,9 +69,15 @@ private:
 	struct Army
 	{
 		Army( int _soldiers, int _carts, float _x, float _y );
+		void Calculate();
 		int soldiers;
 		int carts;
+		float storage_capacity;
+		float food_stored, money_stored;
+		float food_consumed, money_consumed;
+
 		float x, y;
+		float speed;
 		int from, to;
 		bool stationary;
 	};

@@ -31,15 +31,25 @@ private:
 
 		void LoadBmp( std::string name );
 	};
-	GLuint glTexture[2];
+	GLuint glTexture[40];
+
+	struct Text
+	{
+		Text( std::string _s, float _x, float _y, float _size ) : s(_s), x(_x), y(_y), size(_size) {}
+		std::string s;
+		float x, y;
+		float size;
+	};
+	std::vector< Text > texts;
 
 	glm::mat4 viewMatrix;
 	GLuint Vbo[3];
 	void DrawLines( glm::mat4& projectionMatrix );
 	void DrawRectangle( Rectangle& r );
+	void DrawText( glm::mat4& projectionMatrix );
 
 	enum ShaderType { Vertex, Fragment, Geometry };
-	GLuint shaderProgram, shaderLine;
+	GLuint shaderProgram, shaderLine, shaderText;
 
 	GLuint LoadShader( std::string name, ShaderType type );
 	GLuint CreateShader( std::string vertex, std::string fragment );
@@ -50,6 +60,9 @@ public:
 	void MoveY( float _distance ) { viewMatrix[3][1] += _distance; }
 
 	std::pair< float, float > GetIngameCoordinates( float _x, float _y );
+
+	void AddText();
+	void RemoveText();
 
 	void Initialize();
 	void Update();

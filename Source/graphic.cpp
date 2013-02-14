@@ -116,10 +116,10 @@ void Graphic::DrawText( glm::mat4& projectionMatrix )
 				new_line++;
 				continue;
 			}
-			glBindTexture( GL_TEXTURE_2D, glTexture[2] );
+			glBindTexture( GL_TEXTURE_2D, glTexture[ char_textures[ c[i] ] ] );
 
-			modelMatrix[3][0] = t.x + next_char * t.size;
-			modelMatrix[3][1] = t.y - new_line * t.size;
+			modelMatrix[3][0] = t.x + next_char * t.size + t.size / 2;
+			modelMatrix[3][1] = t.y - new_line * t.size - t.size / 2;
 			next_char++;
 
 			modelMatrix[0][0] = modelMatrix[1][1] = modelMatrix[2][2] = t.size;
@@ -215,6 +215,40 @@ std::pair< float, float > Graphic::GetIngameCoordinates( float _x, float _y )
 	return std::make_pair( t_x, t_y );
 }
 
+void Graphic::AddText( std::string _s, float _x, float _y, float _size )
+{
+	texts.push_back( Text( _s, _x, _y, _size ) );
+}
+void Graphic::RemoveText( float _x, float _y )
+{
+	for( int i(0); i < texts.size(); i++ )
+		if( texts[i].x == _x && texts[i].y == _y )
+		{
+			texts.erase( texts.begin() + i );
+			return;
+		}
+}
+void Graphic::RemoveTopText()
+{
+	texts.pop_back();
+}
+void Graphic::MoveText( float _x, float _y, float __x, float __y )
+{
+	for( int i(0); i < texts.size(); i++ )
+		if( texts[i].x == _x && texts[i].y == _y )
+		{
+			texts[i].x = __x;
+			texts[i].y = __y;
+			return;
+		}
+}
+void Graphic::MoveTopText( float _x, float _y )
+{
+	texts.back().x = _x;
+	texts.back().y = _y;
+}
+
+
 void Graphic::Initialize()
 {
 	GLuint Vao;
@@ -253,33 +287,52 @@ void Graphic::Initialize()
 	Texture t;
 	glGenTextures( 40, glTexture );
 
+	int i = 0;
+	
 	t.LoadBmp( "test.bmp" );
-	glBindTexture( GL_TEXTURE_2D, glTexture[0] );
+	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
 
 	t.LoadBmp( "bthBmp.bmp" );
-	glBindTexture( GL_TEXTURE_2D, glTexture[1] );
+	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
 
-	// TODO: Add one for each letter.
-	for( int i(1); i <= 7; i++ )
+	// Load char numbers
+	for( int j(0); j < 10; j++ )
 	{
-		t.LoadBmp( "Font/" + std::to_string(i) + ".bmp" );
-		glBindTexture( GL_TEXTURE_2D, glTexture[i+1] );
+		char_textures[ std::to_string(j)[0] ] = i;
+		t.LoadBmp( "Font/" + std::to_string(j) + ".bmp" );
+		glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
 	}
+	// Load char letters
+	for( int j(0); j < 10; j++ )
+	{
+		char_textures[ 'A'+j ] = i;
+		std::stringstream s;
+		s << "Font/" << (char)('A'+j) << ".bmp";
+		t.LoadBmp( s.str() );
+		glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
+	}
+	char_textures[ '/' ] = i;
+	t.LoadBmp( "Font/forward_slash.bmp" );
+	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
 
 
 	lines.push_back( Line( vertexs[0], vertexs[1], vertexs[3], vertexs[4] ) );
 	lines.push_back( Line( vertexs[6], vertexs[7], vertexs[9], vertexs[10] ) );
-
-	texts.push_back( Text( "Hej\nDa", 1, 1, .5f ) );
 
 
 

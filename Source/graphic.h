@@ -1,8 +1,9 @@
 #pragma once
 
 #include <vector>
-#include <fstream>
 #include <string>
+#include <map>
+#include <fstream>
 #include <iostream>
 #include <sstream>
 #define GLFW_DLL
@@ -41,6 +42,7 @@ private:
 		float size;
 	};
 	std::vector< Text > texts;
+	std::map<char,int> char_textures;
 
 	glm::mat4 viewMatrix;
 	GLuint Vbo[3];
@@ -53,16 +55,18 @@ private:
 
 	GLuint LoadShader( std::string name, ShaderType type );
 	GLuint CreateShader( std::string vertex, std::string fragment );
-
 public:
 	void Zoom( float _z ) { viewMatrix[3][2] = _z; }
 	void MoveX( float _distance ) { viewMatrix[3][0] += _distance; }
 	void MoveY( float _distance ) { viewMatrix[3][1] += _distance; }
 
 	std::pair< float, float > GetIngameCoordinates( float _x, float _y );
-
-	void AddText();
-	void RemoveText();
+	
+	void AddText( std::string _s, float _x, float _y, float _size = 1 );
+	void RemoveText( float _x, float _y );
+	void RemoveTopText();
+	void MoveText( float _x, float _y, float __x, float __y );
+	void MoveTopText( float _x, float _y );
 
 	void Initialize();
 	void Update();

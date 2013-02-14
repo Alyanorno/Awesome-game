@@ -7,6 +7,7 @@ Input::Input( Graphic& _graphic, Logic& _logic ) : graphic(_graphic), logic(_log
 void Input::Initialize()
 {
 	state = select;
+	graphic.AddText( "HEJ\nDA", 0, 0, .5f );
 }
 
 float Distance( float _x, float _y, float __x, float __y )
@@ -36,9 +37,12 @@ void Input::Update()
 	if( glfwGetKey( '1' ) && state != select )
 	{
 		state = select;
+		graphic.AddText( "HEJ\nDA", 0, 0, .5f );
 	}
 	else if( glfwGetKey( '2' ) && state != build_road )
 	{
+		if( state == select )
+			graphic.RemoveTopText();
 		if( state == build_farm || state == build_city )
 			logic.RemoveTopRectangle();
 		state = build_road;
@@ -46,6 +50,8 @@ void Input::Update()
 	}
 	else if( glfwGetKey( '3' ) && state != build_farm )
 	{
+		if( state == select )
+			graphic.RemoveTopText();
 		if( state == build_city )
 			logic.RemoveTopRectangle();
 		else if( state == build_road && create )
@@ -55,6 +61,8 @@ void Input::Update()
 	}
 	else if( glfwGetKey( '4' ) && state != build_city )
 	{
+		if( state == select )
+			graphic.RemoveTopText();
 		if( state == build_farm )
 			logic.RemoveTopRectangle();
 		else if( state == build_road && create )
@@ -88,6 +96,7 @@ void Input::Update()
 	switch( state )
 	{
 		case select:
+			graphic.MoveTopText( t_x, t_y );
 			break;
 		case build_road:
 			if( create )

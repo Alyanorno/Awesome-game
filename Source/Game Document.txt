@@ -1,6 +1,7 @@
 Change roads to use rectangles with textures
 DONE: Add possibility for transparent textures
-Add ability to draw text
+DONE: Add ability to draw text
+Fix better text font
 Add select highlightning
 Add interface for
 	select units
@@ -14,8 +15,8 @@ Graphic
 	Draw rectangles
 	Draw lines
 	Zoom in/out
-	--transparent textures
-	--Draw text
+	transparent textures
+	Draw text
 	--Select highlightning
 Input
 	W/A/S/D -> move

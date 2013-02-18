@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <sstream>
 #define GLFW_DLL
 #include "..\GL\include\glew.h"
 #include "..\GL\include\glfw.h"
@@ -26,6 +27,7 @@ private:
 	{
 		Farm( int _rectangle );
 		void Calculate();
+		operator std::string ();
 		int rectangle;
 		float food_storage;
 		float food_contained;
@@ -37,6 +39,7 @@ private:
 	{
 		City( int _rectangle, int _farm_rectangle );
 		void Calculate();
+		operator std::string ();
 		int rectangle, farm_rectangle;
 		float money_storage;
 		float money_contained;
@@ -58,6 +61,7 @@ private:
 	struct Structure
 	{
 		Structure( int _rectangle, Type _type );
+		operator std::string ();
 		Type type;
 		int rectangle;
 		float money_needed, money_supplied;
@@ -103,6 +107,8 @@ public:
 	std::pair< float, float > RoadLocation( float _x, float _y );
 	std::pair< float, float > FarmLocation( float _x, float _y );
 	std::pair< float, float > CityLocation( float _x, float _y );
+
+	std::string GetInfo( int _rectangle );
 
 	void AddLine( float _x, float _y, float __x, float __y );
 	void AddRectangle( float _x, float _y, float _scale, int _texture = 1 );

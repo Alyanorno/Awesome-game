@@ -110,7 +110,12 @@ void Graphic::DrawText( glm::mat4& projectionMatrix )
 		modelMatrix[3][2] = 0.002;
 		for( int i(0), next_char(0), new_line(0); i < t.s.size(); i++ )
 		{
-			if( c[i] == '\n' )
+			if( c[i] == ' ' )
+			{
+				next_char++;
+				continue;
+			}
+			else if( c[i] == '\n' )
 			{
 				next_char = 0;
 				new_line++;
@@ -273,7 +278,7 @@ void Graphic::Initialize()
 	glFrontFace( GL_CCW );
 	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 
-	glClearColor( 0.0f, 0.0f, 0.0f, 0.5f );
+	glClearColor( 0.5f, 0.5f, 0.5f, 0.5f );
 	glDepthFunc( GL_LESS );
 
 	glm::vec3 eye( 0.f, 0.f, 5.f ), centre( 0.f, 0.f, 0.f ), up( 0.f, 1.f, 0.f );
@@ -291,43 +296,43 @@ void Graphic::Initialize()
 	
 	t.LoadBmp( "test.bmp" );
 	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
 	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
 
 	t.LoadBmp( "bthBmp.bmp" );
 	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
 	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
 
 	// Load char numbers
-	for( int j(0); j < 10; j++ )
+	for( char j(0); j < 10; j++ )
 	{
 		char_textures[ std::to_string(j)[0] ] = i;
 		t.LoadBmp( "Font/" + std::to_string(j) + ".bmp" );
 		glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
 		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
 	}
 	// Load char letters
-	for( int j(0); j < 10; j++ )
+	for( char j(0); j < 26; j++ )
 	{
 		char_textures[ 'A'+j ] = i;
 		std::stringstream s;
 		s << "Font/" << (char)('A'+j) << ".bmp";
 		t.LoadBmp( s.str() );
 		glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
 		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
 	}
 	char_textures[ '/' ] = i;
 	t.LoadBmp( "Font/forward_slash.bmp" );
 	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
 	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
 
 

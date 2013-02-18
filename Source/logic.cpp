@@ -22,6 +22,12 @@ void Logic::Farm::Calculate()
 	food_storage = size * 10;
 	food_production = size;
 }
+Logic::Farm::operator std::string()
+{
+	std::stringstream s;
+	s << "FARM" << std::endl << (int)(food_contained+.5f) << "/" << (int)(food_storage+.5f) << " FOOD" << std::endl << (int)(food_production+.5f) << " FOOD/SECOND";
+	return s.str();
+}
 
 Logic::City::City( int _rectangle, int _farm_rectangle ) : rectangle(_rectangle), farm_rectangle(_farm_rectangle), money_contained(0), carts(0), cart_production_time(1), cart_money(1), soldiers(0), soldier_production_time(1), soldier_money(1)
 {
@@ -34,6 +40,13 @@ void Logic::City::Calculate()
 	money_production = size;
 	food_consumed = size;
 }
+// TODO: Add information about construction of units
+Logic::City::operator std::string()
+{
+	std::stringstream s;
+	s << "CITY" << std::endl << (int)(money_contained+.5f) << "/" << (int)(money_storage+.5f) << " MONEY" << std::endl << (int)(money_production+.5f) << " MONEY/SECOND" << std::endl << (int)(food_consumed+.5f) << " FOOD/SECOND";
+	return s.str();
+}
 
 Logic::Structure::Structure( int _rectangle, Type _type ) : rectangle(_rectangle), type(_type), money_supplied(0)
 {
@@ -41,7 +54,7 @@ Logic::Structure::Structure( int _rectangle, Type _type ) : rectangle(_rectangle
 	switch( type )
 	{
 		case road:
-			// Doesnt exists right now
+			// Doesnt exist right now
 			break;
 		case farm:
 			size = rectangles.v[rectangle].scale;
@@ -56,6 +69,12 @@ Logic::Structure::Structure( int _rectangle, Type _type ) : rectangle(_rectangle
 			money_per_second = 1;
 			break;
 	}
+}
+Logic::Structure::operator std::string()
+{
+	std::stringstream s;
+	s << "STRUCTURE" << std::endl << (int)(money_supplied+.5f) << "/" << (int)(money_needed+.5f) << " MONEY" << std::endl << (int)(production_time+.5f) << " PRODUCTION TIME" << std::endl << (int)(money_per_second+.5f) << " MONEY/SECOND";
+	return s.str();
 }
 
 Logic::Army::Army( int _soldiers, int _carts, float _x, float _y ) : soldiers(_soldiers), carts(_carts), x(_x), y(_y), food_stored(0), money_stored(0), food_consumed(0.1), money_consumed(0.1), speed(0.5), stationary(true)
@@ -91,12 +110,12 @@ void Logic::BuildRoad( int _line, int _from, int _to )
 void Logic::BuildFarm( int _x, int _y, int _scale, int _texture )
 {
 	rectangles.push_back( Rectangle( _x, _y, _scale, _texture ) );
-	structures.push_back( Structure( rectangles.v.size()-1, farm ) );
+	structures.push_back( Structure( rectangles.v.size()-2, farm ) );
 }
 void Logic::BuildCity( int _x, int _y, int _scale, int _texture )
 {
 	rectangles.push_back( Rectangle( _x, _y, _scale, _texture ) );
-	structures.push_back( Structure( rectangles.v.size()-1, city ) );
+	structures.push_back( Structure( rectangles.v.size()-2, city ) );
 }
 void Logic::ExpandFarm( int _rectangle, int _size )
 {
@@ -148,6 +167,7 @@ void Logic::RemoveStructure( int _rectangle )
 }
 
 
+// TODO: Implement
 std::pair< float, float > Logic::RoadLocation( float _x, float _y )
 {
 	return std::make_pair( _x, _y );
@@ -159,6 +179,21 @@ std::pair< float, float > Logic::FarmLocation( float _x, float _y )
 std::pair< float, float > Logic::CityLocation( float _x, float _y )
 {
 	return std::make_pair( _x, _y );
+}
+
+
+std::string Logic::GetInfo( int _rectangle )
+{
+	for each( Structure s in structures )
+		if( s.rectangle == _rectangle )
+			return s;
+	for each( Farm f in farms )
+		if( f.rectangle == _rectangle )
+			return f;
+	for each( City c in cities )
+		if( c.rectangle == _rectangle )
+			return c;
+	return "NO INFO";
 }
 
 
@@ -196,43 +231,50 @@ void Logic::Initialize()
 {
 	last_time = glfwGetTime();
 	rectangles.push_back( Rectangle( 0, 0, 1, 1 ) );
+	farms.push_back( Farm( rectangles.v.size()-1 ) );
 }
 
 void Logic::Update()
 {
 	double time = glfwGetTime();
-	if( last_time + 0.01 < time )
+	if( last_time + 0.01 > time )
 	{
 		return;
 	}
+	float delta_time = time - last_time;
 	last_time = time;
 
-	for each ( Farm f in farms )
+	for( int i(0); i < farms.size(); i++ )
 	{
-		f.food_contained += f.food_production * time;
+		Farm& f( farms[i] );
+		f.food_contained += f.food_production * delta_time;
 		if( f.food_contained > f.food_storage )
 			f.food_contained = f.food_storage;
 	}
-	for each ( City c in cities )
+	for( int i(0); i < cities.size(); i++ )
 	{
-		for each ( Farm f in farms )
+		City& c( cities[i] );
+		for( int j(0); j < farms.size(); j++ )
+		{
+			Farm& f( farms[j] );
 			if( f.rectangle == c.farm_rectangle )
 			{
 				if( f.food_storage <= 0 )
 					break;
-				f.food_storage -= c.food_consumed * time;
+				f.food_storage -= c.food_consumed * delta_time;
 				
-				c.money_contained += c.money_production * time;
+				c.money_contained += c.money_production * delta_time;
 				if( c.money_contained > c.money_storage )
 					c.money_contained = c.money_storage;
 				break;
 			}
+		}
 		if( c.money_contained <= 0 )
 			continue;
 		if( c.carts )
 		{
-			c.money_contained -= c.cart_production_time / time * c.cart_money;
-			c.current_cart_production -= c.cart_production_time / time;
+			c.money_contained -= c.cart_production_time / delta_time * c.cart_money;
+			c.current_cart_production -= c.cart_production_time / delta_time;
 			if( c.current_cart_production <= 0 )
 			{
 				float x = rectangles.v[c.rectangle].x;
@@ -252,8 +294,8 @@ void Logic::Update()
 		}
 		if( c.soldiers )
 		{
-			c.money_contained -= c.soldier_production_time / time * c.soldier_money;
-			c.current_soldier_production -= c.soldier_production_time / time;
+			c.money_contained -= c.soldier_production_time / delta_time * c.soldier_money;
+			c.current_soldier_production -= c.soldier_production_time / delta_time;
 			if( c.current_soldier_production <= 0 )
 			{
 				float x = rectangles.v[c.rectangle].x;
@@ -274,11 +316,11 @@ void Logic::Update()
 	}
 	for( int i(0); i < structures.size(); i++ )
 	{
-		Structure& s = structures[i];
+		Structure& s( structures[i] );
 		if( s.money_supplied <= 0.0 )
 			continue;
-		s.production_time -= time;
-		s.money_supplied -= s.money_per_second * time;
+		s.production_time -= delta_time;
+		s.money_supplied -= s.money_per_second * delta_time;
 
 		Rectangle r;
 		if( s.production_time <= 0 )
@@ -299,13 +341,14 @@ void Logic::Update()
 			i--;
 		}
 	}
-	for each( Army a in armies )
+	for( int i(0); i < armies.size(); i++ )
 	{
+		Army& a( armies[i] );
 		// Movement
 		if( !a.stationary )
 		{
 			Rectangle& r = rectangles.v[a.to];
-			float distance = a.speed * time;
+			float distance = a.speed * delta_time;
 			float d_x = r.x - a.x;
 			float d_y = r.y - a.y;
 			if( d_y == 0 )
@@ -331,8 +374,8 @@ void Logic::Update()
 		}
 
 		// TODO: If in city or on farm, take food from city or farm instead.
-		a.food_stored -= a.food_consumed * time;
-		a.money_stored -= a.money_consumed * time;
+		a.food_stored -= a.food_consumed * delta_time;
+		a.money_stored -= a.money_consumed * delta_time;
 		if( a.food_stored <= 0 )
 		{
 			// TODO: Start the starving... muahahahaha.

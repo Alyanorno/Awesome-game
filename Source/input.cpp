@@ -36,6 +36,8 @@ void Input::Update()
 
 	if( glfwGetKey( '1' ) && state != select )
 	{
+		if( state == build_farm || state == build_city )
+			logic.RemoveTopRectangle();
 		state = select;
 		graphic.AddText( "HEJ\nDA", 0, 0, .5f );
 	}
@@ -96,6 +98,9 @@ void Input::Update()
 	switch( state )
 	{
 		case select:
+			closest = ClosestRectangle( t_x, t_y );
+			graphic.RemoveTopText();
+			graphic.AddText( logic.GetInfo( closest.first ) );
 			graphic.MoveTopText( t_x, t_y );
 			break;
 		case build_road:

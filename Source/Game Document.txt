@@ -1,13 +1,12 @@
-Change roads to use rectangles with textures
-DONE: Add possibility for transparent textures
-DONE: Add ability to draw text
-Fix better text font
-Add select highlightning
 Add interface for
 	select units
 	move units
 	construction of units
 Add pathfinding and faster movement if on road
+
+Change roads to use rectangles with textures
+Fix better text font
+Add select highlightning
 
 
 Graphic

@@ -61,8 +61,8 @@ public:
 	void MoveY( float _distance ) { viewMatrix[3][1] += _distance; }
 
 	std::pair< float, float > GetIngameCoordinates( float _x, float _y );
-	
-	void AddText( std::string _s, float _x, float _y, float _size = 1 );
+
+	void AddText( std::string _s, float _x = 0, float _y = 0, float _size = 1 );
 	void RemoveText( float _x, float _y );
 	void RemoveTopText();
 	void MoveText( float _x, float _y, float __x, float __y );

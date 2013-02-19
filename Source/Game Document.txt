@@ -1,3 +1,4 @@
+Add input code for no valid positions for construction
 Add interface for
 	select units
 	move units

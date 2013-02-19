@@ -65,8 +65,7 @@ private:
 		Type type;
 		int rectangle;
 		float money_needed, money_supplied;
-		int production_time;
-		float money_per_second;
+		float production_time;
 	};
 	std::vector< Structure > structures;
 
@@ -104,9 +103,11 @@ public:
 	void DestroyCity( int _rectangle );
 	void RemoveStructure( int _rectangle );
 
-	std::pair< float, float > RoadLocation( float _x, float _y );
-	std::pair< float, float > FarmLocation( float _x, float _y );
-	std::pair< float, float > CityLocation( float _x, float _y );
+	float Distance( float _x, float _y, float __x, float __y );
+	std::pair< int, float > ClosestRectangle( float _x, float _y );
+	std::pair< int, float > ClosestFarm( float _x, float _y );
+	std::pair< int, float > ClosestCity( float _x, float _y );
+	std::pair< int, float > ClosestStructure( float _x, float _y );
 
 	std::string GetInfo( int _rectangle );
 

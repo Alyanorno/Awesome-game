@@ -10,25 +10,6 @@ void Input::Initialize()
 	graphic.AddText( "HEJ\nDA", 0, 0, .5f );
 }
 
-float Distance( float _x, float _y, float __x, float __y )
-{
-	return (_x - __x) * (_x - __x) + (_y - __y) * (_y - __y);
-}
-std::pair<int,float> ClosestRectangle( float _x, float _y )
-{
-	float distance = Distance( _x, _y, rectangles.v[0].x, rectangles.v[0].y );
-	int closest = 0;
-	for( int i(1); i < rectangles.v.size(); i++ )
-	{
-		float t = Distance( _x, _y, rectangles.v[i].x, rectangles.v[i].y );
-		if( t < distance )
-		{
-			distance = t;
-			closest = i; 
-		}
-	}
-	return std::make_pair( closest, distance );
-}
 void Input::Update()
 {
 	if( glfwGetKey( GLFW_KEY_ESC ) )
@@ -94,19 +75,28 @@ void Input::Update()
 	float t_x = t.first, t_y = t.second;
 
 	std::pair<int,float> closest;
-	std::pair<float,float> closest_line;
+	std::string temp = "";
 	switch( state )
 	{
 		case select:
-			closest = ClosestRectangle( t_x, t_y );
+			closest = logic.ClosestFarm( t_x, t_y ); \
+			if( closest.first != - 1 && closest.second <= rectangles.v[closest.first].scale ) \
+				temp = temp + logic.GetInfo( closest.first );
+			closest = logic.ClosestCity( t_x, t_y );
+			if( closest.first != - 1 && closest.second <= rectangles.v[closest.first].scale )
+				temp = temp + logic.GetInfo( closest.first );
+			closest = logic.ClosestStructure( t_x, t_y );
+			if( closest.first != - 1 && closest.second <= rectangles.v[closest.first].scale )
+				temp = temp + logic.GetInfo( closest.first );
+
 			graphic.RemoveTopText();
-			graphic.AddText( logic.GetInfo( closest.first ) );
+			graphic.AddText( temp );
 			graphic.MoveTopText( t_x, t_y );
 			break;
 		case build_road:
 			if( create )
 			{
-				closest = ClosestRectangle( t_x, t_y );
+				closest = logic.ClosestRectangle( t_x, t_y );
 				t_x = rectangles.v[closest.first].x;
 				t_y = rectangles.v[closest.first].y;
 				logic.MoveTopLine( t_x, t_y );
@@ -127,7 +117,7 @@ void Input::Update()
 					break;
 				if( !create )
 				{
-					closest = ClosestRectangle( t_x, t_y );
+					closest = logic.ClosestRectangle( t_x, t_y );
 					logic.AddLine( rectangles.v[closest.first].x, rectangles.v[closest.first].y, 0, 0 );
 				}
 				create = true;
@@ -153,7 +143,7 @@ void Input::Update()
 			break;
 		case build_city:
 			// Draw not completed city
-			closest = ClosestRectangle( t_x, t_y );
+			closest = logic.ClosestRectangle( t_x, t_y );
 			t_x = rectangles.v[closest.first].x;
 			t_y = rectangles.v[closest.first].y;
 			logic.MoveTopRectangle( t_x, t_y );

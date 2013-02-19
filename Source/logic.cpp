@@ -25,7 +25,7 @@ void Logic::Farm::Calculate()
 Logic::Farm::operator std::string()
 {
 	std::stringstream s;
-	s << "FARM" << std::endl << (int)(food_contained+.5f) << "/" << (int)(food_storage+.5f) << " FOOD" << std::endl << (int)(food_production+.5f) << " FOOD/SECOND";
+	s << "FARM" << std::endl << (int)(food_contained+.5f) << "/" << (int)(food_storage+.5f) << " FOOD" << std::endl << (int)(food_production+.5f) << " FOOD/SECOND" << std::endl;
 	return s.str();
 }
 
@@ -38,13 +38,13 @@ void Logic::City::Calculate()
 	float size = rectangles.v[rectangle].scale;
 	money_storage = size * 10;
 	money_production = size;
-	food_consumed = size;
+	food_consumed = size * 2;
 }
 // TODO: Add information about construction of units
 Logic::City::operator std::string()
 {
 	std::stringstream s;
-	s << "CITY" << std::endl << (int)(money_contained+.5f) << "/" << (int)(money_storage+.5f) << " MONEY" << std::endl << (int)(money_production+.5f) << " MONEY/SECOND" << std::endl << (int)(food_consumed+.5f) << " FOOD/SECOND";
+	s << "CITY" << std::endl << (int)(money_contained+.5f) << "/" << (int)(money_storage+.5f) << " MONEY" << std::endl << (int)(money_production+.5f) << " MONEY/SECOND" << std::endl << (int)(food_consumed+.5f) << " FOOD/SECOND" << std::endl;
 	return s.str();
 }
 
@@ -59,21 +59,22 @@ Logic::Structure::Structure( int _rectangle, Type _type ) : rectangle(_rectangle
 		case farm:
 			size = rectangles.v[rectangle].scale;
 			money_needed = 100 * size;
-			production_time = 100 * size;
-			money_per_second = 1;
+			production_time = 10 * size;
 			break;
 		case city:
 			size = rectangles.v[rectangle].scale;
 			money_needed = 100 * size;
-			production_time = 100 * size;
-			money_per_second = 1;
+			production_time = 10 * size;
 			break;
 	}
+
+	// temp
+	money_supplied = money_needed;
 }
 Logic::Structure::operator std::string()
 {
 	std::stringstream s;
-	s << "STRUCTURE" << std::endl << (int)(money_supplied+.5f) << "/" << (int)(money_needed+.5f) << " MONEY" << std::endl << (int)(production_time+.5f) << " PRODUCTION TIME" << std::endl << (int)(money_per_second+.5f) << " MONEY/SECOND";
+	s << "STRUCTURE" << std::endl << (int)(money_supplied+.5f) << "/" << (int)(money_needed+.5f) << " MONEY" << std::endl << (int)(production_time+.5f) << " PRODUCTION TIME" << std::endl;
 	return s.str();
 }
 
@@ -167,18 +168,99 @@ void Logic::RemoveStructure( int _rectangle )
 }
 
 
-// TODO: Implement
-std::pair< float, float > Logic::RoadLocation( float _x, float _y )
+float Logic::Distance( float _x, float _y, float __x, float __y )
 {
-	return std::make_pair( _x, _y );
+	return (_x - __x) * (_x - __x) + (_y - __y) * (_y - __y);
 }
-std::pair< float, float > Logic::FarmLocation( float _x, float _y )
+std::pair< int, float > Logic::ClosestRectangle( float _x, float _y )
 {
-	return std::make_pair( _x, _y );
+	float distance = Distance( _x, _y, rectangles.v[0].x, rectangles.v[0].y );
+	int closest = 0;
+	for( int i(1); i < rectangles.v.size(); i++ )
+	{
+		float t = Distance( _x, _y, rectangles.v[i].x, rectangles.v[i].y );
+		if( t < distance )
+		{
+			distance = t;
+			closest = i; 
+		}
+	}
+	return std::make_pair( closest, distance );
 }
-std::pair< float, float > Logic::CityLocation( float _x, float _y )
+std::pair< int, float > Logic::ClosestFarm( float _x, float _y )
 {
-	return std::make_pair( _x, _y );
+	float distance = 10000;
+	int closest = -1;
+	for( int i(0); i < rectangles.v.size(); i++ )
+	{
+		float t = Distance( _x, _y, rectangles.v[i].x, rectangles.v[i].y );
+		if( t < distance )
+		{
+			bool farm = false;
+			for each( Farm f in farms )
+				if( f.rectangle == i )
+				{
+					farm = true;
+					break;
+				}
+			if( farm )
+			{
+				distance = t;
+				closest = i; 
+			}
+		}
+	}
+	return std::make_pair( closest, distance );
+}
+std::pair< int, float > Logic::ClosestCity( float _x, float _y )
+{
+	float distance = 10000;
+	int closest = -1;
+	for( int i(0); i < rectangles.v.size(); i++ )
+	{
+		float t = Distance( _x, _y, rectangles.v[i].x, rectangles.v[i].y );
+		if( t < distance )
+		{
+			bool city = false;
+			for each( City c in cities )
+				if( c.rectangle == i )
+				{
+					city = true;
+					break;
+				}
+			if( city )
+			{
+				distance = t;
+				closest = i; 
+			}
+		}
+	}
+	return std::make_pair( closest, distance );
+}
+std::pair< int, float > Logic::ClosestStructure( float _x, float _y )
+{
+	float distance = 10000;
+	int closest = -1;
+	for( int i(0); i < rectangles.v.size(); i++ )
+	{
+		float t = Distance( _x, _y, rectangles.v[i].x, rectangles.v[i].y );
+		if( t < distance )
+		{
+			bool structure = false;
+			for each( Structure s in structures )
+				if( s.rectangle == i )
+				{
+					structure = true;
+					break;
+				}
+			if( structure )
+			{
+				distance = t;
+				closest = i; 
+			}
+		}
+	}
+	return std::make_pair( closest, distance );
 }
 
 
@@ -259,9 +341,9 @@ void Logic::Update()
 			Farm& f( farms[j] );
 			if( f.rectangle == c.farm_rectangle )
 			{
-				if( f.food_storage <= 0 )
+				if( f.food_contained <= 0 )
 					break;
-				f.food_storage -= c.food_consumed * delta_time;
+				f.food_contained -= c.food_consumed * delta_time;
 				
 				c.money_contained += c.money_production * delta_time;
 				if( c.money_contained > c.money_storage )
@@ -320,10 +402,11 @@ void Logic::Update()
 		if( s.money_supplied <= 0.0 )
 			continue;
 		s.production_time -= delta_time;
-		s.money_supplied -= s.money_per_second * delta_time;
+		s.money_supplied -= (s.money_needed / s.production_time) * delta_time;
+		s.money_needed -= (s.money_needed / s.production_time) * delta_time;
 
 		Rectangle r;
-		if( s.production_time <= 0 )
+		if( s.production_time <= 0.1 )
 		{
 			switch( s.type )
 			{
@@ -331,10 +414,19 @@ void Logic::Update()
 					// TODO: Add later when road have been changed to using texture.
 					break;
 				case farm:
-					rectangles.v[ s.rectangle ].texture = 1; // TODO: Change
+					farms.push_back( Farm( s.rectangle ) );
 					break;
 				case city:
-					rectangles.v[ s.rectangle ].texture = 0; // TODO: Change
+					for each( Farm f in farms )
+					{
+						Rectangle& fr( rectangles.v[f.rectangle] );
+						Rectangle& sr( rectangles.v[s.rectangle] );
+						if( fr.x == sr.x && fr.y == fr.y )
+						{
+							cities.push_back( City( s.rectangle, f.rectangle ) );
+							break;
+						}
+					}
 					break;
 			}
 			structures.erase( structures.begin() + i );

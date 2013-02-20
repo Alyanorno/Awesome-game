@@ -18,14 +18,14 @@ Logic::Farm::Farm( int _rectangle ) : rectangle(_rectangle), food_contained(0)
 }
 void Logic::Farm::Calculate()
 {
-	float size = rectangles.v[rectangle].scale;
-	food_storage = size * 10;
+	float size = 3.14 * rectangles.v[rectangle].scale * rectangles.v[rectangle].scale;
+	food_storage = size * 100;
 	food_production = size;
 }
 Logic::Farm::operator std::string()
 {
 	std::stringstream s;
-	s << "FARM " << rectangle << std::endl << (int)(food_contained+.5f) << "/" << (int)(food_storage+.5f) << " FOOD" << std::endl << (int)(food_production+.5f) << " FOOD/SECOND" << std::endl;
+	s << "FARM " << rectangle << std::endl << (int)(food_contained+.5f) << "/" << (int)(food_storage+.5f) << "#" << std::endl << "+" << (int)(food_production+.5f) << "#/S" << std::endl;
 	return s.str();
 }
 
@@ -35,7 +35,7 @@ Logic::City::City( int _rectangle, int _farm_rectangle ) : rectangle(_rectangle)
 }
 void Logic::City::Calculate()
 {
-	float size = rectangles.v[rectangle].scale;
+	float size = 3.14 * rectangles.v[rectangle].scale * rectangles.v[rectangle].scale;
 	money_storage = size * 10;
 	money_production = size * 2;
 	food_consumed = size * 2;
@@ -46,27 +46,25 @@ void Logic::City::Calculate()
 Logic::City::operator std::string()
 {
 	std::stringstream s;
-	s << "CITY " << rectangle << std::endl << (int)(money_contained+.5f) << "/" << (int)(money_storage+.5f) << " MONEY" << std::endl << (int)(money_production+.5f) << " MONEY/SECOND" << std::endl << (int)(food_consumed+.5f) << " FOOD/SECOND" << std::endl << soldiers << " SOLDIERS IN PRODUCTION" << std::endl << carts << " CARTS IN PRODUCTION" << std::endl;
+	s << "CITY " << rectangle << std::endl << (int)(money_contained+.5f) << "/" << (int)(money_storage+.5f) << "$" << std::endl << "+" << (int)(money_production+.5f) << "$/S" << std::endl << "-" << (int)(food_consumed+.5f) << "#/S" << std::endl << soldiers << " SOLDIERS IN PRODUCTION" << std::endl << carts << " CARTS IN PRODUCTION" << std::endl;
 	return s.str();
 }
 
 Logic::Structure::Structure( int _rectangle, Type _type ) : rectangle(_rectangle), type(_type), money_supplied(0)
 {
-	int size;
+	float size = 3.14 * rectangles.v[rectangle].scale * rectangles.v[rectangle].scale;
 	switch( type )
 	{
 		case road:
 			// Doesnt exist right now
 			break;
 		case farm:
-			size = rectangles.v[rectangle].scale;
 			money_needed = 100 * size;
-			production_time = 10 * size;
+			production_time = 1 * size;
 			break;
 		case city:
-			size = rectangles.v[rectangle].scale;
 			money_needed = 100 * size;
-			production_time = 10 * size;
+			production_time = 1 * size;
 			break;
 	}
 
@@ -76,11 +74,11 @@ Logic::Structure::Structure( int _rectangle, Type _type ) : rectangle(_rectangle
 Logic::Structure::operator std::string()
 {
 	std::stringstream s;
-	s << "STRUCTURE" << std::endl << (int)(money_supplied+.5f) << "/" << (int)(money_needed+.5f) << " MONEY" << std::endl << (int)(production_time+.5f) << " PRODUCTION TIME" << std::endl;
+	s << "STRUCTURE" << std::endl << (int)(money_supplied+.5f) << "/" << (int)(money_needed+.5f) << "$" << std::endl << (int)(production_time+.5f) << " PRODUCTION TIME" << std::endl;
 	return s.str();
 }
 
-Logic::Army::Army( int _rectangle, int _soldiers, int _carts ) : rectangle(_rectangle), soldiers(_soldiers), carts(_carts), food_stored(0), money_stored(0), food_consumed(0.1), money_consumed(0.1), speed(0.5), stationary(true)
+Logic::Army::Army( int _rectangle, int _soldiers, int _carts ) : rectangle(_rectangle), soldiers(_soldiers), carts(_carts), food_stored(0), money_stored(0), food_consumed(0.1), money_consumed(0.1), speed(1), stationary(true)
 {
 	x = rectangles.v[rectangle].x;
 	y = rectangles.v[rectangle].y;
@@ -91,12 +89,12 @@ void Logic::Army::Calculate()
 	storage_capacity = soldiers * 1 + carts * 10;
 	rectangles.v[rectangle].x = x;
 	rectangles.v[rectangle].y = y;
-	rectangles.v[rectangle].scale = soldiers + carts * 0.001;
+	rectangles.v[rectangle].scale = sqrt( (soldiers + carts) / 3.14 );
 }
 Logic::Army::operator std::string()
 {
 	std::stringstream s;
-	s << "ARMY" << std::endl << (int)(soldiers+.5f) << " SOLDIERS " << (int)(carts+.5f) << " CARTS" << std::endl << (int)(food_stored+.5f) << " FOOD " << (int)(money_stored+.5f) << " MONEY" << std::endl;
+	s << "ARMY" << std::endl << (int)(soldiers+.5f) << " SOLDIERS " << (int)(carts+.5f) << " CARTS" << std::endl << (int)(food_stored+.5f) << "# " << (int)(money_stored+.5f) << "$" << std::endl;
 	return s.str();
 }
 
@@ -354,6 +352,7 @@ void Logic::Initialize()
 	farms.push_back( Farm( rectangles.v.size()-1 ) );
 }
 
+float L( float _x ) { return _x < 0 ? -_x: _x; }
 void Logic::Update()
 {
 	double time = glfwGetTime();
@@ -496,21 +495,19 @@ void Logic::Update()
 		if( !a.stationary )
 		{
 			Rectangle& r = rectangles.v[a.to];
-			/*float distance = a.speed * delta_time;
+			float distance = a.speed * delta_time;
 			float d_x = r.x - a.x;
 			float d_y = r.y - a.y;
 			if( d_y == 0 )
 				d_y = 0.0001;
-			float t = (d_x < 0 ? -d_x : d_x) / (d_x < 0 ? -d_x : d_x) + (d_y < 0 ? -d_y : d_y);
-			float x = (r.x > a.x ? distance : -distance) * (1-t);
-			float y = (r.y > a.y ? distance : -distance) * t; // Possibly wrong, needs to be tested.
-			if( r.x - a.x <= x )
+			float t = L(d_x) / ( L(d_x) + L(d_y) );
+			float x = (r.x > a.x ? distance : -distance) * t;
+			float y = (r.y > a.y ? distance : -distance) * (1-t);
+			if( L(r.x - a.x) <= L(x) )
 				a.x = r.x;
-			if( r.y - a.y <= y )
-				a.y = r.y; */
+			if( L(r.y - a.y) <= L(y) )
+				a.y = r.y;
 
-			a.x = r.x; // temp
-			a.y = r.y; // temp
 			if( a.x == r.x && a.y == r.y )
 			{
 				for( int j(0); j < armies.size(); j++ )
@@ -527,8 +524,8 @@ void Logic::Update()
 			}
 			else
 			{
-//				a.x += x;
-//				a.y += y;
+				a.x += x;
+				a.y += y;
 			}
 			a.Calculate();
 		}

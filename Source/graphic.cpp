@@ -111,23 +111,23 @@ void Graphic::DrawText( glm::mat4& projectionMatrix )
 
 	for each( Text t in texts )
 	{
-		const char* c = t.s.c_str();
+		std::string& s(t.s);
 		glm::mat4 modelMatrix( glm::mat4( 1.0f ) );
 		modelMatrix[3][2] = 0.002;
 		for( int i(0), next_char(0), new_line(0); i < t.s.size(); i++ )
 		{
-			if( c[i] == ' ' )
+			if( s[i] == ' ' )
 			{
 				next_char++;
 				continue;
 			}
-			else if( c[i] == '\n' )
+			else if( s[i] == '\n' )
 			{
 				next_char = 0;
 				new_line++;
 				continue;
 			}
-			glBindTexture( GL_TEXTURE_2D, glTexture[ char_textures[ c[i] ] ] );
+			glBindTexture( GL_TEXTURE_2D, glTexture[ char_textures[ s[i] ] ] );
 
 			modelMatrix[3][0] = t.x + next_char * t.size + t.size / 2;
 			modelMatrix[3][1] = t.y - new_line * t.size - t.size / 2;
@@ -296,7 +296,7 @@ void Graphic::Initialize()
 	shaderText = CreateShader( "Source/text.vertex", "Source/text.fragment" );
 
 	Texture t;
-	glGenTextures( 42, glTexture );
+	glGenTextures( 46, glTexture );
 
 	int i = 0;
 
@@ -359,6 +359,34 @@ void Graphic::Initialize()
 	}
 	char_textures[ '/' ] = i;
 	t.LoadBmp( "Font/forward_slash.bmp" );
+	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
+
+	char_textures[ '+' ] = i;
+	t.LoadBmp( "Font/plus.bmp" );
+	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
+
+	char_textures[ '-' ] = i;
+	t.LoadBmp( "Font/minus.bmp" );
+	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
+
+	char_textures[ '#' ] = i;
+	t.LoadBmp( "food.bmp" );
+	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
+
+	char_textures[ '$' ] = i;
+	t.LoadBmp( "money.bmp" );
 	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );

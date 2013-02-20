@@ -1,19 +1,16 @@
-DONE: Add input code to handle no valid position for construction
 DONE: Construction of units
 DONE: Select unit
 DONE: Add better textures
-Move unit
-	Fix buggs
+DONE: Move unit
+DONE: Add textures for food and money
+DONE: Change size calcutations to be based on area
 Add interface for
 	construction of units
-	supplie management
+	supply management
 	DONE: select unit
 	DONE: move unit
-Change calcutations to be based on area
-
 Add pathfinding and faster movement if on road
 Change roads to use rectangles with textures
-Fix better text font
 Add select highlightning
 Limit construction further
 	No roads to themself

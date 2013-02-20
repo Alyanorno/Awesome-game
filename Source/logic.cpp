@@ -25,11 +25,11 @@ void Logic::Farm::Calculate()
 Logic::Farm::operator std::string()
 {
 	std::stringstream s;
-	s << "FARM" << std::endl << (int)(food_contained+.5f) << "/" << (int)(food_storage+.5f) << " FOOD" << std::endl << (int)(food_production+.5f) << " FOOD/SECOND" << std::endl;
+	s << "FARM " << rectangle << std::endl << (int)(food_contained+.5f) << "/" << (int)(food_storage+.5f) << " FOOD" << std::endl << (int)(food_production+.5f) << " FOOD/SECOND" << std::endl;
 	return s.str();
 }
 
-Logic::City::City( int _rectangle, int _farm_rectangle ) : rectangle(_rectangle), farm_rectangle(_farm_rectangle), money_contained(0), carts(0), cart_production_time(1), cart_money(1), soldiers(0), soldier_production_time(1), soldier_money(1)
+Logic::City::City( int _rectangle, int _farm_rectangle ) : rectangle(_rectangle), farm_rectangle(_farm_rectangle), money_contained(0), carts(0), cart_production_time(1), current_cart_production( cart_production_time ), cart_money(1), soldiers(0), soldier_production_time(1), current_soldier_production( soldier_production_time ), soldier_money(1)
 {
 	Calculate();
 }
@@ -37,14 +37,16 @@ void Logic::City::Calculate()
 {
 	float size = rectangles.v[rectangle].scale;
 	money_storage = size * 10;
-	money_production = size;
+	money_production = size * 2;
 	food_consumed = size * 2;
+
+	//temp
+	soldiers = 10;
 }
-// TODO: Add information about construction of units
 Logic::City::operator std::string()
 {
 	std::stringstream s;
-	s << "CITY" << std::endl << (int)(money_contained+.5f) << "/" << (int)(money_storage+.5f) << " MONEY" << std::endl << (int)(money_production+.5f) << " MONEY/SECOND" << std::endl << (int)(food_consumed+.5f) << " FOOD/SECOND" << std::endl;
+	s << "CITY " << rectangle << std::endl << (int)(money_contained+.5f) << "/" << (int)(money_storage+.5f) << " MONEY" << std::endl << (int)(money_production+.5f) << " MONEY/SECOND" << std::endl << (int)(food_consumed+.5f) << " FOOD/SECOND" << std::endl << soldiers << " SOLDIERS IN PRODUCTION" << std::endl << carts << " CARTS IN PRODUCTION" << std::endl;
 	return s.str();
 }
 
@@ -85,6 +87,12 @@ Logic::Army::Army( int _soldiers, int _carts, float _x, float _y ) : soldiers(_s
 void Logic::Army::Calculate()
 {
 	storage_capacity = soldiers * 1 + carts * 10;
+}
+Logic::Army::operator std::string()
+{
+	std::stringstream s;
+	s << "ARMY" << std::endl << (int)(soldiers+.5f) << " SOLDIERS " << (int)(carts+.5f) << " CARTS" << std::endl << (int)(food_stored+.5f) << " FOOD " << (int)(money_stored+.5f) << " MONEY" << std::endl;
+	return s.str();
 }
 
 
@@ -174,9 +182,9 @@ float Logic::Distance( float _x, float _y, float __x, float __y )
 }
 std::pair< int, float > Logic::ClosestRectangle( float _x, float _y )
 {
-	float distance = Distance( _x, _y, rectangles.v[0].x, rectangles.v[0].y );
-	int closest = 0;
-	for( int i(1); i < rectangles.v.size(); i++ )
+	float distance = 1000;
+	int closest = -1;
+	for( int i(0); i < rectangles.v.size(); i++ )
 	{
 		float t = Distance( _x, _y, rectangles.v[i].x, rectangles.v[i].y );
 		if( t < distance )
@@ -262,7 +270,21 @@ std::pair< int, float > Logic::ClosestStructure( float _x, float _y )
 	}
 	return std::make_pair( closest, distance );
 }
-
+std::pair< int, float > Logic::ClosestArmy( float _x, float _y )
+{
+	float distance = 10000;
+	int closest = -1;
+	for( int i(0); i < armies.size(); i++ )
+	{
+		float t = Distance( _x, _y, armies[i].x, armies[i].y );
+		if( t < distance )
+		{
+			distance = t;
+			closest = i; 
+		}
+	}
+	return std::make_pair( closest, distance );
+}
 
 std::string Logic::GetInfo( int _rectangle )
 {
@@ -276,6 +298,17 @@ std::string Logic::GetInfo( int _rectangle )
 		if( c.rectangle == _rectangle )
 			return c;
 	return "NO INFO";
+}
+std::string Logic::GetArmyInfo( int _x )
+{
+	return armies[_x];
+}
+
+
+void Logic::ArmyTo( int _army, int _to )
+{
+	armies[_army].to = _to;
+	armies[_army].stationary = false;
 }
 
 
@@ -355,44 +388,54 @@ void Logic::Update()
 			continue;
 		if( c.carts )
 		{
-			c.money_contained -= c.cart_production_time / delta_time * c.cart_money;
-			c.current_cart_production -= c.cart_production_time / delta_time;
+			c.money_contained -= c.cart_money * delta_time;
+			c.current_cart_production -= delta_time;
 			if( c.current_cart_production <= 0 )
 			{
 				float x = rectangles.v[c.rectangle].x;
 				float y = rectangles.v[c.rectangle].y;
 				bool army_in_city = false;
-				for each( Army a in armies )
-					if( a.x == x && a.y == y && a.stationary )
+				for( int j(0); j < armies.size(); j++ )
+				{
+					if( armies[j].x == x && armies[j].y == y )
 					{
 						army_in_city = true;
-						a.carts += 1;
+						armies[j].carts++;
+						armies[j].Calculate();
 						break;
 					}
+				}
 
 				if( !army_in_city )
 					armies.push_back( Army( 0, 1, x, y ) );
+				c.current_cart_production = c.soldier_production_time;
+				c.carts--;
 			}
 		}
 		if( c.soldiers )
 		{
-			c.money_contained -= c.soldier_production_time / delta_time * c.soldier_money;
-			c.current_soldier_production -= c.soldier_production_time / delta_time;
+			c.money_contained -= c.soldier_money * delta_time;
+			c.current_soldier_production -= delta_time;
 			if( c.current_soldier_production <= 0 )
 			{
 				float x = rectangles.v[c.rectangle].x;
 				float y = rectangles.v[c.rectangle].y;
 				bool army_in_city = false;
-				for each( Army a in armies )
-					if( a.x == x && a.y == y )
+				for( int j(0); j < armies.size(); j++ )
+				{
+					if( armies[j].x == x && armies[j].y == y )
 					{
 						army_in_city = true;
-						a.soldiers += 1;
+						armies[j].soldiers++;
+						armies[j].Calculate();
 						break;
 					}
+				}
 
 				if( !army_in_city )
-					armies.push_back( Army( 0, 1, x, y ) );
+					armies.push_back( Army( 1, 0, x, y ) );
+				c.current_soldier_production = c.soldier_production_time;
+				c.soldiers--;
 			}
 		}
 	}
@@ -440,42 +483,56 @@ void Logic::Update()
 		if( !a.stationary )
 		{
 			Rectangle& r = rectangles.v[a.to];
-			float distance = a.speed * delta_time;
+			/*float distance = a.speed * delta_time;
 			float d_x = r.x - a.x;
 			float d_y = r.y - a.y;
 			if( d_y == 0 )
 				d_y = 0.0001;
-			float t = (d_x < 0 ? -d_x : d_x) / (d_y < 0 ? -d_y : d_y);
-			float x = (r.x > a.x ? distance : -distance) * t;
-			float y = (r.y > a.y ? distance : -distance) * (1-t); // Possibly wrong, needs to be tested.
+			float t = (d_x < 0 ? -d_x : d_x) / (d_x < 0 ? -d_x : d_x) + (d_y < 0 ? -d_y : d_y);
+			float x = (r.x > a.x ? distance : -distance) * (1-t);
+			float y = (r.y > a.y ? distance : -distance) * t; // Possibly wrong, needs to be tested.
 			if( r.x - a.x <= x )
 				a.x = r.x;
 			if( r.y - a.y <= y )
-				a.y = r.y;
-			
-			if( a.x == r.x && a.y == r.x )
+				a.y = r.y; */
+
+			a.x = r.x; // temp
+			a.y = r.y; // temp
+			if( a.x == r.x && a.y == r.y )
 			{
+				for( int j(0); j < armies.size(); j++ )
+					if( i != j && a.x == armies[j].x && a.y == armies[j].y )
+					{
+						a.soldiers += armies[j].soldiers;
+						a.carts += armies[j].carts;
+						a.Calculate();
+						armies.erase( armies.begin() + j );
+						break;
+					}
 				a.from = a.to;
 				a.stationary = true;
 			}
 			else
 			{
-				a.x += x;
-				a.y += y;
+//				a.x += x;
+//				a.y += y;
 			}
 		}
 
 		// TODO: If in city or on farm, take food from city or farm instead.
-		a.food_stored -= a.food_consumed * delta_time;
-		a.money_stored -= a.money_consumed * delta_time;
 		if( a.food_stored <= 0 )
 		{
 			// TODO: Start the starving... muahahahaha.
 		}
+		else
+			a.food_stored -= a.food_consumed * delta_time;
+			
 		if( a.money_stored <= 0 )
 		{
 			// TODO: They dont like you... MUTINY.
 		}
+		else
+			a.money_stored -= a.money_consumed * delta_time;
 	}
 }
 

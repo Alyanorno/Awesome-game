@@ -1,7 +1,7 @@
 #include "input.h"
 
 
-Input::Input( Graphic& _graphic, Logic& _logic ) : graphic(_graphic), logic(_logic), mouse_wheel_z(0), mouse_wheel_scale(0), scale(1.f), line_lock(false)
+Input::Input( Graphic& _graphic, Logic& _logic ) : graphic(_graphic), logic(_logic), mouse_wheel_z(0), mouse_wheel_scale(0), scale(1.f), line_lock(false), army_lock(false)
 {}
 
 void Input::Initialize()
@@ -79,8 +79,13 @@ void Input::Update()
 	switch( state )
 	{
 		case select:
-			closest = logic.ClosestFarm( t_x, t_y ); \
-			if( closest.first != - 1 && closest.second <= rectangles.v[closest.first].scale ) \
+			if( army_lock )
+				temp = std::to_string(army_selected) + '\n';
+			closest = logic.ClosestArmy( t_x, t_y );
+			if( closest.first != - 1 && closest.second <= 5 )
+				temp = temp + logic.GetArmyInfo( closest.first );
+			closest = logic.ClosestFarm( t_x, t_y );
+			if( closest.first != - 1 && closest.second <= rectangles.v[closest.first].scale )
 				temp = temp + logic.GetInfo( closest.first );
 			closest = logic.ClosestCity( t_x, t_y );
 			if( closest.first != - 1 && closest.second <= rectangles.v[closest.first].scale )
@@ -92,14 +97,48 @@ void Input::Update()
 			graphic.RemoveTopText();
 			graphic.AddText( temp );
 			graphic.MoveTopText( t_x, t_y );
+
+			if( glfwGetMouseButton( GLFW_MOUSE_BUTTON_1 ) )
+			{
+				if( !create )
+				{
+					if( !army_lock )
+					{
+						army_selected = logic.ClosestArmy( t_x, t_y ).first;
+						if( army_selected != -1 )
+							army_lock = true;
+					}
+					else
+					{
+						closest = logic.ClosestRectangle( t_x, t_y );
+						if( closest.first != -1 )
+							logic.ArmyTo( army_selected, closest.first );
+						army_lock = false;
+					}
+					create = true;
+				}
+			}
+			else if( glfwGetMouseButton( GLFW_MOUSE_BUTTON_2 ) )
+				army_lock = false;
+			else
+				create = false;
 			break;
 		case build_road:
 			if( create )
 			{
 				closest = logic.ClosestRectangle( t_x, t_y );
-				t_x = rectangles.v[closest.first].x;
-				t_y = rectangles.v[closest.first].y;
-				logic.MoveTopLine( t_x, t_y );
+				if( closest.first == -1 )
+				{
+					logic.RemoveTopLine();
+					create = false;
+					line_lock = true;
+				}
+				else
+				{
+					t_x = rectangles.v[closest.first].x;
+					t_y = rectangles.v[closest.first].y;
+					logic.MoveTopLine( t_x, t_y );
+				}
 			}
 
 			if( glfwGetMouseButton( GLFW_MOUSE_BUTTON_2 ) )
@@ -118,7 +157,8 @@ void Input::Update()
 				if( !create )
 				{
 					closest = logic.ClosestRectangle( t_x, t_y );
-					logic.AddLine( rectangles.v[closest.first].x, rectangles.v[closest.first].y, 0, 0 );
+					if( closest.first != -1 )
+						logic.AddLine( rectangles.v[closest.first].x, rectangles.v[closest.first].y, 0, 0 );
 				}
 				create = true;
 			}
@@ -144,9 +184,14 @@ void Input::Update()
 		case build_city:
 			// Draw not completed city
 			closest = logic.ClosestRectangle( t_x, t_y );
-			t_x = rectangles.v[closest.first].x;
-			t_y = rectangles.v[closest.first].y;
-			logic.MoveTopRectangle( t_x, t_y );
+			if( closest.first != -1 )
+			{
+				t_x = rectangles.v[closest.first].x;
+				t_y = rectangles.v[closest.first].y;
+				logic.MoveTopRectangle( t_x, t_y );
+			}
+			else
+				logic.MoveTopRectangle( 0, 0 ); // TODO: Handle this better
 
 			if( glfwGetMouseButton( GLFW_MOUSE_BUTTON_1 ) )
 			{

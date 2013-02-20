@@ -2,6 +2,8 @@
 
 #include <vector>
 
+enum class Textures { Farm = 1, City, Structure };
+
 template <class T>
 struct buffer
 {

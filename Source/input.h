@@ -22,7 +22,8 @@ private:
 	Graphic& graphic;
 	Logic& logic;
 	float mouse_wheel_z, mouse_wheel_scale, scale, line_x, line_y;
-	bool create, line_lock;
+	bool create, line_lock, army_lock;
+	int army_selected;
 	enum { select, build_road, build_farm, build_city } state;
 public:
 	Input( Graphic& _graphic, Logic& _logic );

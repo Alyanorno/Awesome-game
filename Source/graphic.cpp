@@ -300,12 +300,28 @@ void Graphic::Initialize()
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
 	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
 
-	t.LoadBmp( "bthBmp.bmp" );
+	t.LoadBmp( "farm.bmp" );
+	assert( i == (int)Textures::Farm );
 	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
 	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
 
+	t.LoadBmp( "city.bmp" );
+	assert( i == (int)Textures::City );
+	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
+
+	t.LoadBmp( "structure.bmp" );
+	assert( i == (int)Textures::Structure );
+	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
+
+	
 	// Load char numbers
 	for( char j(0); j < 10; j++ )
 	{

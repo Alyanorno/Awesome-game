@@ -73,6 +73,7 @@ private:
 	{
 		Army( int _soldiers, int _carts, float _x, float _y );
 		void Calculate();
+		operator std::string ();
 		int soldiers;
 		int carts;
 		float storage_capacity;
@@ -108,8 +109,12 @@ public:
 	std::pair< int, float > ClosestFarm( float _x, float _y );
 	std::pair< int, float > ClosestCity( float _x, float _y );
 	std::pair< int, float > ClosestStructure( float _x, float _y );
+	std::pair< int, float > ClosestArmy( float _x, float _y );
 
 	std::string GetInfo( int _rectangle );
+	std::string GetArmyInfo( int _x );
+
+	void ArmyTo( int _army, int _to );
 
 	void AddLine( float _x, float _y, float __x, float __y );
 	void AddRectangle( float _x, float _y, float _scale, int _texture = 1 );

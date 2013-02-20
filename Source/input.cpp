@@ -40,7 +40,7 @@ void Input::Update()
 		else if( state == build_road && create )
 			logic.RemoveTopLine();
 		state = build_farm;
-		logic.AddRectangle( 0, 0, scale );
+		logic.AddRectangle( 0, 0, scale, (int)Textures::Farm );
 	}
 	else if( glfwGetKey( '4' ) && state != build_city )
 	{
@@ -51,7 +51,7 @@ void Input::Update()
 		else if( state == build_road && create )
 			logic.RemoveTopLine();
 		state = build_city;
-		logic.AddRectangle( 0, 0, scale, 0 );
+		logic.AddRectangle( 0, 0, scale, (int)Textures::City );
 	}
 
 	if( glfwGetKey( GLFW_KEY_LCTRL ) )
@@ -175,7 +175,10 @@ void Input::Update()
 			if( glfwGetMouseButton( GLFW_MOUSE_BUTTON_1 ) )
 			{
 				if( !create )
-					logic.BuildFarm( t_x, t_y, scale, 1 );
+				{
+					logic.BuildFarm( t_x, t_y, scale );
+					logic.AddRectangle( 0, 0, scale, (int)Textures::Farm );
+				}
 				create = true;
 			}
 			else
@@ -196,7 +199,10 @@ void Input::Update()
 			if( glfwGetMouseButton( GLFW_MOUSE_BUTTON_1 ) )
 			{
 				if( !create )
-					logic.BuildCity( t_x, t_y, scale, 0 );
+				{
+					logic.BuildCity( t_x, t_y, scale );
+					logic.AddRectangle( 0, 0, scale, (int)Textures::City );
+				}
 				create = true;
 			}
 			else

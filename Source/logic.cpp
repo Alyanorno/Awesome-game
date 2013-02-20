@@ -80,13 +80,18 @@ Logic::Structure::operator std::string()
 	return s.str();
 }
 
-Logic::Army::Army( int _soldiers, int _carts, float _x, float _y ) : soldiers(_soldiers), carts(_carts), x(_x), y(_y), food_stored(0), money_stored(0), food_consumed(0.1), money_consumed(0.1), speed(0.5), stationary(true)
+Logic::Army::Army( int _rectangle, int _soldiers, int _carts ) : rectangle(_rectangle), soldiers(_soldiers), carts(_carts), food_stored(0), money_stored(0), food_consumed(0.1), money_consumed(0.1), speed(0.5), stationary(true)
 {
+	x = rectangles.v[rectangle].x;
+	y = rectangles.v[rectangle].y;
 	Calculate();
 }
 void Logic::Army::Calculate()
 {
 	storage_capacity = soldiers * 1 + carts * 10;
+	rectangles.v[rectangle].x = x;
+	rectangles.v[rectangle].y = y;
+	rectangles.v[rectangle].scale = soldiers + carts * 0.001;
 }
 Logic::Army::operator std::string()
 {
@@ -116,15 +121,15 @@ void Logic::BuildRoad( int _line, int _from, int _to )
 {
 	roads.push_back( Road( _line, _from, _to ) );
 }
-void Logic::BuildFarm( int _x, int _y, int _scale, int _texture )
+void Logic::BuildFarm( int _x, int _y, int _scale )
 {
-	rectangles.push_back( Rectangle( _x, _y, _scale, _texture ) );
-	structures.push_back( Structure( rectangles.v.size()-2, farm ) );
+	rectangles.v.back().texture = (int)Textures::Structure;
+	structures.push_back( Structure( rectangles.v.size()-1, farm ) );
 }
-void Logic::BuildCity( int _x, int _y, int _scale, int _texture )
+void Logic::BuildCity( int _x, int _y, int _scale )
 {
-	rectangles.push_back( Rectangle( _x, _y, _scale, _texture ) );
-	structures.push_back( Structure( rectangles.v.size()-2, city ) );
+	rectangles.v.back().texture = (int)Textures::Structure;
+	structures.push_back( Structure( rectangles.v.size()-1, city ) );
 }
 void Logic::ExpandFarm( int _rectangle, int _size )
 {
@@ -345,7 +350,7 @@ void Logic::ResizeTopRectangle( float _scale )
 void Logic::Initialize()
 {
 	last_time = glfwGetTime();
-	rectangles.push_back( Rectangle( 0, 0, 1, 1 ) );
+	rectangles.push_back( Rectangle( 0, 0, 1, (int)Textures::Farm ) );
 	farms.push_back( Farm( rectangles.v.size()-1 ) );
 }
 
@@ -407,7 +412,10 @@ void Logic::Update()
 				}
 
 				if( !army_in_city )
-					armies.push_back( Army( 0, 1, x, y ) );
+				{
+					rectangles.push_back( Rectangle( x, y, 1, (int)Textures::Army ) );
+					armies.push_back( Army( rectangles.v.size()-1, 0, 1 ) );
+				}
 				c.current_cart_production = c.soldier_production_time;
 				c.carts--;
 			}
@@ -433,7 +441,10 @@ void Logic::Update()
 				}
 
 				if( !army_in_city )
-					armies.push_back( Army( 1, 0, x, y ) );
+				{
+					rectangles.push_back( Rectangle( x, y, 1, (int)Textures::Army ) );
+					armies.push_back( Army( rectangles.v.size()-1, 1, 0 ) );
+				}
 				c.current_soldier_production = c.soldier_production_time;
 				c.soldiers--;
 			}
@@ -442,7 +453,7 @@ void Logic::Update()
 	for( int i(0); i < structures.size(); i++ )
 	{
 		Structure& s( structures[i] );
-		if( s.money_supplied <= 0.0 )
+		if( s.money_supplied <= -0.001 )
 			continue;
 		s.production_time -= delta_time;
 		s.money_supplied -= (s.money_needed / s.production_time) * delta_time;
@@ -457,6 +468,7 @@ void Logic::Update()
 					// TODO: Add later when road have been changed to using texture.
 					break;
 				case farm:
+					rectangles.v[s.rectangle].texture = (int)Textures::Farm;
 					farms.push_back( Farm( s.rectangle ) );
 					break;
 				case city:
@@ -466,6 +478,7 @@ void Logic::Update()
 						Rectangle& sr( rectangles.v[s.rectangle] );
 						if( fr.x == sr.x && fr.y == fr.y )
 						{
+							rectangles.v[s.rectangle].texture = (int)Textures::City;
 							cities.push_back( City( s.rectangle, f.rectangle ) );
 							break;
 						}
@@ -505,7 +518,7 @@ void Logic::Update()
 					{
 						a.soldiers += armies[j].soldiers;
 						a.carts += armies[j].carts;
-						a.Calculate();
+						rectangles.erase( armies[j].rectangle );
 						armies.erase( armies.begin() + j );
 						break;
 					}
@@ -517,6 +530,7 @@ void Logic::Update()
 //				a.x += x;
 //				a.y += y;
 			}
+			a.Calculate();
 		}
 
 		// TODO: If in city or on farm, take food from city or farm instead.

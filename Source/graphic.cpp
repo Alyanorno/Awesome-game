@@ -79,8 +79,14 @@ void Graphic::DrawRectangle( Rectangle& r )
 	glm::mat4 modelMatrix( glm::mat4( 1.0f ) );
 	modelMatrix[3][0] = r.x;
 	modelMatrix[3][1] = r.y;
-	if( r.texture == 1 )
-		modelMatrix[3][2] = 0.001; // TODO: Remove temporary code.
+	if( r.texture == (int)Textures::Army )
+		modelMatrix[3][2] = -0.002;
+	else if( r.texture == (int)Textures::Farm )
+		modelMatrix[3][2] = -0.001;
+	else if( r.texture == (int)Textures::City )
+		modelMatrix[3][2] = 0.001;
+	else if( r.texture == (int)Textures::Structure )
+		modelMatrix[3][2] = 0.002;
 
 	modelMatrix[0][0] *= r.scale;
 	modelMatrix[1][1] *= r.scale;
@@ -290,10 +296,10 @@ void Graphic::Initialize()
 	shaderText = CreateShader( "Source/text.vertex", "Source/text.fragment" );
 
 	Texture t;
-	glGenTextures( 40, glTexture );
+	glGenTextures( 42, glTexture );
 
 	int i = 0;
-	
+
 	t.LoadBmp( "test.bmp" );
 	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
@@ -316,6 +322,13 @@ void Graphic::Initialize()
 
 	t.LoadBmp( "structure.bmp" );
 	assert( i == (int)Textures::Structure );
+	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
+
+	t.LoadBmp( "army.bmp" );
+	assert( i == (int)Textures::Army );
 	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
@@ -409,7 +422,7 @@ void Graphic::Update()
 	glUseProgram( shaderProgram );
 	glUniformMatrix4fv( glGetUniformLocation(shaderProgram, "projectionMatrix"), 1, GL_FALSE, &projectionMatrix[0][0] );
 
-	for( int i(rectangles.v.size()-1); i >= 0; i-- )
+	for( int i(0); i < rectangles.v.size(); i++ )
 		DrawRectangle( rectangles.v[i] );
 
 	DrawText( projectionMatrix );

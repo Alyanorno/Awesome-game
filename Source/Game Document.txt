@@ -1,11 +1,12 @@
 DONE: Add input code to handle no valid position for construction
 DONE: Construction of units
 DONE: Select unit
-Add better textures
+DONE: Add better textures
 Move unit
 	Fix buggs
 Add interface for
 	construction of units
+	supplie management
 	DONE: select unit
 	DONE: move unit
 Change calcutations to be based on area
@@ -32,10 +33,10 @@ Graphic
 Input
 	W/A/S/D -> move
 	Scroll	-> zoom/scale
-	Left	  -> confirm	--/select
-	Right	  -> regret	--/order
+	Left	  -> confirm/select
+	Right	  -> regret/order
 	Numbers
-	--	1 -> select
+		1 -> select
 		2 -> build road (must start from center of city)
 		3 -> build farm (must be on end of road)
 		4 -> build city (must be on center of a farm)

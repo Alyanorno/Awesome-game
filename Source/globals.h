@@ -2,7 +2,7 @@
 
 #include <vector>
 
-enum class Textures { Farm = 1, City, Structure };
+enum class Textures { Farm = 1, City, Structure, Army };
 
 template <class T>
 struct buffer

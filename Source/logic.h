@@ -71,9 +71,10 @@ private:
 
 	struct Army
 	{
-		Army( int _soldiers, int _carts, float _x, float _y );
+		Army( int _rectangle, int _soldiers, int _carts );
 		void Calculate();
 		operator std::string ();
+		int rectangle;
 		int soldiers;
 		int carts;
 		float storage_capacity;
@@ -93,8 +94,8 @@ public:
 	void BuildSoldiers( int _rectangle, int _amount );
 
 	void BuildRoad( int _line, int _from, int _to );
-	void BuildFarm( int _x, int _y, int _scale, int _texture );
-	void BuildCity( int _x, int _y, int _scale, int _texture );
+	void BuildFarm( int _x, int _y, int _scale );
+	void BuildCity( int _x, int _y, int _scale );
 
 	void ExpandFarm( int _rectangle, int _size );
 	void ExpandCity( int _rectangle, int _size );

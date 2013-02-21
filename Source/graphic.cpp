@@ -226,6 +226,7 @@ std::pair< float, float > Graphic::GetIngameCoordinates( float _x, float _y )
 	return std::make_pair( t_x, t_y );
 }
 
+
 void Graphic::AddText( std::string _s, float _x, float _y, float _size )
 {
 	texts.push_back( Text( _s, _x, _y, _size ) );
@@ -258,6 +259,24 @@ void Graphic::MoveTopText( float _x, float _y )
 	texts.back().x = _x;
 	texts.back().y = _y;
 }
+
+
+void Graphic::SetRectangle( float _scale, int _texture, bool _used )
+{
+	inputRectangle.scale = _scale;
+	inputRectangle.texture = _texture;
+	inputRectangle.used = _used;
+}
+void Graphic::MoveRectangle( float _x, float _y )
+{
+	inputRectangle.x = _x;
+	inputRectangle.y = _y;
+}
+void Graphic::ResizeRectangle( float _scale )
+{
+	inputRectangle.scale = _scale;
+}
+
 
 
 void Graphic::Initialize()
@@ -432,6 +451,8 @@ void Graphic::Initialize()
 
 
 	glBindVertexArray(Vao);
+
+	inputRectangle.used = false;
 }
 
 
@@ -452,6 +473,7 @@ void Graphic::Update()
 
 	for( int i(0); i < rectangles.v.size(); i++ )
 		DrawRectangle( rectangles.v[i] );
+	DrawRectangle( inputRectangle );
 
 	DrawText( projectionMatrix );
 

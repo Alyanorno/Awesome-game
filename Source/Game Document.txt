@@ -4,6 +4,7 @@ DONE: Add better textures
 DONE: Move unit
 DONE: Add textures for food and money
 DONE: Change size calcutations to be based on area
+DONE: Restructure input code
 Add interface for
 	construction of units
 	supply management

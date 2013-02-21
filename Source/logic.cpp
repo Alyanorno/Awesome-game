@@ -119,14 +119,14 @@ void Logic::BuildRoad( int _line, int _from, int _to )
 {
 	roads.push_back( Road( _line, _from, _to ) );
 }
-void Logic::BuildFarm( int _x, int _y, int _scale )
+void Logic::BuildFarm( float _x, float _y, int _scale )
 {
-	rectangles.v.back().texture = (int)Textures::Structure;
+	rectangles.push_back( Rectangle( _x, _y, _scale, (int)Textures::Structure ) );
 	structures.push_back( Structure( rectangles.v.size()-1, farm ) );
 }
-void Logic::BuildCity( int _x, int _y, int _scale )
+void Logic::BuildCity( float _x, float _y, int _scale )
 {
-	rectangles.v.back().texture = (int)Textures::Structure;
+	rectangles.push_back( Rectangle( _x, _y, _scale, (int)Textures::Structure ) );
 	structures.push_back( Structure( rectangles.v.size()-1, city ) );
 }
 void Logic::ExpandFarm( int _rectangle, int _size )
@@ -319,29 +319,13 @@ void Logic::AddLine( float _x, float _y, float __x, float __y )
 {
 	lines.push_back( Line( _x, _y, __x, __y ) );
 }
-void Logic::AddRectangle( float _x, float _y, float _scale, int _texture )
-{ 
-	rectangles.push_back( Rectangle( _x, _y, _scale, _texture ) );
-}
 void Logic::RemoveTopLine()
 {
 	if( lines.size() <= 2 ) return; lines.pop_back();
 }
-void Logic::RemoveTopRectangle()
-{
-	rectangles.v.pop_back();
-}
 void Logic::MoveTopLine( float _x, float _y )
 {
 	if( lines.size() > 2 ) lines.back().end = Line::Coords( _x, _y );
-}
-void Logic::MoveTopRectangle( float _x, float _y )
-{
-	rectangles.v.back().x = _x; rectangles.v.back().y = _y;
-}
-void Logic::ResizeTopRectangle( float _scale )
-{
-	rectangles.v.back().scale = _scale;
 }
 
 

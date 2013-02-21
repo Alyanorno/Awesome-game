@@ -44,6 +44,7 @@ private:
 	std::vector< Text > texts;
 	std::map<int,int> char_textures;
 
+	Rectangle inputRectangle;
 	glm::mat4 viewMatrix;
 	GLuint Vbo[3];
 	void DrawLines( glm::mat4& projectionMatrix );
@@ -57,6 +58,7 @@ private:
 	GLuint CreateShader( std::string vertex, std::string fragment );
 public:
 	void Zoom( float _z ) { viewMatrix[3][2] = _z; }
+	float GetZoom() { return viewMatrix[3][2]; }
 	void MoveX( float _distance ) { viewMatrix[3][0] += _distance; }
 	void MoveY( float _distance ) { viewMatrix[3][1] += _distance; }
 
@@ -67,6 +69,10 @@ public:
 	void RemoveTopText();
 	void MoveText( float _x, float _y, float __x, float __y );
 	void MoveTopText( float _x, float _y );
+
+	void SetRectangle( float _scale, int _texture, bool _used = true );
+	void MoveRectangle( float _x, float _y );
+	void ResizeRectangle( float _scale );
 
 	void Initialize();
 	void Update();

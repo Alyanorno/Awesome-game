@@ -94,8 +94,8 @@ public:
 	void BuildSoldiers( int _rectangle, int _amount );
 
 	void BuildRoad( int _line, int _from, int _to );
-	void BuildFarm( int _x, int _y, int _scale );
-	void BuildCity( int _x, int _y, int _scale );
+	void BuildFarm( float _x, float _y, int _scale );
+	void BuildCity( float _x, float _y, int _scale );
 
 	void ExpandFarm( int _rectangle, int _size );
 	void ExpandCity( int _rectangle, int _size );
@@ -118,14 +118,8 @@ public:
 	void ArmyTo( int _army, int _to );
 
 	void AddLine( float _x, float _y, float __x, float __y );
-	void AddRectangle( float _x, float _y, float _scale, int _texture = 1 );
-
 	void RemoveTopLine();
-	void RemoveTopRectangle();
-
 	void MoveTopLine( float _x, float _y );
-	void MoveTopRectangle( float _x, float _y );
-	void ResizeTopRectangle( float _scale );
 
 
 	void Initialize();

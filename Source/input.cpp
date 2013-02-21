@@ -104,6 +104,9 @@ void Input::BuildRoad::Input( float _x, float _y )
 	}
 	else
 	{
+		if( create && lock )
+			if( logic.TopLineFromEqualsTo() || logic.TopLineEqualsOtherLine() )
+				logic.RemoveTopLine();
 		create = false;
 		lock = false;
 	}
@@ -111,27 +114,36 @@ void Input::BuildRoad::Input( float _x, float _y )
 
 Input::BuildFarm::BuildFarm( Graphic& _graphic, Logic& _logic, float& _mouse_wheel )
 	: State( _graphic, _logic, _mouse_wheel ), scale(1.f)
-	{ graphic.SetRectangle( scale, (int)Textures::Farm ); }
+{
+	mouse_wheel = glfwGetMouseWheel() - graphic.GetZoom();
+	scale = 1 + mouse_wheel / 10;
+	graphic.SetRectangle( inputRectangle, scale, (int)Textures::Farm );
+}
 Input::BuildFarm::~BuildFarm()
-	{ graphic.SetRectangle( 1, 0, false ); }
+	{ graphic.SetRectangle( inputRectangle, 1, 0, false ); }
 void Input::BuildFarm::Input( float _x, float _y )
 {
 	std::pair<int,float> closest;
 	if( glfwGetKey( GLFW_KEY_LCTRL ) )
 	{
-		mouse_wheel = glfwGetMouseWheel() - graphic.GetZoom() + 5.f;
+		mouse_wheel = glfwGetMouseWheel() - graphic.GetZoom();
 		scale = 1 + mouse_wheel / 10;
-		graphic.ResizeRectangle( scale );
+		graphic.ResizeRectangle( inputRectangle, scale );
 	}
 
+	bool overlapping = logic.OverLappingFarm( _x, _y, scale );
+	graphic.SetRectangleVisibility( inputRectangle, !overlapping );
+
 	// Draw not completed farm
-	graphic.MoveRectangle( _x, _y );
+	if( !overlapping )
+		graphic.MoveRectangle( inputRectangle, _x, _y );
 
 	if( glfwGetMouseButton( GLFW_MOUSE_BUTTON_1 ) )
 	{
-		if( !create )
+		if( !create && !overlapping )
 			logic.BuildFarm( _x, _y, scale );
-		create = true;
+		else
+			create = true;
 	}
 	else
 		create = false;
@@ -141,17 +153,22 @@ void Input::BuildFarm::Input( float _x, float _y )
 
 Input::BuildCity::BuildCity( Graphic& _graphic, Logic& _logic, float& _mouse_wheel )
 	: State( _graphic, _logic, _mouse_wheel ), scale(1.f)
-	{ graphic.SetRectangle( scale, (int)Textures::City ); }
+{
+	mouse_wheel = glfwGetMouseWheel() - graphic.GetZoom();
+	scale = 1 + mouse_wheel / 10;
+	graphic.SetRectangle( inputRectangle, scale, (int)Textures::City );
+}
 Input::BuildCity::~BuildCity()
-	{ graphic.SetRectangle( 1, 0, false ); }
+	{ graphic.SetRectangle( inputRectangle, 1, 0, false ); }
 void Input::BuildCity::Input( float _x, float _y )
 {
+	bool overlapping;
 	std::pair<int,float> closest;
 	if( glfwGetKey( GLFW_KEY_LCTRL ) )
 	{
-		mouse_wheel = glfwGetMouseWheel() - graphic.GetZoom() + 5.f;
+		mouse_wheel = glfwGetMouseWheel() - graphic.GetZoom();
 		scale = 1 + mouse_wheel / 10;
-		graphic.ResizeRectangle( scale );
+		graphic.ResizeRectangle( inputRectangle, scale );
 	}
 
 	// Draw not completed city
@@ -160,14 +177,18 @@ void Input::BuildCity::Input( float _x, float _y )
 	{
 		_x = rectangles.v[closest.first].x;
 		_y = rectangles.v[closest.first].y;
-		graphic.MoveRectangle( _x, _y );
+		overlapping = logic.OverLappingCity( _x, _y, scale );
+		if( !overlapping )
+			graphic.MoveRectangle( inputRectangle, _x, _y );
 	}
 	else
-		graphic.MoveRectangle( 0, 0 ); // TODO: Handle this better
+		overlapping = true;
+
+	graphic.SetRectangleVisibility( inputRectangle, !overlapping );
 
 	if( glfwGetMouseButton( GLFW_MOUSE_BUTTON_1 ) )
 	{
-		if( !create )
+		if( !create && !overlapping )
 			logic.BuildCity( _x, _y, scale );
 		create = true;
 	}
@@ -223,8 +244,8 @@ void Input::Update()
 
 
 	float speed = 0.005f;
-	if( graphic.GetZoom() + 5.f > 0 )
-		speed += 1000 / (graphic.GetZoom() + 5.f);
+	if( graphic.GetZoom() > 0 )
+		speed += speed * graphic.GetZoom();
 	if( glfwGetKey( 'W' ) )
 		graphic.MoveY( -speed );
 	if( glfwGetKey( 'S' ) )

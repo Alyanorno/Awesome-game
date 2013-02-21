@@ -26,7 +26,7 @@ private:
 		Logic& logic;
 		float& mouse_wheel;
 		bool create;
-		State( Graphic& _graphic, Logic& _logic, float& _mouse_wheel ) 
+		State( Graphic& _graphic, Logic& _logic, float& _mouse_wheel )
 			: graphic(_graphic), logic(_logic), mouse_wheel(_mouse_wheel), create(false)
 		{}
 		virtual void Input( float _x, float _y ) {}
@@ -65,7 +65,8 @@ private:
 
 	Graphic& graphic;
 	Logic& logic;
-	float mouse_wheel;
+	float mouse_wheel, mouse_wheel_z;
+	static const int inputRectangle = 0, selectRectangle = 1;
 public:
 	Input( Graphic& _graphic, Logic& _logic );
 

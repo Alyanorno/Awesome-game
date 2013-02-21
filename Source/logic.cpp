@@ -289,6 +289,29 @@ std::pair< int, float > Logic::ClosestArmy( float _x, float _y )
 	return std::make_pair( closest, distance );
 }
 
+
+bool Logic::OverLappingFarm( float _x, float _y, float _scale )
+{
+	for each( Farm f in farms )
+	{
+		Rectangle& r( rectangles.v[f.rectangle] );
+		if( (_scale + r.scale) / 2 >= sqrt( pow( _x - r.x, 2) + pow( _y - r.y, 2 ) ) )
+			return true;
+	}
+	return false;
+}
+bool Logic::OverLappingCity( float _x, float _y, float _scale )
+{
+	for each( City c in cities )
+	{
+		Rectangle& r( rectangles.v[c.rectangle] );
+		if( (_scale + r.scale) / 2 >= sqrt( pow( _x - r.x, 2) + pow( _y - r.y, 2 ) ) )
+			return true;
+	}
+	return false;
+}
+
+
 std::string Logic::GetInfo( int _rectangle )
 {
 	for each( Structure s in structures )
@@ -326,6 +349,17 @@ void Logic::RemoveTopLine()
 void Logic::MoveTopLine( float _x, float _y )
 {
 	if( lines.size() > 2 ) lines.back().end = Line::Coords( _x, _y );
+}
+bool Logic::TopLineFromEqualsTo()
+{
+	return lines.back().start == lines.back().end;
+}
+bool Logic::TopLineEqualsOtherLine()
+{
+	for( int i(2); i < lines.size()-1; i++ )
+		if( lines[i] == lines.back() )
+			return true;
+	return false;
 }
 
 

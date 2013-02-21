@@ -5,6 +5,10 @@ DONE: Move unit
 DONE: Add textures for food and money
 DONE: Change size calcutations to be based on area
 DONE: Restructure input code
+DONE: Limit construction further
+	DONE: No roads to themself
+	DONE: No overlapping farms
+	DONE: No overlapping cities
 Add interface for
 	construction of units
 	supply management
@@ -13,10 +17,6 @@ Add interface for
 Add pathfinding and faster movement if on road
 Change roads to use rectangles with textures
 Add select highlightning
-Limit construction further
-	No roads to themself
-	No overlapping farms
-	No overlapping cities
 
 
 

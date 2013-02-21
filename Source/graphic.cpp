@@ -113,7 +113,7 @@ void Graphic::DrawText( glm::mat4& projectionMatrix )
 	{
 		std::string& s(t.s);
 		glm::mat4 modelMatrix( glm::mat4( 1.0f ) );
-		modelMatrix[3][2] = 0.002;
+		modelMatrix[3][2] = 0.005;
 		for( int i(0), next_char(0), new_line(0); i < t.s.size(); i++ )
 		{
 			if( s[i] == ' ' )
@@ -261,20 +261,24 @@ void Graphic::MoveTopText( float _x, float _y )
 }
 
 
-void Graphic::SetRectangle( float _scale, int _texture, bool _used )
+void Graphic::SetRectangle( int _i, float _scale, int _texture, bool _used )
 {
-	inputRectangle.scale = _scale;
-	inputRectangle.texture = _texture;
-	inputRectangle.used = _used;
+	inputRectangles[_i].scale = _scale;
+	inputRectangles[_i].texture = _texture;
+	inputRectangles[_i].used = _used;
 }
-void Graphic::MoveRectangle( float _x, float _y )
+void Graphic::SetRectangleVisibility( int _i, bool _used )
 {
-	inputRectangle.x = _x;
-	inputRectangle.y = _y;
+	inputRectangles[_i].used = _used;
 }
-void Graphic::ResizeRectangle( float _scale )
+void Graphic::MoveRectangle( int _i, float _x, float _y )
 {
-	inputRectangle.scale = _scale;
+	inputRectangles[_i].x = _x;
+	inputRectangles[_i].y = _y;
+}
+void Graphic::ResizeRectangle( int _i, float _scale )
+{
+	inputRectangles[_i].scale = _scale;
 }
 
 
@@ -452,7 +456,8 @@ void Graphic::Initialize()
 
 	glBindVertexArray(Vao);
 
-	inputRectangle.used = false;
+	inputRectangles[0].used = false;
+	inputRectangles[1].used = false;
 }
 
 
@@ -473,7 +478,8 @@ void Graphic::Update()
 
 	for( int i(0); i < rectangles.v.size(); i++ )
 		DrawRectangle( rectangles.v[i] );
-	DrawRectangle( inputRectangle );
+	DrawRectangle( inputRectangles[0] );
+	DrawRectangle( inputRectangles[1] );
 
 	DrawText( projectionMatrix );
 

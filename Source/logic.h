@@ -112,6 +112,9 @@ public:
 	std::pair< int, float > ClosestStructure( float _x, float _y );
 	std::pair< int, float > ClosestArmy( float _x, float _y );
 
+	bool OverLappingFarm( float _x, float _y, float _scale );
+	bool OverLappingCity( float _x, float _y, float _scale );
+
 	std::string GetInfo( int _rectangle );
 	std::string GetArmyInfo( int _x );
 
@@ -120,7 +123,8 @@ public:
 	void AddLine( float _x, float _y, float __x, float __y );
 	void RemoveTopLine();
 	void MoveTopLine( float _x, float _y );
-
+	bool Logic::TopLineFromEqualsTo();
+	bool Logic::TopLineEqualsOtherLine();
 
 	void Initialize();
 	void Update();

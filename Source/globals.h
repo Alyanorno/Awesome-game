@@ -39,9 +39,11 @@ struct Line
 {
 	Line( float x, float y, float to_x, float to_y )
 		: start( x, y ), end( to_x, to_y ) {}
+	bool operator == ( Line& l ) { return start == l.start && end == l.end; }
 	struct Coords
 	{
 		Coords( float _x, float _y ) : x(_x), y(_y), z(0) {}
+		bool operator == ( Coords& c ) { return x == c.x && y == c.y; }
 		float x, y, z;
 	} start, end;
 };

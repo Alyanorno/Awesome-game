@@ -2,20 +2,21 @@
 
 #include <vector>
 
-enum class Textures { Farm = 1, City, Structure, Army };
+enum class Textures { Farm = 1, City, Structure, Army, Road };
 
 template <class T>
 struct buffer
 {
-	void push_back( T _t )
+	int insert( T _t )
 	{
 		for( int i(0); i < v.size(); i++ )
 			if( v[i].used == false )
 			{
 				v[i] = _t;
-				return;
+				return i;
 			}
 		v.push_back( _t );
+		return v.size()-1;
 	}
 	void erase( int _i )
 	{
@@ -27,9 +28,9 @@ struct buffer
 struct Rectangle
 {
 	Rectangle() {}
-	Rectangle( float _x, float _y, float _scale, int _texture )
-		: x(_x), y(_y), scale(_scale), texture(_texture), used(true) {}
-	float x, y, scale;
+	Rectangle( float _x, float _y, float _scale, int _texture, float _rotation = 0 )
+		: x(_x), y(_y), scale(_scale), texture(_texture), rotation(_rotation), used(true) {}
+	float x, y, scale, rotation;
 	int texture;
 	bool used;
 };

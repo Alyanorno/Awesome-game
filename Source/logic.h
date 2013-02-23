@@ -15,11 +15,10 @@ private:
 
 	struct Road
 	{
-		Road( int _line, int _from, int _to );
+		Road( int _rectangle, int _from, int _to );
 		void Calculate();
-		int line;
+		int rectangle, from, to;
 		float length;
-		int from, to;
 	};
 	std::vector< Road > roads;
 
@@ -91,11 +90,12 @@ private:
 	std::vector< Army > armies;
 
 	double last_time;
+	static float L( float _x ) { return _x < 0 ? -_x: _x; }
 public:
 	void BuildCarts( int _rectangle, int _amount );
 	void BuildSoldiers( int _rectangle, int _amount );
 
-	void BuildRoad( int _line, int _from, int _to );
+	void BuildRoad( int _from, int _to );
 	void BuildFarm( float _x, float _y, float _scale );
 	void BuildCity( float _x, float _y, float _scale );
 
@@ -122,6 +122,8 @@ public:
 
 	void ArmyTo( int _army, int _to );
 	void ArmyTransport( int _army, int _to );
+	std::pair<float,float> ArmyPosition( int _army );
+	float ArmySize( int _army );
 
 	void AddLine( float _x, float _y, float __x, float __y );
 	void RemoveTopLine();

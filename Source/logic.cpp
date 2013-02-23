@@ -1,15 +1,22 @@
 #include "logic.h"
 
-
-Logic::Road::Road( int _line, int _from, int _to ) : line(_line), from(_from), to(_to)
+Logic::Road::Road( int _rectangle, int _from, int _to ) : rectangle(_rectangle), from(_from), to(_to)
 {
 	Calculate();
 }
 void Logic::Road::Calculate()
 {
-	float x = lines[line].start.x - lines[line].end.x;
-	float y = lines[line].start.y - lines[line].end.y;
-	length = x * x + y * y;
+	Rectangle& r( rectangles.v[rectangle] );
+	Rectangle& to_r( rectangles.v[from] );
+	Rectangle& from_r( rectangles.v[to] );
+
+	r.x = (to_r.x + from_r.x) / 2;
+	r.y = (to_r.y + from_r.y) / 2;
+
+	length = sqrt( pow( L(to_r.x + from_r.x), 2 ) + pow( L(to_r.y + from_r.y), 2 ) );
+	r.scale = length / 2;
+
+	r.rotation = tan( (to_r.x + from_r.x) / (to_r.y + from_r.y) );
 }
 
 Logic::Farm::Farm( int _rectangle ) : rectangle(_rectangle), food_contained(0)
@@ -115,19 +122,21 @@ void Logic::BuildSoldiers( int _rectangle, int _amount )
 }
 
 
-void Logic::BuildRoad( int _line, int _from, int _to )
+void Logic::BuildRoad( int _from, int _to )
 {
-	roads.push_back( Road( _line, _from, _to ) );
+	// TODO: Add construction of road
+	int t = rectangles.insert( Rectangle( 0, 0, 0, (int)Textures::Road ) );
+	roads.push_back( Road( t, _from, _to ) );
 }
 void Logic::BuildFarm( float _x, float _y, float _scale )
 {
-	rectangles.push_back( Rectangle( _x, _y, _scale, (int)Textures::Structure ) );
-	structures.push_back( Structure( rectangles.v.size()-1, farm ) );
+	int t = rectangles.insert( Rectangle( _x, _y, _scale, (int)Textures::Structure ) );
+	structures.push_back( Structure( t, farm ) );
 }
 void Logic::BuildCity( float _x, float _y, float _scale )
 {
-	rectangles.push_back( Rectangle( _x, _y, _scale, (int)Textures::Structure ) );
-	structures.push_back( Structure( rectangles.v.size()-1, city ) );
+	int t = rectangles.insert( Rectangle( _x, _y, _scale, (int)Textures::Structure ) );
+	structures.push_back( Structure( t, city ) );
 }
 void Logic::ExpandFarm( int _rectangle, float _size )
 {
@@ -357,6 +366,14 @@ void Logic::ArmyTransport( int _army, int _to )
 	if( !found )
 		throw std::string("Invalid target for transporting food"); // TODO: Do this better
 }
+std::pair<float,float> Logic::ArmyPosition( int _army )
+{
+	return std::make_pair( armies[_army].x, armies[_army].y );
+}
+float Logic::ArmySize( int _army )
+{
+	return rectangles.v[ armies[_army].rectangle ].scale;
+}
 
 
 void Logic::AddLine( float _x, float _y, float __x, float __y )
@@ -387,11 +404,10 @@ bool Logic::TopLineEqualsOtherLine()
 void Logic::Initialize()
 {
 	last_time = glfwGetTime();
-	rectangles.push_back( Rectangle( 0, 0, 1, (int)Textures::Farm ) );
-	farms.push_back( Farm( rectangles.v.size()-1 ) );
+	int t =rectangles.insert( Rectangle( 0, 0, 1, (int)Textures::Farm ) );
+	farms.push_back( Farm( t ) );
 }
 
-float L( float _x ) { return _x < 0 ? -_x: _x; }
 void Logic::Update()
 {
 	double time = glfwGetTime();
@@ -451,8 +467,8 @@ void Logic::Update()
 
 				if( !army_in_city )
 				{
-					rectangles.push_back( Rectangle( x, y, 1, (int)Textures::Army ) );
-					armies.push_back( Army( rectangles.v.size()-1, 0, 1 ) );
+					int t = rectangles.insert( Rectangle( x, y, 1, (int)Textures::Army ) );
+					armies.push_back( Army( t, 0, 1 ) );
 				}
 				c.current_cart_production = c.soldier_production_time;
 				c.carts--;
@@ -480,8 +496,8 @@ void Logic::Update()
 
 				if( !army_in_city )
 				{
-					rectangles.push_back( Rectangle( x, y, 1, (int)Textures::Army ) );
-					armies.push_back( Army( rectangles.v.size()-1, 1, 0 ) );
+					int t = rectangles.insert( Rectangle( x, y, 1, (int)Textures::Army ) );
+					armies.push_back( Army( t, 1, 0 ) );
 				}
 				c.current_soldier_production = c.soldier_production_time;
 				c.soldiers--;

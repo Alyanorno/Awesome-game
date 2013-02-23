@@ -92,6 +92,8 @@ void Graphic::DrawRectangle( Rectangle& r )
 	modelMatrix[1][1] *= r.scale;
 	modelMatrix[2][2] *= r.scale;
 
+	if( r.rotation != 0 )
+		modelMatrix = glm::rotate( modelMatrix, r.rotation, glm::vec3( 0.f, 1.f, 0.f ) );
 	glm::mat4 modelViewMatrix = viewMatrix * modelMatrix;
 	glUniformMatrix4fv( glGetUniformLocation( shaderProgram, "modelViewMatrix" ), 1, GL_FALSE, &modelViewMatrix[0][0] );
 

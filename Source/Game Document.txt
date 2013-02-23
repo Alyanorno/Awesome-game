@@ -14,9 +14,9 @@ DONE: Add interface for
 	DONE: supply management
 	DONE: select unit
 	DONE: move unit
+DONE: Add select highlightning
 Add pathfinding and faster movement if on road
 Change roads to use rectangles with textures
-Add select highlightning
 
 
 Graphic

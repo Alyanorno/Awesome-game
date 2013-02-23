@@ -2,9 +2,14 @@
 
 Input::Select::Select( Graphic& _graphic, Logic& _logic, float& _mouse_wheel )
 	: State( _graphic, _logic, _mouse_wheel ), lock(false)
-	{ graphic.AddText( "HEJ\nDA", 0, 0, .5f ); }
+{
+	graphic.AddText( "", 0, 0, .5f );
+}
 Input::Select::~Select()
-	{ graphic.RemoveTopText(); }
+{
+	graphic.RemoveTopText();
+	graphic.SetRectangleVisibility( selectRectangle, false );
+}
 void Input::Select::Input( float _x, float _y )
 {
 	std::pair<int,float> closest;
@@ -40,6 +45,12 @@ void Input::Select::Input( float _x, float _y )
 	graphic.AddText( temp );
 	graphic.MoveTopText( _x, _y );
 
+	if( lock )
+	{
+		std::pair<float,float> t = logic.ArmyPosition( army_selected );
+		graphic.SetRectangle( selectRectangle, logic.ArmySize( army_selected ), (int)Textures::Structure ); // TODO: Add better texture
+		graphic.MoveRectangle( selectRectangle, t.first, t.second );
+	}
 
 	if( glfwGetMouseButton( GLFW_MOUSE_BUTTON_1 ) )
 	{
@@ -62,13 +73,17 @@ void Input::Select::Input( float _x, float _y )
 					else
 						logic.ArmyTo( army_selected, closest.first );
 				}
+				graphic.SetRectangleVisibility( selectRectangle, false );
 				lock = false;
 			}
 			create = true;
 		}
 	}
 	else if( glfwGetMouseButton( GLFW_MOUSE_BUTTON_2 ) )
+	{
+		graphic.SetRectangleVisibility( selectRectangle, false );
 		lock = false;
+	}
 	else
 		create = false;
 }
@@ -93,8 +108,9 @@ void Input::BuildRoad::Input( float _x, float _y )
 		}
 		else
 		{
-			_x = rectangles.v[closest.first].x;
-			_y = rectangles.v[closest.first].y;
+			to = closest.first;
+			_x = rectangles.v[to].x;
+			_y = rectangles.v[to].y;
 			logic.MoveTopLine( _x, _y );
 		}
 	}
@@ -116,7 +132,10 @@ void Input::BuildRoad::Input( float _x, float _y )
 		{
 			closest = logic.ClosestRectangle( _x, _y );
 			if( closest.first != -1 )
-				logic.AddLine( rectangles.v[closest.first].x, rectangles.v[closest.first].y, 0, 0 );
+			{
+				from = closest.first;
+				logic.AddLine( rectangles.v[from].x, rectangles.v[from].y, 0, 0 );
+			}
 		}
 		create = true;
 	}
@@ -125,6 +144,8 @@ void Input::BuildRoad::Input( float _x, float _y )
 		if( create && lock )
 			if( logic.TopLineFromEqualsTo() || logic.TopLineEqualsOtherLine() )
 				logic.RemoveTopLine();
+			else
+				logic.BuildRoad( from, to );
 		create = false;
 		lock = false;
 	}

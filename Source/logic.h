@@ -84,6 +84,8 @@ private:
 		float x, y;
 		float speed;
 		int from, to;
+		bool transporting;
+		int transporting_from, transporting_to;
 		bool stationary;
 	};
 	std::vector< Army > armies;
@@ -94,11 +96,11 @@ public:
 	void BuildSoldiers( int _rectangle, int _amount );
 
 	void BuildRoad( int _line, int _from, int _to );
-	void BuildFarm( float _x, float _y, int _scale );
-	void BuildCity( float _x, float _y, int _scale );
+	void BuildFarm( float _x, float _y, float _scale );
+	void BuildCity( float _x, float _y, float _scale );
 
-	void ExpandFarm( int _rectangle, int _size );
-	void ExpandCity( int _rectangle, int _size );
+	void ExpandFarm( int _rectangle, float _size );
+	void ExpandCity( int _rectangle, float _size );
 
 	void DestroyRoad( int _line );
 	void DestroyFarm( int _rectangle );
@@ -119,6 +121,7 @@ public:
 	std::string GetArmyInfo( int _x );
 
 	void ArmyTo( int _army, int _to );
+	void ArmyTransport( int _army, int _to );
 
 	void AddLine( float _x, float _y, float __x, float __y );
 	void RemoveTopLine();

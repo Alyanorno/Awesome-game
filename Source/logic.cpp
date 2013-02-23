@@ -78,7 +78,7 @@ Logic::Structure::operator std::string()
 	return s.str();
 }
 
-Logic::Army::Army( int _rectangle, int _soldiers, int _carts ) : rectangle(_rectangle), soldiers(_soldiers), carts(_carts), food_stored(0), money_stored(0), food_consumed(0.1), money_consumed(0.1), speed(1), stationary(true)
+Logic::Army::Army( int _rectangle, int _soldiers, int _carts ) : rectangle(_rectangle), soldiers(_soldiers), carts(_carts), food_stored(0), money_stored(0), food_consumed(0.1), money_consumed(0.1), speed(1), transporting(false), stationary(true)
 {
 	x = rectangles.v[rectangle].x;
 	y = rectangles.v[rectangle].y;
@@ -102,16 +102,16 @@ Logic::Army::operator std::string()
 
 void Logic::BuildCarts( int _rectangle, int _amount )
 {
-	for each( City c in cities )
-		if( c.rectangle == _rectangle )
-			c.carts += _amount;
+	for( int i(0); i < cities.size(); i++ )
+		if( cities[i].rectangle == _rectangle )
+			cities[i].carts += _amount;
 }
 
 void Logic::BuildSoldiers( int _rectangle, int _amount )
 {
-	for each( City c in cities )
-		if( c.rectangle == _rectangle )
-			c.soldiers += _amount;
+	for( int i(0); i < cities.size(); i++ )
+		if( cities[i].rectangle == _rectangle )
+			cities[i].soldiers += _amount;
 }
 
 
@@ -119,17 +119,17 @@ void Logic::BuildRoad( int _line, int _from, int _to )
 {
 	roads.push_back( Road( _line, _from, _to ) );
 }
-void Logic::BuildFarm( float _x, float _y, int _scale )
+void Logic::BuildFarm( float _x, float _y, float _scale )
 {
 	rectangles.push_back( Rectangle( _x, _y, _scale, (int)Textures::Structure ) );
 	structures.push_back( Structure( rectangles.v.size()-1, farm ) );
 }
-void Logic::BuildCity( float _x, float _y, int _scale )
+void Logic::BuildCity( float _x, float _y, float _scale )
 {
 	rectangles.push_back( Rectangle( _x, _y, _scale, (int)Textures::Structure ) );
 	structures.push_back( Structure( rectangles.v.size()-1, city ) );
 }
-void Logic::ExpandFarm( int _rectangle, int _size )
+void Logic::ExpandFarm( int _rectangle, float _size )
 {
 	// TODO: Add construction before expanding.
 	for each( Farm f in farms )
@@ -139,7 +139,7 @@ void Logic::ExpandFarm( int _rectangle, int _size )
 			break;
 		}
 }
-void Logic::ExpandCity( int _rectangle, int _size )
+void Logic::ExpandCity( int _rectangle, float _size )
 {
 	// TODO: Add construction before expanding.
 	for each( City c in cities )
@@ -335,6 +335,27 @@ void Logic::ArmyTo( int _army, int _to )
 {
 	armies[_army].to = _to;
 	armies[_army].stationary = false;
+	armies[_army].transporting = false;
+}
+void Logic::ArmyTransport( int _army, int _to )
+{
+	Army& a( armies[_army] );
+	a.to = _to;
+	a.transporting_from = a.from;
+	a.transporting_to = a.to;
+	a.stationary = false;
+	a.transporting = true;
+
+	bool found = false;
+	for( int j(0); j < farms.size(); j++ )
+		if( farms[j].rectangle == a.from )
+		{
+			a.food_stored = a.storage_capacity;
+			farms[j].food_contained -= a.food_stored;
+			found = true;
+		}
+	if( !found )
+		throw std::string("Invalid target for transporting food"); // TODO: Do this better
 }
 
 
@@ -528,17 +549,47 @@ void Logic::Update()
 
 			if( a.x == r.x && a.y == r.y )
 			{
-				for( int j(0); j < armies.size(); j++ )
-					if( i != j && a.x == armies[j].x && a.y == armies[j].y )
-					{
-						a.soldiers += armies[j].soldiers;
-						a.carts += armies[j].carts;
-						rectangles.erase( armies[j].rectangle );
-						armies.erase( armies.begin() + j );
-						break;
-					}
-				a.from = a.to;
-				a.stationary = true;
+				if( a.transporting )
+				{
+					bool found = false;
+					for( int j(0); j < farms.size(); j++ )
+						if( farms[j].rectangle == a.to )
+						{
+							if( a.to == a.transporting_to )
+							{
+								farms[j].food_contained += a.food_stored;
+								a.food_stored = 0;
+							}
+							else if( a.to == a.transporting_from )
+							{
+								a.food_stored = a.storage_capacity;
+								farms[j].food_contained -= a.food_stored;
+							}
+							else
+								throw std::string("Invalid target for transporting food"); // TODO: Do this better
+							int t = a.from;
+							a.from = a.to;
+							a.to = t;
+							found = true;
+							break;
+						}
+					if( !found )
+						throw std::string("Invalid target for transporting food"); // TODO: Do this better
+				}
+				else
+				{
+					for( int j(0); j < armies.size(); j++ )
+						if( i != j && a.x == armies[j].x && a.y == armies[j].y )
+						{
+							a.soldiers += armies[j].soldiers;
+							a.carts += armies[j].carts;
+							rectangles.erase( armies[j].rectangle );
+							armies.erase( armies.begin() + j );
+							break;
+						}
+					a.from = a.to;
+					a.stationary = true;
+				}
 			}
 			else
 			{

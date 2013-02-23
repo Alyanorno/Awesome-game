@@ -12,22 +12,34 @@ void Input::Select::Input( float _x, float _y )
 
 	if( lock )
 		temp = std::to_string(army_selected) + '\n';
-		closest = logic.ClosestArmy( _x, _y );
+
+	closest = logic.ClosestArmy( _x, _y );
 	if( closest.first != - 1 && closest.second <= 5 )
 		temp = temp + logic.GetArmyInfo( closest.first );
+
 	closest = logic.ClosestFarm( _x, _y );
 	if( closest.first != - 1 && closest.second <= rectangles.v[closest.first].scale )
 		temp = temp + logic.GetInfo( closest.first );
+
 	closest = logic.ClosestCity( _x, _y );
 	if( closest.first != - 1 && closest.second <= rectangles.v[closest.first].scale )
+	{
 		temp = temp + logic.GetInfo( closest.first );
+		if( glfwGetKey( 'E' ) )
+			logic.BuildSoldiers( closest.first, 1 );
+		if( glfwGetKey( 'R' ) )
+			logic.BuildCarts( closest.first, 1 );
+	}
+
 	closest = logic.ClosestStructure( _x, _y );
 	if( closest.first != - 1 && closest.second <= rectangles.v[closest.first].scale )
 		temp = temp + logic.GetInfo( closest.first );
 
+
 	graphic.RemoveTopText();
 	graphic.AddText( temp );
 	graphic.MoveTopText( _x, _y );
+
 
 	if( glfwGetMouseButton( GLFW_MOUSE_BUTTON_1 ) )
 	{
@@ -43,7 +55,13 @@ void Input::Select::Input( float _x, float _y )
 			{
 				closest = logic.ClosestRectangle( _x, _y );
 				if( closest.first != -1 )
-					logic.ArmyTo( army_selected, closest.first );
+				{
+					if( glfwGetKey( GLFW_KEY_LSHIFT ) )
+						// Set up transport route
+						logic.ArmyTransport( army_selected, closest.first );
+					else
+						logic.ArmyTo( army_selected, closest.first );
+				}
 				lock = false;
 			}
 			create = true;
@@ -141,9 +159,10 @@ void Input::BuildFarm::Input( float _x, float _y )
 	if( glfwGetMouseButton( GLFW_MOUSE_BUTTON_1 ) )
 	{
 		if( !create && !overlapping )
+		{
 			logic.BuildFarm( _x, _y, scale );
-		else
 			create = true;
+		}
 	}
 	else
 		create = false;
@@ -189,8 +208,10 @@ void Input::BuildCity::Input( float _x, float _y )
 	if( glfwGetMouseButton( GLFW_MOUSE_BUTTON_1 ) )
 	{
 		if( !create && !overlapping )
+		{
 			logic.BuildCity( _x, _y, scale );
-		create = true;
+			create = true;
+		}
 	}
 	else
 		create = false;
@@ -232,7 +253,7 @@ void Input::Update()
 	}
 
 	if( !glfwGetKey( GLFW_KEY_LCTRL ) )
-		graphic.Zoom( glfwGetMouseWheel() - mouse_wheel - 5.f );
+		graphic.Zoom( glfwGetMouseWheel() - mouse_wheel );
 
 
 	int m_x, m_y;

@@ -57,7 +57,7 @@ private:
 	GLuint LoadShader( std::string name, ShaderType type );
 	GLuint CreateShader( std::string vertex, std::string fragment );
 public:
-	void Zoom( float _z ) { viewMatrix[3][2] = _z; }
+	void Zoom( float _z ) { viewMatrix[3][2] = _z - 5.f; }
 	float GetZoom() { return viewMatrix[3][2] + 5.f; }
 	void MoveX( float _distance ) { viewMatrix[3][0] += _distance; }
 	void MoveY( float _distance ) { viewMatrix[3][1] += _distance; }

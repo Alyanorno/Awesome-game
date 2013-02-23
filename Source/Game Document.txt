@@ -9,15 +9,14 @@ DONE: Limit construction further
 	DONE: No roads to themself
 	DONE: No overlapping farms
 	DONE: No overlapping cities
-Add interface for
-	construction of units
-	supply management
+DONE: Add interface for
+	DONE: construction of units
+	DONE: supply management
 	DONE: select unit
 	DONE: move unit
 Add pathfinding and faster movement if on road
 Change roads to use rectangles with textures
 Add select highlightning
-
 
 
 Graphic
@@ -64,3 +63,28 @@ Rules
 	Soldier consume Food
 	Soldier consume Money
 	Building Road/Farm/City/Soldier consume Money
+
+
+
+
+
+Step 2:
+Add road construction
+Add moral system
+Implement starving
+Add resource system
+	Add map
+	Implement generation of resources on map
+	Have forests expand over time
+	Resources
+		Tree
+		Rock
+Limit construction further depending on map
+#Population system
+
+Step 3:
+Add other teams
+Implement simple AI
+Add interaction with AI (diplomacy)
+#Height map
+#other graphical enchantments

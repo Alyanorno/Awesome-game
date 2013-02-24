@@ -106,6 +106,64 @@ Logic::Army::operator std::string()
 }
 
 
+// TODO: Implement
+int Logic::CalculatePathTo( Army& _a, int _to )
+{
+	return _to; // temp
+
+	std::vector<int> closed, open;
+	std::map map; // map of navigated nodes
+
+	float shortest = 0; // Cost from start along best known path
+	int current = _a.from;
+	open.push_back( current );
+	// TODO: Add variable(s) estimated total cost from start to goal througb y
+
+	while( open.size() )
+	{
+		if( current == _to )
+		{
+			// Found path to goal
+		}
+
+		// Remove current from open
+		// Add current to closed
+
+		// find each road going from current
+		std::vector<int> from_current;
+
+		for( int i(0); i < from_current.size(); i++ )
+		{
+			// if what line leads to is contained in closed
+			// 	continue
+			Road& r( from_current[i] );
+			bool Continue = false;
+			for each( int j in closed )
+				if( r.from == current ? r.to == j: r.from == j; )
+				{
+					Continue = true;
+					break;
+				}
+			if( Continue )
+				continue;
+
+		//	cost = cost of current + length of line
+		//
+		//	if what line leads to not in open || cost < total cost to what line leads to
+		//		map[ what line leads to ] = current
+		//		total cost of path to what line leads to = cost
+		//		estimate of cost from what line leads to to goal = cost of path to what line leads to + quess of cost from what line leads to to goal
+		//		if what line leads to not in open
+		//			add it to open
+		}
+	}
+
+	// Path not found
+	a.stationary = true;
+	return a.from;
+}
+
+
 
 void Logic::BuildCarts( int _rectangle, int _amount )
 {
@@ -342,14 +400,17 @@ std::string Logic::GetArmyInfo( int _x )
 
 void Logic::ArmyTo( int _army, int _to )
 {
-	armies[_army].to = _to;
-	armies[_army].stationary = false;
-	armies[_army].transporting = false;
+	Army& a( armies[_army] );
+	a.final_to = _to;
+	a.to = CalculatePathTo( a, a.final_to );
+	a.stationary = false;
+	a.transporting = false;
 }
 void Logic::ArmyTransport( int _army, int _to )
 {
 	Army& a( armies[_army] );
-	a.to = _to;
+	a.final_to = _to;
+	a.to = CalculatePathTo( a, a.final_to );
 	a.transporting_from = a.from;
 	a.transporting_to = a.to;
 	a.stationary = false;
@@ -575,36 +636,52 @@ void Logic::Update()
 							{
 								farms[j].food_contained += a.food_stored;
 								a.food_stored = 0;
+
+								a.final_to = a.from;
+								a.from = a.to;
+								a.to = CalculatePathTo( a, a.final_to );
+								found = true;
+								break;
 							}
 							else if( a.to == a.transporting_from )
 							{
 								a.food_stored = a.storage_capacity;
 								farms[j].food_contained -= a.food_stored;
+
+								a.final_to = a.from;
+								a.from = a.to;
+								a.to = CalculatePathTo( a, a.final_to );
+								found = true;
+								break;
 							}
-							else
-								throw std::string("Invalid target for transporting food"); // TODO: Do this better
-							int t = a.from;
-							a.from = a.to;
-							a.to = t;
-							found = true;
-							break;
 						}
 					if( !found )
-						throw std::string("Invalid target for transporting food"); // TODO: Do this better
+					{
+						a.from = a.to;
+						a.to = CalculatePathTo( a, a.final_to );
+					}
 				}
 				else
 				{
-					for( int j(0); j < armies.size(); j++ )
-						if( i != j && a.x == armies[j].x && a.y == armies[j].y )
-						{
-							a.soldiers += armies[j].soldiers;
-							a.carts += armies[j].carts;
-							rectangles.erase( armies[j].rectangle );
-							armies.erase( armies.begin() + j );
-							break;
-						}
-					a.from = a.to;
-					a.stationary = true;
+					if( a.to == a.final_to )
+					{
+						for( int j(0); j < armies.size(); j++ )
+							if( i != j && a.x == armies[j].x && a.y == armies[j].y )
+							{
+								a.soldiers += armies[j].soldiers;
+								a.carts += armies[j].carts;
+								rectangles.erase( armies[j].rectangle );
+								armies.erase( armies.begin() + j );
+								break;
+							}
+						a.from = a.to;
+						a.stationary = true;
+					}
+					else
+					{
+						a.from = a.to;
+						a.to = CalculatePathTo( a, a.final_to );
+					}
 				}
 			}
 			else

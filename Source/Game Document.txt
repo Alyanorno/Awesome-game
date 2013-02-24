@@ -16,7 +16,7 @@ DONE: Add interface for
 	DONE: move unit
 DONE: Add select highlightning
 DONE: (mostly) Change roads to use rectangles with textures
-Add pathfinding and faster movement if on road
+Add pathfinding and faster or only movement if on road
 
 
 Graphic

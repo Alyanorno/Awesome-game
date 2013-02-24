@@ -82,7 +82,7 @@ private:
 
 		float x, y;
 		float speed;
-		int from, to;
+		int from, to, final_to;
 		bool transporting;
 		int transporting_from, transporting_to;
 		bool stationary;
@@ -91,6 +91,7 @@ private:
 
 	double last_time;
 	static float L( float _x ) { return _x < 0 ? -_x: _x; }
+	int CalculatePathTo( Army& _a, int _to );
 public:
 	void BuildCarts( int _rectangle, int _amount );
 	void BuildSoldiers( int _rectangle, int _amount );

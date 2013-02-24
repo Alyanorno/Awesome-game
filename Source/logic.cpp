@@ -13,10 +13,10 @@ void Logic::Road::Calculate()
 	r.x = (to_r.x + from_r.x) / 2;
 	r.y = (to_r.y + from_r.y) / 2;
 
-	length = sqrt( pow( L(to_r.x + from_r.x), 2 ) + pow( L(to_r.y + from_r.y), 2 ) );
-	r.scale = length / 2;
+	length = sqrt( pow( L(to_r.x - from_r.x), 2 ) + pow( L(to_r.y - from_r.y), 2 ) );
+	r.scale = length;
 
-	r.rotation = tan( (to_r.x + from_r.x) / (to_r.y + from_r.y) );
+	r.rotation = atan( (to_r.x - from_r.x) / (to_r.y - from_r.y) ) * 180 / 3.14159;
 }
 
 Logic::Farm::Farm( int _rectangle ) : rectangle(_rectangle), food_contained(0)
@@ -25,7 +25,7 @@ Logic::Farm::Farm( int _rectangle ) : rectangle(_rectangle), food_contained(0)
 }
 void Logic::Farm::Calculate()
 {
-	float size = 3.14 * rectangles.v[rectangle].scale * rectangles.v[rectangle].scale;
+	float size = 3.14159 * rectangles.v[rectangle].scale * rectangles.v[rectangle].scale;
 	food_storage = size * 100;
 	food_production = size;
 }
@@ -42,7 +42,7 @@ Logic::City::City( int _rectangle, int _farm_rectangle ) : rectangle(_rectangle)
 }
 void Logic::City::Calculate()
 {
-	float size = 3.14 * rectangles.v[rectangle].scale * rectangles.v[rectangle].scale;
+	float size = 3.14159 * rectangles.v[rectangle].scale * rectangles.v[rectangle].scale;
 	money_storage = size * 10;
 	money_production = size * 2;
 	food_consumed = size * 2;
@@ -59,7 +59,7 @@ Logic::City::operator std::string()
 
 Logic::Structure::Structure( int _rectangle, Type _type ) : rectangle(_rectangle), type(_type), money_supplied(0)
 {
-	float size = 3.14 * rectangles.v[rectangle].scale * rectangles.v[rectangle].scale;
+	float size = 3.14159 * rectangles.v[rectangle].scale * rectangles.v[rectangle].scale;
 	switch( type )
 	{
 		case road:
@@ -96,7 +96,7 @@ void Logic::Army::Calculate()
 	storage_capacity = soldiers * 1 + carts * 10;
 	rectangles.v[rectangle].x = x;
 	rectangles.v[rectangle].y = y;
-	rectangles.v[rectangle].scale = sqrt( (soldiers + carts) / 3.14 );
+	rectangles.v[rectangle].scale = sqrt( (soldiers + carts) / 3.14159 );
 }
 Logic::Army::operator std::string()
 {

@@ -15,8 +15,8 @@ DONE: Add interface for
 	DONE: select unit
 	DONE: move unit
 DONE: Add select highlightning
+DONE: (mostly) Change roads to use rectangles with textures
 Add pathfinding and faster movement if on road
-Change roads to use rectangles with textures
 
 
 Graphic
@@ -26,7 +26,7 @@ Graphic
 	Zoom in/out
 	transparent textures
 	Draw text
-	--Select highlightning
+	Select highlightning
 Input
 	W/A/S/D -> move
 	Scroll	-> zoom/scale

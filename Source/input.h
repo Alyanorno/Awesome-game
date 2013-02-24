@@ -42,7 +42,6 @@ private:
 	};
 	struct BuildRoad : public State
 	{
-		bool lock;
 		int from, to;
 		BuildRoad( Graphic& _graphic, Logic& _logic, float& _mouse_wheel );
 		~BuildRoad();

@@ -32,7 +32,7 @@ private:
 
 		void LoadBmp( std::string name );
 	};
-	GLuint glTexture[46];
+	GLuint glTexture[47];
 
 	struct Text
 	{
@@ -44,6 +44,8 @@ private:
 	std::vector< Text > texts;
 	std::map<int,int> char_textures;
 
+	// To allow transparency
+	float small_difference;
 	Rectangle inputRectangles[2];
 	glm::mat4 viewMatrix;
 	GLuint Vbo[3];

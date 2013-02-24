@@ -79,21 +79,25 @@ void Graphic::DrawRectangle( Rectangle& r )
 	glm::mat4 modelMatrix( glm::mat4( 1.0f ) );
 	modelMatrix[3][0] = r.x;
 	modelMatrix[3][1] = r.y;
-	if( r.texture == (int)Textures::Army )
-		modelMatrix[3][2] = -0.002;
+	if( r.texture == (int)Textures::Road )
+		modelMatrix[3][2] = -.04;
 	else if( r.texture == (int)Textures::Farm )
-		modelMatrix[3][2] = -0.001;
+		modelMatrix[3][2] = -.02;
 	else if( r.texture == (int)Textures::City )
-		modelMatrix[3][2] = 0.001;
+		modelMatrix[3][2] = .00;
+	else if( r.texture == (int)Textures::Army )
+		modelMatrix[3][2] = .02;
 	else if( r.texture == (int)Textures::Structure )
-		modelMatrix[3][2] = 0.002;
+		modelMatrix[3][2] = .04;
+	modelMatrix[3][2] += small_difference;
+	small_difference += 0.001;
 
 	modelMatrix[0][0] *= r.scale;
 	modelMatrix[1][1] *= r.scale;
 	modelMatrix[2][2] *= r.scale;
 
 	if( r.rotation != 0 )
-		modelMatrix = glm::rotate( modelMatrix, r.rotation, glm::vec3( 0.f, 1.f, 0.f ) );
+		modelMatrix = glm::rotate( modelMatrix, r.rotation, glm::vec3( 0.f, 0.f, -1.f ) );
 	glm::mat4 modelViewMatrix = viewMatrix * modelMatrix;
 	glUniformMatrix4fv( glGetUniformLocation( shaderProgram, "modelViewMatrix" ), 1, GL_FALSE, &modelViewMatrix[0][0] );
 
@@ -321,7 +325,7 @@ void Graphic::Initialize()
 	shaderText = CreateShader( "Source/text.vertex", "Source/text.fragment" );
 
 	Texture t;
-	glGenTextures( 46, glTexture );
+	glGenTextures( 47, glTexture );
 
 	int i = 0;
 
@@ -354,6 +358,13 @@ void Graphic::Initialize()
 
 	t.LoadBmp( "army.bmp" );
 	assert( i == (int)Textures::Army );
+	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
+
+	t.LoadBmp( "road.bmp" );
+	assert( i == (int)Textures::Road );
 	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
@@ -458,6 +469,7 @@ void Graphic::Initialize()
 
 	glBindVertexArray(Vao);
 
+	small_difference = 0.f;
 	inputRectangles[0].used = false;
 	inputRectangles[1].used = false;
 }
@@ -473,7 +485,7 @@ void Graphic::Update()
 	float nearClip = 1.0f, farClip = 1000.0f, fovDeg = 45.0f, aspect = (float)width / (float)height;
 	glm::mat4 projectionMatrix = glm::perspective(fovDeg, aspect, nearClip, farClip);
 
-	DrawLines( projectionMatrix );
+	//DrawLines( projectionMatrix );
 
 	glUseProgram( shaderProgram );
 	glUniformMatrix4fv( glGetUniformLocation(shaderProgram, "projectionMatrix"), 1, GL_FALSE, &projectionMatrix[0][0] );
@@ -488,5 +500,7 @@ void Graphic::Update()
 	glUseProgram(0);
 
 	glfwSwapBuffers();
+
+	small_difference = 0.f;
 }
 

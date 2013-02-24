@@ -89,7 +89,7 @@ void Input::Select::Input( float _x, float _y )
 }
 
 Input::BuildRoad::BuildRoad( Graphic& _graphic, Logic& _logic, float& _mouse_wheel )
-	: State( _graphic, _logic, _mouse_wheel ), lock(false)
+	: State( _graphic, _logic, _mouse_wheel )
 {}
 Input::BuildRoad::~BuildRoad()
 	{ if( create ) logic.RemoveTopLine(); }
@@ -104,7 +104,6 @@ void Input::BuildRoad::Input( float _x, float _y )
 		{
 			logic.RemoveTopLine();
 			create = false;
-			lock = true;
 		}
 		else
 		{
@@ -121,13 +120,10 @@ void Input::BuildRoad::Input( float _x, float _y )
 		{
 			logic.RemoveTopLine();
 			create = false;
-			lock = true;
 		}
 	}
 	else if( glfwGetMouseButton( GLFW_MOUSE_BUTTON_1 ) )
 	{
-		if( lock == true )
-			return;
 		if( !create )
 		{
 			closest = logic.ClosestRectangle( _x, _y );
@@ -141,13 +137,12 @@ void Input::BuildRoad::Input( float _x, float _y )
 	}
 	else
 	{
-		if( create && lock )
+		if( create )
 			if( logic.TopLineFromEqualsTo() || logic.TopLineEqualsOtherLine() )
 				logic.RemoveTopLine();
 			else
 				logic.BuildRoad( from, to );
 		create = false;
-		lock = false;
 	}
 }
 

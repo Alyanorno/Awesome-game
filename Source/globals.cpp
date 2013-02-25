@@ -1,5 +1,5 @@
 #include "globals.h"
 
-buffer< Rectangle > rectangles;
+std::vector< buffer< Rectangle > > rectangles( (int)Type::Size );
 std::vector< Line > lines;
 

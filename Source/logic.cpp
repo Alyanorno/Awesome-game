@@ -6,9 +6,9 @@ Logic::Road::Road( int _rectangle, int _from, int _to ) : rectangle(_rectangle),
 }
 void Logic::Road::Calculate()
 {
-	Rectangle& r( rectangles.v[rectangle] );
-	Rectangle& to_r( rectangles.v[from] );
-	Rectangle& from_r( rectangles.v[to] );
+	Rectangle& r( rectangles[ (int)Type::Road ].v[rectangle] );
+	Rectangle& to_r( rectangles[ (int)Type::Farm ].v[from] );
+	Rectangle& from_r( rectangles[ (int)Type::Farm ].v[to] );
 
 	r.x = (to_r.x + from_r.x) / 2;
 	r.y = (to_r.y + from_r.y) / 2;
@@ -25,7 +25,7 @@ Logic::Farm::Farm( int _rectangle ) : rectangle(_rectangle), food_contained(0)
 }
 void Logic::Farm::Calculate()
 {
-	float size = 3.14159 * rectangles.v[rectangle].scale * rectangles.v[rectangle].scale;
+	float size = 3.14159 * rectangles[ (int)Type::Farm ].v[rectangle].scale * rectangles[ (int)Type::Farm ].v[rectangle].scale;
 	food_storage = size * 100;
 	food_production = size;
 }
@@ -42,7 +42,7 @@ Logic::City::City( int _rectangle, int _farm_rectangle ) : rectangle(_rectangle)
 }
 void Logic::City::Calculate()
 {
-	float size = 3.14159 * rectangles.v[rectangle].scale * rectangles.v[rectangle].scale;
+	float size = 3.14159 * rectangles[ (int)Type::City ].v[rectangle].scale * rectangles[ (int)Type::City ].v[rectangle].scale;
 	money_storage = size * 10;
 	money_production = size * 2;
 	food_consumed = size * 2;
@@ -59,20 +59,22 @@ Logic::City::operator std::string()
 
 Logic::Structure::Structure( int _rectangle, Type _type ) : rectangle(_rectangle), type(_type), money_supplied(0)
 {
-	float size = 3.14159 * rectangles.v[rectangle].scale * rectangles.v[rectangle].scale;
+	float size = 3.14159 * rectangles[ (int)Type::Structure ].v[rectangle].scale * rectangles[ (int)Type::Structure ].v[rectangle].scale;
 	switch( type )
 	{
-		case road:
+		case Type::Road:
 			// Doesnt exist right now
 			break;
-		case farm:
+		case Type::Farm:
 			money_needed = 100 * size;
 			production_time = 1 * size;
 			break;
-		case city:
+		case Type::City:
 			money_needed = 100 * size;
 			production_time = 1 * size;
 			break;
+		default:
+			throw std::string( "Invalid type for construction: " + std::to_string( (int)_type ) );
 	}
 
 	// temp
@@ -87,16 +89,16 @@ Logic::Structure::operator std::string()
 
 Logic::Army::Army( int _rectangle, int _soldiers, int _carts ) : rectangle(_rectangle), soldiers(_soldiers), carts(_carts), food_stored(0), money_stored(0), food_consumed(0.1), money_consumed(0.1), speed(1), transporting(false), stationary(true)
 {
-	x = rectangles.v[rectangle].x;
-	y = rectangles.v[rectangle].y;
+	x = rectangles[ (int)Type::Army ].v[rectangle].x;
+	y = rectangles[ (int)Type::Army ].v[rectangle].y;
 	Calculate();
 }
 void Logic::Army::Calculate()
 {
 	storage_capacity = soldiers * 1 + carts * 10;
-	rectangles.v[rectangle].x = x;
-	rectangles.v[rectangle].y = y;
-	rectangles.v[rectangle].scale = sqrt( (soldiers + carts) / 3.14159 );
+	rectangles[ (int)Type::Army ].v[rectangle].x = x;
+	rectangles[ (int)Type::Army ].v[rectangle].y = y;
+	rectangles[ (int)Type::Army ].v[rectangle].scale = sqrt( (soldiers + carts) / 3.14159 );
 }
 Logic::Army::operator std::string()
 {
@@ -112,7 +114,7 @@ int Logic::CalculatePathTo( Army& _a, int _to )
 	return _to; // temp
 
 	std::vector<int> closed, open;
-	std::map map; // map of navigated nodes
+	std::map<int,int> map; // map of navigated nodes
 
 	float shortest = 0; // Cost from start along best known path
 	int current = _a.from;
@@ -136,10 +138,10 @@ int Logic::CalculatePathTo( Army& _a, int _to )
 		{
 			// if what line leads to is contained in closed
 			// 	continue
-			Road& r( from_current[i] );
+			Road& r( roads[ from_current[i] ] );
 			bool Continue = false;
 			for each( int j in closed )
-				if( r.from == current ? r.to == j: r.from == j; )
+				if( r.from == current ? r.to == j: r.from == j )
 				{
 					Continue = true;
 					break;
@@ -159,8 +161,8 @@ int Logic::CalculatePathTo( Army& _a, int _to )
 	}
 
 	// Path not found
-	a.stationary = true;
-	return a.from;
+	_a.stationary = true;
+	return _a.from;
 }
 
 
@@ -183,18 +185,18 @@ void Logic::BuildSoldiers( int _rectangle, int _amount )
 void Logic::BuildRoad( int _from, int _to )
 {
 	// TODO: Add construction of road
-	int t = rectangles.insert( Rectangle( 0, 0, 0, (int)Textures::Road ) );
+	int t = rectangles[ (int)Type::Road ].insert( Rectangle( 0, 0, 0 ) );
 	roads.push_back( Road( t, _from, _to ) );
 }
 void Logic::BuildFarm( float _x, float _y, float _scale )
 {
-	int t = rectangles.insert( Rectangle( _x, _y, _scale, (int)Textures::Structure ) );
-	structures.push_back( Structure( t, farm ) );
+	int t = rectangles[ (int)Type::Structure ].insert( Rectangle( _x, _y, _scale ) );
+	structures.push_back( Structure( t, Type::Farm ) );
 }
 void Logic::BuildCity( float _x, float _y, float _scale )
 {
-	int t = rectangles.insert( Rectangle( _x, _y, _scale, (int)Textures::Structure ) );
-	structures.push_back( Structure( t, city ) );
+	int t = rectangles[ (int)Type::Structure ].insert( Rectangle( _x, _y, _scale ) );
+	structures.push_back( Structure( t, Type::City ) );
 }
 void Logic::ExpandFarm( int _rectangle, float _size )
 {
@@ -250,28 +252,13 @@ float Logic::Distance( float _x, float _y, float __x, float __y )
 {
 	return (_x - __x) * (_x - __x) + (_y - __y) * (_y - __y);
 }
-std::pair< int, float > Logic::ClosestRectangle( float _x, float _y )
-{
-	float distance = 1000;
-	int closest = -1;
-	for( int i(0); i < rectangles.v.size(); i++ )
-	{
-		float t = Distance( _x, _y, rectangles.v[i].x, rectangles.v[i].y );
-		if( t < distance )
-		{
-			distance = t;
-			closest = i; 
-		}
-	}
-	return std::make_pair( closest, distance );
-}
 std::pair< int, float > Logic::ClosestFarm( float _x, float _y )
 {
 	float distance = 10000;
 	int closest = -1;
-	for( int i(0); i < rectangles.v.size(); i++ )
+	for( int i(0); i < rectangles[ (int)Type::Farm ].v.size(); i++ )
 	{
-		float t = Distance( _x, _y, rectangles.v[i].x, rectangles.v[i].y );
+		float t = Distance( _x, _y, rectangles[ (int)Type::Farm ].v[i].x, rectangles[ (int)Type::Farm ].v[i].y );
 		if( t < distance )
 		{
 			bool farm = false;
@@ -294,9 +281,9 @@ std::pair< int, float > Logic::ClosestCity( float _x, float _y )
 {
 	float distance = 10000;
 	int closest = -1;
-	for( int i(0); i < rectangles.v.size(); i++ )
+	for( int i(0); i < rectangles[ (int)Type::City ].v.size(); i++ )
 	{
-		float t = Distance( _x, _y, rectangles.v[i].x, rectangles.v[i].y );
+		float t = Distance( _x, _y, rectangles[ (int)Type::City ].v[i].x, rectangles[ (int)Type::City ].v[i].y );
 		if( t < distance )
 		{
 			bool city = false;
@@ -319,9 +306,9 @@ std::pair< int, float > Logic::ClosestStructure( float _x, float _y )
 {
 	float distance = 10000;
 	int closest = -1;
-	for( int i(0); i < rectangles.v.size(); i++ )
+	for( int i(0); i < rectangles[ (int)Type::Structure ].v.size(); i++ )
 	{
-		float t = Distance( _x, _y, rectangles.v[i].x, rectangles.v[i].y );
+		float t = Distance( _x, _y, rectangles[ (int)Type::Structure ].v[i].x, rectangles[ (int)Type::Structure ].v[i].y );
 		if( t < distance )
 		{
 			bool structure = false;
@@ -361,7 +348,7 @@ bool Logic::OverLappingFarm( float _x, float _y, float _scale )
 {
 	for each( Farm f in farms )
 	{
-		Rectangle& r( rectangles.v[f.rectangle] );
+		Rectangle& r( rectangles[ (int)Type::Farm ].v[f.rectangle] );
 		if( (_scale + r.scale) / 2 >= sqrt( pow( _x - r.x, 2) + pow( _y - r.y, 2 ) ) )
 			return true;
 	}
@@ -371,7 +358,7 @@ bool Logic::OverLappingCity( float _x, float _y, float _scale )
 {
 	for each( City c in cities )
 	{
-		Rectangle& r( rectangles.v[c.rectangle] );
+		Rectangle& r( rectangles[ (int)Type::City ].v[c.rectangle] );
 		if( (_scale + r.scale) / 2 >= sqrt( pow( _x - r.x, 2) + pow( _y - r.y, 2 ) ) )
 			return true;
 	}
@@ -433,7 +420,7 @@ std::pair<float,float> Logic::ArmyPosition( int _army )
 }
 float Logic::ArmySize( int _army )
 {
-	return rectangles.v[ armies[_army].rectangle ].scale;
+	return rectangles[ (int)Type::Army ].v[ armies[_army].rectangle ].scale;
 }
 
 
@@ -465,7 +452,7 @@ bool Logic::TopLineEqualsOtherLine()
 void Logic::Initialize()
 {
 	last_time = glfwGetTime();
-	int t =rectangles.insert( Rectangle( 0, 0, 1, (int)Textures::Farm ) );
+	int t = rectangles[ (int)Type::Farm ].insert( Rectangle( 0, 0, 1 ) );
 	farms.push_back( Farm( t ) );
 }
 
@@ -512,8 +499,8 @@ void Logic::Update()
 			c.current_cart_production -= delta_time;
 			if( c.current_cart_production <= 0 )
 			{
-				float x = rectangles.v[c.rectangle].x;
-				float y = rectangles.v[c.rectangle].y;
+				float x = rectangles[ (int)Type::City ].v[c.rectangle].x;
+				float y = rectangles[ (int)Type::City ].v[c.rectangle].y;
 				bool army_in_city = false;
 				for( int j(0); j < armies.size(); j++ )
 				{
@@ -528,7 +515,7 @@ void Logic::Update()
 
 				if( !army_in_city )
 				{
-					int t = rectangles.insert( Rectangle( x, y, 1, (int)Textures::Army ) );
+					int t = rectangles[ (int)Type::Army ].insert( Rectangle( x, y, 1 ) );
 					armies.push_back( Army( t, 0, 1 ) );
 				}
 				c.current_cart_production = c.soldier_production_time;
@@ -541,8 +528,8 @@ void Logic::Update()
 			c.current_soldier_production -= delta_time;
 			if( c.current_soldier_production <= 0 )
 			{
-				float x = rectangles.v[c.rectangle].x;
-				float y = rectangles.v[c.rectangle].y;
+				float x = rectangles[ (int)Type::City ].v[c.rectangle].x;
+				float y = rectangles[ (int)Type::City ].v[c.rectangle].y;
 				bool army_in_city = false;
 				for( int j(0); j < armies.size(); j++ )
 				{
@@ -557,7 +544,7 @@ void Logic::Update()
 
 				if( !army_in_city )
 				{
-					int t = rectangles.insert( Rectangle( x, y, 1, (int)Textures::Army ) );
+					int t = rectangles[ (int)Type::Army ].insert( Rectangle( x, y, 1 ) );
 					armies.push_back( Army( t, 1, 0 ) );
 				}
 				c.current_soldier_production = c.soldier_production_time;
@@ -574,32 +561,34 @@ void Logic::Update()
 		s.money_supplied -= (s.money_needed / s.production_time) * delta_time;
 		s.money_needed -= (s.money_needed / s.production_time) * delta_time;
 
+		int t;
 		Rectangle r;
+		Rectangle& sr( rectangles[ (int)Type::Structure ].v[s.rectangle] );
 		if( s.production_time <= 0.1 )
 		{
 			switch( s.type )
 			{
-				case road:
+				case Type::Road:
 					// TODO: Add later when road have been changed to using texture.
 					break;
-				case farm:
-					rectangles.v[s.rectangle].texture = (int)Textures::Farm;
-					farms.push_back( Farm( s.rectangle ) );
+				case Type::Farm:
+					t = rectangles[ (int)Type::Farm ].insert( Rectangle( sr.x, sr.y, sr.scale ) );
+					farms.push_back( Farm( t ) );
 					break;
-				case city:
+				case Type::City:
 					for each( Farm f in farms )
 					{
-						Rectangle& fr( rectangles.v[f.rectangle] );
-						Rectangle& sr( rectangles.v[s.rectangle] );
+						Rectangle& fr( rectangles[ (int)Type::Farm ].v[f.rectangle] );
 						if( fr.x == sr.x && fr.y == fr.y )
 						{
-							rectangles.v[s.rectangle].texture = (int)Textures::City;
-							cities.push_back( City( s.rectangle, f.rectangle ) );
+							t = rectangles[ (int)Type::City ].insert( Rectangle( sr.x, sr.y, sr.scale ) );
+							cities.push_back( City( t, f.rectangle ) );
 							break;
 						}
 					}
 					break;
 			}
+			rectangles[ (int)Type::Structure ].erase( s.rectangle );
 			structures.erase( structures.begin() + i );
 			i--;
 		}
@@ -610,7 +599,7 @@ void Logic::Update()
 		// Movement
 		if( !a.stationary )
 		{
-			Rectangle& r = rectangles.v[a.to];
+			Rectangle& r = rectangles[ (int)Type::Farm ].v[a.to];
 			float distance = a.speed * delta_time;
 			float d_x = r.x - a.x;
 			float d_y = r.y - a.y;
@@ -670,7 +659,7 @@ void Logic::Update()
 							{
 								a.soldiers += armies[j].soldiers;
 								a.carts += armies[j].carts;
-								rectangles.erase( armies[j].rectangle );
+								rectangles[ (int)Type::Army ].erase( armies[j].rectangle );
 								armies.erase( armies.begin() + j );
 								break;
 							}

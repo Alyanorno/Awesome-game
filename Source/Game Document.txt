@@ -1,22 +1,35 @@
-DONE: Construction of units
-DONE: Select unit
-DONE: Add better textures
-DONE: Move unit
-DONE: Add textures for food and money
-DONE: Change size calcutations to be based on area
-DONE: Restructure input code
-DONE: Limit construction further
-	DONE: No roads to themself
-	DONE: No overlapping farms
-	DONE: No overlapping cities
-DONE: Add interface for
-	DONE: construction of units
-	DONE: supply management
-	DONE: select unit
-	DONE: move unit
-DONE: Add select highlightning
-DONE: (mostly) Change roads to use rectangles with textures
+Step 1: Base
+DONE: Restructure graphic based on types
+Refine interface for construction of units
+Refine interface for supply management
+Add ability to select cities and farms
 Add pathfinding and faster or only movement if on road
+Add road construction
+#Universal interface system
+
+
+Step 2: System
+Add moral system
+Implement starving
+Add resource system
+	Add map
+	Add forest
+	Add mountain
+	Implement generation of resources on map
+	Have forests expand over time
+	Resources
+		Tree
+		Rock
+		#Fertile soil
+Limit construction further
+	No farm/city on mountain
+	No road on mountain
+Population system
+	Increase based on birth rate
+	Decrease based on mortality rate
+	Solve inbalances by migration
+#Seasons
+
 
 
 Graphic
@@ -66,25 +79,13 @@ Rules
 
 
 
-
-
-Step 2:
-Add road construction
-Add moral system
-Implement starving
-Add resource system
-	Add map
-	Implement generation of resources on map
-	Have forests expand over time
-	Resources
-		Tree
-		Rock
-Limit construction further depending on map
-#Population system
-
-Step 3:
+Step 3: Game
 Add other teams
 Implement simple AI
 Add interaction with AI (diplomacy)
 #Height map
 #other graphical enchantments
+#Network (multiplayer)
+
+
+Step 4: Rough polish

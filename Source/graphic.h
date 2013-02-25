@@ -32,7 +32,7 @@ private:
 
 		void LoadBmp( std::string name );
 	};
-	GLuint glTexture[47];
+	GLuint glTexture[46];
 
 	struct Text
 	{
@@ -44,13 +44,15 @@ private:
 	std::vector< Text > texts;
 	std::map<int,int> char_textures;
 
-	// To allow transparency
+	// To allow for transparency
 	float small_difference;
+
+	int inputTextures[2];
 	Rectangle inputRectangles[2];
 	glm::mat4 viewMatrix;
 	GLuint Vbo[3];
 	void DrawLines( glm::mat4& projectionMatrix );
-	void DrawRectangle( Rectangle& r );
+	void DrawRectangle( Rectangle& r, Type type );
 	void DrawText( glm::mat4& projectionMatrix );
 
 	enum ShaderType { Vertex, Fragment, Geometry };

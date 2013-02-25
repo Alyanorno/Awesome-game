@@ -69,25 +69,23 @@ float textureCoordinates[] = {
 	0.0f, 0.0f,
 	0.0f, 1.0f
 };
-void Graphic::DrawRectangle( Rectangle& r )
+void Graphic::DrawRectangle( Rectangle& r, Type type )
 {
 	if( r.used == false )
 		return;
 
-	glBindTexture( GL_TEXTURE_2D, glTexture[r.texture] );
-
 	glm::mat4 modelMatrix( glm::mat4( 1.0f ) );
 	modelMatrix[3][0] = r.x;
 	modelMatrix[3][1] = r.y;
-	if( r.texture == (int)Textures::Road )
+	if( type == Type::Road )
 		modelMatrix[3][2] = -.04;
-	else if( r.texture == (int)Textures::Farm )
+	else if( type == Type::Farm )
 		modelMatrix[3][2] = -.02;
-	else if( r.texture == (int)Textures::City )
+	else if( type == Type::City )
 		modelMatrix[3][2] = .00;
-	else if( r.texture == (int)Textures::Army )
+	else if( type == Type::Army )
 		modelMatrix[3][2] = .02;
-	else if( r.texture == (int)Textures::Structure )
+	else if( type == Type::Structure )
 		modelMatrix[3][2] = .04;
 	modelMatrix[3][2] += small_difference;
 	small_difference += 0.001;
@@ -270,8 +268,8 @@ void Graphic::MoveTopText( float _x, float _y )
 void Graphic::SetRectangle( int _i, float _scale, int _texture, bool _used )
 {
 	inputRectangles[_i].scale = _scale;
-	inputRectangles[_i].texture = _texture;
 	inputRectangles[_i].used = _used;
+	inputTextures[_i] = _texture;
 }
 void Graphic::SetRectangleVisibility( int _i, bool _used )
 {
@@ -325,51 +323,44 @@ void Graphic::Initialize()
 	shaderText = CreateShader( "Source/text.vertex", "Source/text.fragment" );
 
 	Texture t;
-	glGenTextures( 47, glTexture );
+	glGenTextures( 46, glTexture );
 
 	int i = 0;
 
-	t.LoadBmp( "test.bmp" );
+	t.LoadBmp( "road.bmp" );
+	assert( i == (int)Type::Road );
 	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
 	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
 
 	t.LoadBmp( "farm.bmp" );
-	assert( i == (int)Textures::Farm );
+	assert( i == (int)Type::Farm );
 	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
 	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
 
 	t.LoadBmp( "city.bmp" );
-	assert( i == (int)Textures::City );
+	assert( i == (int)Type::City );
 	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
 	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
 
 	t.LoadBmp( "structure.bmp" );
-	assert( i == (int)Textures::Structure );
+	assert( i == (int)Type::Structure );
 	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
 	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
 
 	t.LoadBmp( "army.bmp" );
-	assert( i == (int)Textures::Army );
+	assert( i == (int)Type::Army );
 	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
 	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
-
-	t.LoadBmp( "road.bmp" );
-	assert( i == (int)Textures::Road );
-	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
-
 	
 	// Load char numbers
 	for( char j(0); j < 10; j++ )
@@ -490,17 +481,33 @@ void Graphic::Update()
 	glUseProgram( shaderProgram );
 	glUniformMatrix4fv( glGetUniformLocation(shaderProgram, "projectionMatrix"), 1, GL_FALSE, &projectionMatrix[0][0] );
 
-	for( int i(0); i < rectangles.v.size(); i++ )
-		DrawRectangle( rectangles.v[i] );
-	DrawRectangle( inputRectangles[0] );
-	DrawRectangle( inputRectangles[1] );
+	small_difference = -0.3f;
+	if( inputTextures[0] == (int)Type::Farm )
+	{
+		glBindTexture( GL_TEXTURE_2D, glTexture[ inputTextures[0] ] );
+		DrawRectangle( inputRectangles[0], (Type)inputTextures[0] );
+	}
+	glBindTexture( GL_TEXTURE_2D, glTexture[ inputTextures[1] ] );
+	DrawRectangle( inputRectangles[1], (Type)inputTextures[1] );
+	for( int i(0); i < rectangles.size(); i++ )
+	{
+		for( int j(0); j < rectangles[i].v.size(); j++ )
+		{
+			glBindTexture( GL_TEXTURE_2D, glTexture[ i ] );
+			DrawRectangle( rectangles[i].v[j], (Type)i );
+		}
+		small_difference = 0.f;
+	}
+	if( inputTextures[0] == (int)Type::City )
+	{
+		glBindTexture( GL_TEXTURE_2D, glTexture[ inputTextures[0] ] );
+		DrawRectangle( inputRectangles[0], (Type)inputTextures[0] );
+	}
 
 	DrawText( projectionMatrix );
 
 	glUseProgram(0);
 
 	glfwSwapBuffers();
-
-	small_difference = 0.f;
 }
 

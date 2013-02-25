@@ -23,11 +23,11 @@ void Input::Select::Input( float _x, float _y )
 		temp = temp + logic.GetArmyInfo( closest.first );
 
 	closest = logic.ClosestFarm( _x, _y );
-	if( closest.first != - 1 && closest.second <= rectangles.v[closest.first].scale )
+	if( closest.first != - 1 && closest.second <= rectangles[ (int)Type::Farm ].v[closest.first].scale )
 		temp = temp + logic.GetInfo( closest.first );
 
 	closest = logic.ClosestCity( _x, _y );
-	if( closest.first != - 1 && closest.second <= rectangles.v[closest.first].scale )
+	if( closest.first != - 1 && closest.second <= rectangles[ (int)Type::City ].v[closest.first].scale )
 	{
 		temp = temp + logic.GetInfo( closest.first );
 		if( glfwGetKey( 'E' ) )
@@ -37,7 +37,7 @@ void Input::Select::Input( float _x, float _y )
 	}
 
 	closest = logic.ClosestStructure( _x, _y );
-	if( closest.first != - 1 && closest.second <= rectangles.v[closest.first].scale )
+	if( closest.first != - 1 && closest.second <= rectangles[ (int)Type::Structure ].v[closest.first].scale )
 		temp = temp + logic.GetInfo( closest.first );
 
 
@@ -48,7 +48,7 @@ void Input::Select::Input( float _x, float _y )
 	if( lock )
 	{
 		std::pair<float,float> t = logic.ArmyPosition( army_selected );
-		graphic.SetRectangle( selectRectangle, logic.ArmySize( army_selected ), (int)Textures::Structure ); // TODO: Add better texture
+		graphic.SetRectangle( selectRectangle, logic.ArmySize( army_selected ), (int)Type::Structure ); // TODO: Add better texture
 		graphic.MoveRectangle( selectRectangle, t.first, t.second );
 	}
 
@@ -64,7 +64,7 @@ void Input::Select::Input( float _x, float _y )
 			}
 			else
 			{
-				closest = logic.ClosestRectangle( _x, _y );
+				closest = logic.ClosestFarm( _x, _y );
 				if( closest.first != -1 )
 				{
 					if( glfwGetKey( GLFW_KEY_LSHIFT ) )
@@ -99,7 +99,7 @@ void Input::BuildRoad::Input( float _x, float _y )
 
 	if( create )
 	{
-		closest = logic.ClosestRectangle( _x, _y );
+		closest = logic.ClosestFarm( _x, _y );
 		if( closest.first == -1 )
 		{
 			logic.RemoveTopLine();
@@ -108,8 +108,8 @@ void Input::BuildRoad::Input( float _x, float _y )
 		else
 		{
 			to = closest.first;
-			_x = rectangles.v[to].x;
-			_y = rectangles.v[to].y;
+			_x = rectangles[ (int)Type::Farm ].v[to].x;
+			_y = rectangles[ (int)Type::Farm ].v[to].y;
 			logic.MoveTopLine( _x, _y );
 		}
 	}
@@ -126,11 +126,11 @@ void Input::BuildRoad::Input( float _x, float _y )
 	{
 		if( !create )
 		{
-			closest = logic.ClosestRectangle( _x, _y );
+			closest = logic.ClosestFarm( _x, _y );
 			if( closest.first != -1 )
 			{
 				from = closest.first;
-				logic.AddLine( rectangles.v[from].x, rectangles.v[from].y, 0, 0 );
+				logic.AddLine( rectangles[ (int)Type::Farm ].v[from].x, rectangles[ (int)Type::Farm ].v[from].y, 0, 0 );
 			}
 		}
 		create = true;
@@ -151,7 +151,7 @@ Input::BuildFarm::BuildFarm( Graphic& _graphic, Logic& _logic, float& _mouse_whe
 {
 	mouse_wheel = glfwGetMouseWheel() - graphic.GetZoom();
 	scale = 1 + mouse_wheel / 10;
-	graphic.SetRectangle( inputRectangle, scale, (int)Textures::Farm );
+	graphic.SetRectangle( inputRectangle, scale, (int)Type::Farm );
 }
 Input::BuildFarm::~BuildFarm()
 	{ graphic.SetRectangle( inputRectangle, 1, 0, false ); }
@@ -191,7 +191,7 @@ Input::BuildCity::BuildCity( Graphic& _graphic, Logic& _logic, float& _mouse_whe
 {
 	mouse_wheel = glfwGetMouseWheel() - graphic.GetZoom();
 	scale = 1 + mouse_wheel / 10;
-	graphic.SetRectangle( inputRectangle, scale, (int)Textures::City );
+	graphic.SetRectangle( inputRectangle, scale, (int)Type::City );
 }
 Input::BuildCity::~BuildCity()
 	{ graphic.SetRectangle( inputRectangle, 1, 0, false ); }
@@ -207,11 +207,11 @@ void Input::BuildCity::Input( float _x, float _y )
 	}
 
 	// Draw not completed city
-	closest = logic.ClosestRectangle( _x, _y );
+	closest = logic.ClosestFarm( _x, _y );
 	if( closest.first != -1 )
 	{
-		_x = rectangles.v[closest.first].x;
-		_y = rectangles.v[closest.first].y;
+		_x = rectangles[ (int)Type::Farm ].v[closest.first].x;
+		_y = rectangles[ (int)Type::Farm ].v[closest.first].y;
 		overlapping = logic.OverLappingCity( _x, _y, scale );
 		if( !overlapping )
 			graphic.MoveRectangle( inputRectangle, _x, _y );

@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <sstream>
+#include <map>
 #define GLFW_DLL
 #include "..\GL\include\glew.h"
 #include "..\GL\include\glfw.h"
@@ -11,8 +12,6 @@
 class Logic
 {
 private:
-	enum Type { road, farm, city };
-
 	struct Road
 	{
 		Road( int _rectangle, int _from, int _to );
@@ -109,7 +108,6 @@ public:
 	void RemoveStructure( int _rectangle );
 
 	float Distance( float _x, float _y, float __x, float __y );
-	std::pair< int, float > ClosestRectangle( float _x, float _y );
 	std::pair< int, float > ClosestFarm( float _x, float _y );
 	std::pair< int, float > ClosestCity( float _x, float _y );
 	std::pair< int, float > ClosestStructure( float _x, float _y );

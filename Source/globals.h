@@ -2,7 +2,7 @@
 
 #include <vector>
 
-enum class Textures { Farm = 1, City, Structure, Army, Road };
+enum class Type { Road, Farm, City, Structure, Army, Size };
 
 template <class T>
 struct buffer
@@ -28,13 +28,12 @@ struct buffer
 struct Rectangle
 {
 	Rectangle() {}
-	Rectangle( float _x, float _y, float _scale, int _texture, float _rotation = 0 )
-		: x(_x), y(_y), scale(_scale), texture(_texture), rotation(_rotation), used(true) {}
+	Rectangle( float _x, float _y, float _scale, float _rotation = 0 )
+		: x(_x), y(_y), scale(_scale), rotation(_rotation), used(true) {}
 	float x, y, scale, rotation;
-	int texture;
 	bool used;
 };
-extern buffer< Rectangle > rectangles;
+extern std::vector< buffer< Rectangle > > rectangles;
 
 struct Line
 {

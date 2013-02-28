@@ -7,10 +7,18 @@
 #include "..\GL\include\glew.h"
 #include "..\GL\include\glfw.h"
 #include "globals.h"
+#include "Type/farm.h"
+#include "Type/city.h"
+#include "Type/structure.h"
+#include "Type/army.h"
 
 
 class Logic
 {
+friend void Farm::Update( Logic& l, float delta_time );
+friend void City::Update( Logic& l, float delta_time );
+friend void Structure::Update( Logic& l, float delta_time, int& i );
+friend void Army::Update( Logic& l, float delta_time, int& i );
 private:
 	struct Road
 	{
@@ -21,84 +29,18 @@ private:
 	};
 	std::vector< Road > roads;
 
-	struct Farm
-	{
-		Farm( int _rectangle );
-		void Calculate();
-		operator std::string ();
-		int rectangle;
-
-		float food_storage, food_contained, food_production;
-
-		float population, population_needed;
-
-		float hunger, moral;
-	};
 	std::vector< Farm > farms;
 
-	struct City
-	{
-		City( int _rectangle, int _farm_rectangle );
-		void Calculate();
-		operator std::string ();
-		int rectangle, farm_rectangle;
-		float money_storage, money_contained, money_production;
-
-		int carts;
-		float cart_production_time, current_cart_production, cart_money;
-
-		int soldiers;
-		float soldier_production_time, current_soldier_production, soldier_money;
-
-		float population, population_needed;
-
-		float hunger, moral;
-	};
 	std::vector< City > cities;
 
-	struct Structure
-	{
-		Structure( int _rectangle, Type _type );
-		operator std::string ();
-		Type type;
-		int rectangle;
-		float food_contained;
-		float money_needed, money_supplied;
-		float production_time;
-
-		float population, population_needed;
-
-		float hunger;
-	};
 	std::vector< Structure > structures;
 
-	struct Army
-	{
-		Army( int _rectangle, int _from, int _soldiers, int _carts );
-		void Calculate();
-		operator std::string ();
-		int rectangle;
-		int soldiers;
-		int carts;
-		float storage_capacity;
-		float food_stored, money_stored;
-		float food_consumed, money_consumed;
-
-		float x, y;
-		float speed;
-		int from, to, final_to;
-		bool transporting;
-		int transporting_from, transporting_to;
-		bool stationary;
-
-		float hunger, moral;
-	};
 	std::vector< Army > armies;
 
 	double last_time;
 	float food_per_person, population_increase;
-	static float L( float _x ) { return _x < 0 ? -_x: _x; }
 	int CalculatePathTo( Army& _a, int _to );
+	static float L( float _x ) { return _x < 0 ? -_x: _x; }
 public:
 	void BuildCarts( int _rectangle, int _amount );
 	void BuildSoldiers( int _rectangle, int _amount );

@@ -2,7 +2,7 @@
 
 #include <vector>
 
-enum class Type { Road, Farm, City, Structure, Army, Size };
+enum class Type { Road, Farm, City, Army, Structure, Size };
 
 template <class T>
 struct buffer

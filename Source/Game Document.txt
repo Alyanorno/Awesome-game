@@ -2,6 +2,7 @@ Step 1: Base
 DONE: Restructure graphic based on types
 Refine interface for construction of units
 Refine interface for supply management
+Add ability to move population
 Add ability to select cities and farms
 Add pathfinding and faster or only movement if on road
 Add road construction
@@ -20,13 +21,14 @@ Add resource system
 	Resources
 		Tree
 		Rock
+		#Iron
 		#Fertile soil
 Limit construction further
 	No farm/city on mountain
 	No road on mountain
 Population system
-	Increase based on birth rate
-	Decrease based on mortality rate
+	DONE: Efficency based on number of people
+	DONE: Increase
 	Solve inbalances by migration
 #Seasons
 
@@ -59,6 +61,7 @@ Logic
 				Food and Money storage
 		Road
 		Units
+			--Citicens
 			Soldiers
 				Food and/or Money storage
 			Carts

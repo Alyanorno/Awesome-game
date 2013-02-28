@@ -20,16 +20,16 @@ void Input::Select::Input( float _x, float _y )
 
 	closest = logic.ClosestArmy( _x, _y );
 	if( closest.first != - 1 && closest.second <= 5 )
-		temp = temp + logic.GetArmyInfo( closest.first );
+		temp = temp + logic.GetInfo( closest.first, Type::Army );
 
 	closest = logic.ClosestFarm( _x, _y );
 	if( closest.first != - 1 && closest.second <= rectangles[ (int)Type::Farm ].v[closest.first].scale )
-		temp = temp + logic.GetInfo( closest.first );
+		temp = temp + logic.GetInfo( closest.first, Type::Farm );
 
 	closest = logic.ClosestCity( _x, _y );
 	if( closest.first != - 1 && closest.second <= rectangles[ (int)Type::City ].v[closest.first].scale )
 	{
-		temp = temp + logic.GetInfo( closest.first );
+		temp = temp + logic.GetInfo( closest.first, Type::City );
 		if( glfwGetKey( 'E' ) )
 			logic.BuildSoldiers( closest.first, 1 );
 		if( glfwGetKey( 'R' ) )
@@ -38,7 +38,7 @@ void Input::Select::Input( float _x, float _y )
 
 	closest = logic.ClosestStructure( _x, _y );
 	if( closest.first != - 1 && closest.second <= rectangles[ (int)Type::Structure ].v[closest.first].scale )
-		temp = temp + logic.GetInfo( closest.first );
+		temp = temp + logic.GetInfo( closest.first, Type::Structure );
 
 
 	graphic.RemoveTopText();

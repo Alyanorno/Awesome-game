@@ -27,9 +27,12 @@ private:
 		void Calculate();
 		operator std::string ();
 		int rectangle;
-		float food_storage;
-		float food_contained;
-		float food_production;
+
+		float food_storage, food_contained, food_production;
+
+		float population, population_needed;
+
+		float hunger, moral;
 	};
 	std::vector< Farm > farms;
 
@@ -39,20 +42,17 @@ private:
 		void Calculate();
 		operator std::string ();
 		int rectangle, farm_rectangle;
-		float money_storage;
-		float money_contained;
-		float money_production;
-		float food_consumed;
+		float money_storage, money_contained, money_production;
 
 		int carts;
-		float cart_production_time;
-		float current_cart_production;
-		float cart_money;
+		float cart_production_time, current_cart_production, cart_money;
 
 		int soldiers;
-		float soldier_production_time;
-		float current_soldier_production;
-		float soldier_money;
+		float soldier_production_time, current_soldier_production, soldier_money;
+
+		float population, population_needed;
+
+		float hunger, moral;
 	};
 	std::vector< City > cities;
 
@@ -62,14 +62,19 @@ private:
 		operator std::string ();
 		Type type;
 		int rectangle;
+		float food_contained;
 		float money_needed, money_supplied;
 		float production_time;
+
+		float population, population_needed;
+
+		float hunger;
 	};
 	std::vector< Structure > structures;
 
 	struct Army
 	{
-		Army( int _rectangle, int _soldiers, int _carts );
+		Army( int _rectangle, int _from, int _soldiers, int _carts );
 		void Calculate();
 		operator std::string ();
 		int rectangle;
@@ -85,10 +90,13 @@ private:
 		bool transporting;
 		int transporting_from, transporting_to;
 		bool stationary;
+
+		float hunger, moral;
 	};
 	std::vector< Army > armies;
 
 	double last_time;
+	float food_per_person, population_increase;
 	static float L( float _x ) { return _x < 0 ? -_x: _x; }
 	int CalculatePathTo( Army& _a, int _to );
 public:
@@ -116,8 +124,7 @@ public:
 	bool OverLappingFarm( float _x, float _y, float _scale );
 	bool OverLappingCity( float _x, float _y, float _scale );
 
-	std::string GetInfo( int _rectangle );
-	std::string GetArmyInfo( int _x );
+	std::string GetInfo( int _rectangle, Type _t );
 
 	void ArmyTo( int _army, int _to );
 	void ArmyTransport( int _army, int _to );

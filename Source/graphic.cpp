@@ -117,7 +117,7 @@ void Graphic::DrawText( glm::mat4& projectionMatrix )
 	{
 		std::string& s(t.s);
 		glm::mat4 modelMatrix( glm::mat4( 1.0f ) );
-		modelMatrix[3][2] = 0.005;
+		modelMatrix[3][2] = 0.05;
 		for( int i(0), next_char(0), new_line(0); i < t.s.size(); i++ )
 		{
 			if( s[i] == ' ' )
@@ -348,15 +348,15 @@ void Graphic::Initialize()
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
 	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
 
-	t.LoadBmp( "structure.bmp" );
-	assert( i == (int)Type::Structure );
+	t.LoadBmp( "army.bmp" );
+	assert( i == (int)Type::Army );
 	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
 	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
 
-	t.LoadBmp( "army.bmp" );
-	assert( i == (int)Type::Army );
+	t.LoadBmp( "structure.bmp" );
+	assert( i == (int)Type::Structure );
 	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
@@ -481,7 +481,6 @@ void Graphic::Update()
 	glUseProgram( shaderProgram );
 	glUniformMatrix4fv( glGetUniformLocation(shaderProgram, "projectionMatrix"), 1, GL_FALSE, &projectionMatrix[0][0] );
 
-	small_difference = -0.3f;
 	if( inputTextures[0] == (int)Type::Farm )
 	{
 		glBindTexture( GL_TEXTURE_2D, glTexture[ inputTextures[0] ] );

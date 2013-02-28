@@ -19,24 +19,27 @@ void Logic::Road::Calculate()
 	r.rotation = atan( (to_r.x - from_r.x) / (to_r.y - from_r.y) ) * 180 / 3.14159;
 }
 
-Logic::Farm::Farm( int _rectangle ) : rectangle(_rectangle), food_contained(0)
+Logic::Farm::Farm( int _rectangle ) : rectangle(_rectangle), food_contained(0), hunger(0)
 {
 	Calculate();
 }
 void Logic::Farm::Calculate()
 {
 	float size = 3.14159 * rectangles[ (int)Type::Farm ].v[rectangle].scale * rectangles[ (int)Type::Farm ].v[rectangle].scale;
-	food_storage = size * 100;
-	food_production = size;
+	food_storage = size * 1000;
+	food_production = size * 10;
+
+	population_needed = size * 100;
+	population = population_needed; // temp
 }
 Logic::Farm::operator std::string()
 {
 	std::stringstream s;
-	s << "FARM " << rectangle << std::endl << (int)(food_contained+.5f) << "/" << (int)(food_storage+.5f) << "#" << std::endl << "+" << (int)(food_production+.5f) << "#/S" << std::endl;
+	s << "FARM " << rectangle << std::endl << (int)(food_contained+.5f) << "/" << (int)(food_storage+.5f) << "#" << std::endl << "+" << (int)(food_production+.5f) << "#/S" << std::endl << (int)(population+.5f) << "/" << (int)(population_needed+.5f) << " PEOPLE" << std::endl;
 	return s.str();
 }
 
-Logic::City::City( int _rectangle, int _farm_rectangle ) : rectangle(_rectangle), farm_rectangle(_farm_rectangle), money_contained(0), carts(0), cart_production_time(1), current_cart_production( cart_production_time ), cart_money(1), soldiers(0), soldier_production_time(1), current_soldier_production( soldier_production_time ), soldier_money(1)
+Logic::City::City( int _rectangle, int _farm_rectangle ) : rectangle(_rectangle), farm_rectangle(_farm_rectangle), money_contained(0), carts(0), cart_production_time(1), current_cart_production( cart_production_time ), cart_money(1), soldiers(0), soldier_production_time(1), current_soldier_production( soldier_production_time ), soldier_money(1), hunger(0)
 {
 	Calculate();
 }
@@ -45,19 +48,21 @@ void Logic::City::Calculate()
 	float size = 3.14159 * rectangles[ (int)Type::City ].v[rectangle].scale * rectangles[ (int)Type::City ].v[rectangle].scale;
 	money_storage = size * 10;
 	money_production = size * 2;
-	food_consumed = size * 2;
 
 	//temp
 	soldiers = 10;
+
+	population_needed = size * 100;
+	population = population_needed; // temp
 }
 Logic::City::operator std::string()
 {
 	std::stringstream s;
-	s << "CITY " << rectangle << std::endl << (int)(money_contained+.5f) << "/" << (int)(money_storage+.5f) << "$" << std::endl << "+" << (int)(money_production+.5f) << "$/S" << std::endl << "-" << (int)(food_consumed+.5f) << "#/S" << std::endl << soldiers << " SOLDIERS IN PRODUCTION" << std::endl << carts << " CARTS IN PRODUCTION" << std::endl;
+	s << "CITY " << rectangle << std::endl << (int)(money_contained+.5f) << "/" << (int)(money_storage+.5f) << "$" << std::endl << "+" << (int)(money_production+.5f) << "$/S" << std::endl << std::endl << soldiers << " SOLDIERS IN PRODUCTION" << std::endl << carts << " CARTS IN PRODUCTION" << std::endl << (int)(population+.5f) << "/" << (int)(population_needed+.5f) << " PEOPLE" << std::endl;
 	return s.str();
 }
 
-Logic::Structure::Structure( int _rectangle, Type _type ) : rectangle(_rectangle), type(_type), money_supplied(0)
+Logic::Structure::Structure( int _rectangle, Type _type ) : rectangle(_rectangle), type(_type), money_supplied(0), hunger(0)
 {
 	float size = 3.14159 * rectangles[ (int)Type::Structure ].v[rectangle].scale * rectangles[ (int)Type::Structure ].v[rectangle].scale;
 	switch( type )
@@ -77,18 +82,21 @@ Logic::Structure::Structure( int _rectangle, Type _type ) : rectangle(_rectangle
 			throw std::string( "Invalid type for construction: " + std::to_string( (int)_type ) );
 	}
 
-	// temp
-	money_supplied = money_needed;
+	money_supplied = money_needed; // temp
+
+	population_needed = size * 100;
+	population = population_needed; // temp
 }
 Logic::Structure::operator std::string()
 {
 	std::stringstream s;
-	s << "STRUCTURE" << std::endl << (int)(money_supplied+.5f) << "/" << (int)(money_needed+.5f) << "$" << std::endl << (int)(production_time+.5f) << " PRODUCTION TIME" << std::endl;
+	s << "STRUCTURE" << std::endl << (int)(money_supplied+.5f) << "/" << (int)(money_needed+.5f) << "$" << std::endl << (int)(production_time+.5f) << " PRODUCTION TIME" << std::endl << (int)(population+.5f) << "/" << (int)(population_needed+.5f) << " PEOPLE" << std::endl;
 	return s.str();
 }
 
-Logic::Army::Army( int _rectangle, int _soldiers, int _carts ) : rectangle(_rectangle), soldiers(_soldiers), carts(_carts), food_stored(0), money_stored(0), food_consumed(0.1), money_consumed(0.1), speed(1), transporting(false), stationary(true)
+Logic::Army::Army( int _rectangle, int _from, int _soldiers, int _carts ) : rectangle(_rectangle), soldiers(_soldiers), carts(_carts), food_stored(0), money_stored(0), food_consumed(0.1), money_consumed(0.1), speed(1), transporting(false), stationary(true), hunger(0)
 {
+	from = _from;
 	x = rectangles[ (int)Type::Army ].v[rectangle].x;
 	y = rectangles[ (int)Type::Army ].v[rectangle].y;
 	Calculate();
@@ -261,18 +269,8 @@ std::pair< int, float > Logic::ClosestFarm( float _x, float _y )
 		float t = Distance( _x, _y, rectangles[ (int)Type::Farm ].v[i].x, rectangles[ (int)Type::Farm ].v[i].y );
 		if( t < distance )
 		{
-			bool farm = false;
-			for each( Farm f in farms )
-				if( f.rectangle == i )
-				{
-					farm = true;
-					break;
-				}
-			if( farm )
-			{
-				distance = t;
-				closest = i; 
-			}
+			distance = t;
+			closest = i; 
 		}
 	}
 	return std::make_pair( closest, distance );
@@ -286,18 +284,8 @@ std::pair< int, float > Logic::ClosestCity( float _x, float _y )
 		float t = Distance( _x, _y, rectangles[ (int)Type::City ].v[i].x, rectangles[ (int)Type::City ].v[i].y );
 		if( t < distance )
 		{
-			bool city = false;
-			for each( City c in cities )
-				if( c.rectangle == i )
-				{
-					city = true;
-					break;
-				}
-			if( city )
-			{
-				distance = t;
-				closest = i; 
-			}
+			distance = t;
+			closest = i; 
 		}
 	}
 	return std::make_pair( closest, distance );
@@ -366,22 +354,30 @@ bool Logic::OverLappingCity( float _x, float _y, float _scale )
 }
 
 
-std::string Logic::GetInfo( int _rectangle )
+std::string Logic::GetInfo( int _rectangle, Type _t )
 {
-	for each( Structure s in structures )
-		if( s.rectangle == _rectangle )
-			return s;
-	for each( Farm f in farms )
-		if( f.rectangle == _rectangle )
-			return f;
-	for each( City c in cities )
-		if( c.rectangle == _rectangle )
-			return c;
+	switch( _t )
+	{
+		case Type::Structure:
+			for each( Structure s in structures )
+				if( s.rectangle == _rectangle )
+					return s;
+			break;
+		case Type::Farm:
+			for each( Farm f in farms )
+				if( f.rectangle == _rectangle )
+					return f;
+			break;
+		case Type::City:
+			for each( City c in cities )
+				if( c.rectangle == _rectangle )
+					return c;
+			break;
+		case Type::Army:
+			return armies[_rectangle];
+			break;
+	}
 	return "NO INFO";
-}
-std::string Logic::GetArmyInfo( int _x )
-{
-	return armies[_x];
 }
 
 
@@ -452,6 +448,8 @@ bool Logic::TopLineEqualsOtherLine()
 void Logic::Initialize()
 {
 	last_time = glfwGetTime();
+	food_per_person = 0.01f;
+	population_increase = 0.01f;
 	int t = rectangles[ (int)Type::Farm ].insert( Rectangle( 0, 0, 1 ) );
 	farms.push_back( Farm( t ) );
 }
@@ -469,23 +467,43 @@ void Logic::Update()
 	for( int i(0); i < farms.size(); i++ )
 	{
 		Farm& f( farms[i] );
-		f.food_contained += f.food_production * delta_time;
+		float efficency = f.population / f.population_needed;
+		if( efficency > 1.f )
+			efficency = 1.f;
+
+		f.food_contained += f.food_production * delta_time * efficency;
+		if( f.hunger > 0 )
+		{
+			f.food_contained -= f.hunger;
+			f.hunger = 0;
+		}
+		f.food_contained -= food_per_person * f.population * delta_time;
 		if( f.food_contained > f.food_storage )
 			f.food_contained = f.food_storage;
+
+		f.population += f.population * population_increase * delta_time;
 	}
 	for( int i(0); i < cities.size(); i++ )
 	{
 		City& c( cities[i] );
-		for( int j(0); j < farms.size(); j++ )
+		float efficency = c.population / c.population_needed;
+		if( efficency > 1.f )
+			efficency = 1.f;
+
+		int j = 0;
+		for( ; j < farms.size(); j++ )
 		{
 			Farm& f( farms[j] );
 			if( f.rectangle == c.farm_rectangle )
 			{
 				if( f.food_contained <= 0 )
-					break;
-				f.food_contained -= c.food_consumed * delta_time;
-				
-				c.money_contained += c.money_production * delta_time;
+				{
+					c.hunger -= food_per_person * c.population * delta_time;
+				}
+				else
+					f.food_contained -= food_per_person * c.population * delta_time;
+
+				c.money_contained += c.money_production * delta_time * efficency;
 				if( c.money_contained > c.money_storage )
 					c.money_contained = c.money_storage;
 				break;
@@ -495,20 +513,20 @@ void Logic::Update()
 			continue;
 		if( c.carts )
 		{
-			c.money_contained -= c.cart_money * delta_time;
-			c.current_cart_production -= delta_time;
+			c.money_contained -= c.cart_money * delta_time * efficency;
+			c.current_cart_production -= delta_time * efficency;
 			if( c.current_cart_production <= 0 )
 			{
 				float x = rectangles[ (int)Type::City ].v[c.rectangle].x;
 				float y = rectangles[ (int)Type::City ].v[c.rectangle].y;
 				bool army_in_city = false;
-				for( int j(0); j < armies.size(); j++ )
+				for( int k(0); k < armies.size(); k++ )
 				{
-					if( armies[j].x == x && armies[j].y == y )
+					if( armies[k].x == x && armies[k].y == y )
 					{
 						army_in_city = true;
-						armies[j].carts++;
-						armies[j].Calculate();
+						armies[k].carts++;
+						armies[k].Calculate();
 						break;
 					}
 				}
@@ -516,7 +534,7 @@ void Logic::Update()
 				if( !army_in_city )
 				{
 					int t = rectangles[ (int)Type::Army ].insert( Rectangle( x, y, 1 ) );
-					armies.push_back( Army( t, 0, 1 ) );
+					armies.push_back( Army( t, j, 0, 1 ) );
 				}
 				c.current_cart_production = c.soldier_production_time;
 				c.carts--;
@@ -524,20 +542,20 @@ void Logic::Update()
 		}
 		if( c.soldiers )
 		{
-			c.money_contained -= c.soldier_money * delta_time;
-			c.current_soldier_production -= delta_time;
+			c.money_contained -= c.soldier_money * delta_time * efficency;
+			c.current_soldier_production -= delta_time * efficency;
 			if( c.current_soldier_production <= 0 )
 			{
 				float x = rectangles[ (int)Type::City ].v[c.rectangle].x;
 				float y = rectangles[ (int)Type::City ].v[c.rectangle].y;
 				bool army_in_city = false;
-				for( int j(0); j < armies.size(); j++ )
+				for( int k(0); k < armies.size(); k++ )
 				{
-					if( armies[j].x == x && armies[j].y == y )
+					if( armies[k].x == x && armies[k].y == y )
 					{
 						army_in_city = true;
-						armies[j].soldiers++;
-						armies[j].Calculate();
+						armies[k].soldiers++;
+						armies[k].Calculate();
 						break;
 					}
 				}
@@ -545,21 +563,35 @@ void Logic::Update()
 				if( !army_in_city )
 				{
 					int t = rectangles[ (int)Type::Army ].insert( Rectangle( x, y, 1 ) );
-					armies.push_back( Army( t, 1, 0 ) );
+					armies.push_back( Army( t, j, 1, 0 ) );
 				}
 				c.current_soldier_production = c.soldier_production_time;
 				c.soldiers--;
 			}
 		}
+		c.population += c.population * population_increase * delta_time;
 	}
 	for( int i(0); i < structures.size(); i++ )
 	{
 		Structure& s( structures[i] );
 		if( s.money_supplied <= -0.001 )
 			continue;
-		s.production_time -= delta_time;
-		s.money_supplied -= (s.money_needed / s.production_time) * delta_time;
-		s.money_needed -= (s.money_needed / s.production_time) * delta_time;
+
+		float efficency = s.population / s.population_needed;
+		if( efficency > 1.f )
+			efficency = 1.f;
+
+		s.production_time -= delta_time * efficency;
+		s.money_supplied -= (s.money_needed / s.production_time) * delta_time * efficency;
+		s.money_needed -= (s.money_needed / s.production_time) * delta_time * efficency;
+
+		if( s.hunger > 0 )
+		{
+			s.food_contained -= s.hunger;
+			s.hunger = 0;
+		}
+		s.food_contained -= food_per_person * s.population * delta_time;
+
 
 		int t;
 		Rectangle r;
@@ -592,6 +624,7 @@ void Logic::Update()
 			structures.erase( structures.begin() + i );
 			i--;
 		}
+		s.population += s.population * population_increase * delta_time;
 	}
 	for( int i(0); i < armies.size(); i++ )
 	{
@@ -681,14 +714,36 @@ void Logic::Update()
 			a.Calculate();
 		}
 
-		// TODO: If in city or on farm, take food from city or farm instead.
-		if( a.food_stored <= 0 )
+		// If on farm, take food from farm.
+		int farm = 0;
+		bool on_farm = false;
+		if( !a.stationary )
+			for( ; farm < farms.size(); farm++ )
+				if( a.from == farms[farm].rectangle )
+				{
+					on_farm = true;
+					break;
+				}
+		if( a.stationary && on_farm )
 		{
-			// TODO: Start the starving... muahahahaha.
+			if( a.hunger > 0 )
+			{
+				farms[farm].food_contained -= a.hunger;
+			}
+			farms[farm].food_contained -= a.food_consumed * delta_time;
 		}
 		else
-			a.food_stored -= a.food_consumed * delta_time;
-			
+			if( a.food_stored <= 0 )
+			{
+				a.hunger += a.food_consumed * delta_time;
+				if( a.hunger > 1000 ) // TODO: Change random number to be less random
+				{
+					// TODO: Start the starving... muahahahaha.
+				}
+			}
+			else
+				a.food_stored -= a.food_consumed * delta_time;
+		
 		if( a.money_stored <= 0 )
 		{
 			// TODO: They dont like you... MUTINY.

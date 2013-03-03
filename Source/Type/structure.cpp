@@ -2,7 +2,7 @@
 #include "../logic.h"
 
 
-Structure::Structure( int _rectangle, Type _type ) : rectangle(_rectangle), type(_type), money_supplied(0), hunger(0)
+Structure::Structure( int _rectangle, Type _type ) : rectangle(_rectangle), type(_type), food_contained(0), money_supplied(0), hunger(0)
 {
 	float size = 3.14159 * rectangles[ (int)Type::Structure ].v[rectangle].scale * rectangles[ (int)Type::Structure ].v[rectangle].scale;
 	switch( type )
@@ -26,6 +26,7 @@ Structure::Structure( int _rectangle, Type _type ) : rectangle(_rectangle), type
 
 	population_needed = size * 100;
 	population = population_needed; // temp
+	food_contained = population * 1000; // temp
 }
 
 Structure::operator std::string()
@@ -47,14 +48,6 @@ void Structure::Update( Logic& l, float delta_time, int& i )
 	production_time -= delta_time * efficency;
 	money_supplied -= (money_needed / production_time) * delta_time * efficency;
 	money_needed -= (money_needed / production_time) * delta_time * efficency;
-
-	if( hunger > 0 )
-	{
-		food_contained -= hunger;
-		hunger = 0;
-	}
-	food_contained -= l.food_per_person * population * delta_time;
-
 
 	int t;
 	Rectangle r;
@@ -87,6 +80,6 @@ void Structure::Update( Logic& l, float delta_time, int& i )
 		l.structures.erase( l.structures.begin() + i );
 		i--;
 	}
-	population += population * l.population_increase * delta_time;
+	l.PopulationCalculations( food_contained, population, hunger, delta_time );
 }
 

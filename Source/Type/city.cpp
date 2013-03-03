@@ -52,66 +52,48 @@ void City::Update( Logic& l, float delta_time )
 			break;
 		}
 	}
-	if( money_contained <= 0 )
-		return;
-	if( carts )
-	{
-		money_contained -= cart_money * delta_time * efficency;
-		current_cart_production -= delta_time * efficency;
-		if( current_cart_production <= 0 )
-		{
-			float x = rectangles[ (int)Type::City ].v[rectangle].x;
-			float y = rectangles[ (int)Type::City ].v[rectangle].y;
-			bool army_in_city = false;
-			for( int k(0); k < l.armies.size(); k++ )
-			{
-				if( l.armies[k].x == x && l.armies[k].y == y )
-				{
-					army_in_city = true;
-					l.armies[k].carts++;
-					l.armies[k].Calculate();
-					break;
-				}
-			}
-
-			if( !army_in_city )
-			{
-				int t = rectangles[ (int)Type::Army ].insert( Rectangle( x, y, 1 ) );
-				l.armies.push_back( Army( t, j, 0, 1 ) );
-			}
-			current_cart_production = soldier_production_time;
-			carts--;
-		}
+#define PRODUCE( NAME, SOLDIER, CART ) \
+	if( NAME##s ) \
+	{ \
+		money_contained -= NAME##_money * delta_time * efficency; \
+		current_##NAME##_production -= delta_time * efficency; \
+		if( current_##NAME##_production <= 0 ) \
+		{ \
+			float x = rectangles[ (int)Type::City ].v[rectangle].x; \
+			float y = rectangles[ (int)Type::City ].v[rectangle].y; \
+			bool army_in_city = false; \
+			for( int k(0); k < l.armies.size(); k++ ) \
+			{ \
+				if( l.armies[k].x == x && l.armies[k].y == y ) \
+				{ \
+					army_in_city = true; \
+					l.armies[k].##NAME##s++; \
+					l.armies[k].Calculate(); \
+					break; \
+				} \
+			} \
+			\
+			if( !army_in_city ) \
+			{ \
+				int t = rectangles[ (int)Type::Army ].insert( Rectangle( x, y, 1 ) ); \
+				l.armies.push_back( Army( t, j, SOLDIER, CART ) ); \
+			} \
+			current_##NAME##_production = NAME##_production_time; \
+			NAME##s--; \
+		} \
 	}
-	if( soldiers )
+	if( money_contained > 0 )
 	{
-		money_contained -= soldier_money * delta_time * efficency;
-		current_soldier_production -= delta_time * efficency;
-		if( current_soldier_production <= 0 )
-		{
-			float x = rectangles[ (int)Type::City ].v[rectangle].x;
-			float y = rectangles[ (int)Type::City ].v[rectangle].y;
-			bool army_in_city = false;
-			for( int k(0); k < l.armies.size(); k++ )
-			{
-				if( l.armies[k].x == x && l.armies[k].y == y )
-				{
-					army_in_city = true;
-					l.armies[k].soldiers++;
-					l.armies[k].Calculate();
-					break;
-				}
-			}
-
-			if( !army_in_city )
-			{
-				int t = rectangles[ (int)Type::Army ].insert( Rectangle( x, y, 1 ) );
-				l.armies.push_back( Army( t, j, 1, 0 ) );
-			}
-			current_soldier_production = soldier_production_time;
-			soldiers--;
-		}
+		PRODUCE( cart, 0, 1 );
+		PRODUCE( soldier, 1, 0 );
 	}
-	population += population * l.population_increase * delta_time;
+#undef PRODUCE
+
+	int k = 0;
+	for( ; k < l.farms.size(); k++ )
+		if( l.farms[k].rectangle == farm_rectangle )
+			break;
+	float& food_contained( l.farms[k].food_contained );
+	l.PopulationCalculations( food_contained, population, hunger, delta_time );
 }
 

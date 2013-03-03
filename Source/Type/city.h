@@ -20,7 +20,7 @@ struct City
 
 	float population, population_needed;
 
-	float hunger, moral;
+	float hunger;
 
 	City( int _rectangle, int _farm_rectangle );
 	operator std::string ();

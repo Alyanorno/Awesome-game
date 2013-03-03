@@ -21,7 +21,7 @@ struct Army
 	int transporting_from, transporting_to;
 	bool stationary;
 
-	float hunger, moral;
+	float hunger;
 
 	Army( int _rectangle, int _from, int _soldiers, int _carts );
 	operator std::string ();

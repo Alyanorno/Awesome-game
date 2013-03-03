@@ -28,13 +28,9 @@ private:
 		float length;
 	};
 	std::vector< Road > roads;
-
 	std::vector< Farm > farms;
-
 	std::vector< City > cities;
-
 	std::vector< Structure > structures;
-
 	std::vector< Army > armies;
 
 	double last_time;
@@ -67,6 +63,8 @@ public:
 	bool OverLappingCity( float _x, float _y, float _scale );
 
 	std::string GetInfo( int _rectangle, Type _t );
+
+	void PopulationCalculations( float& _food_contained, float& _population, float& _hunger, float _delta_time );
 
 	void ArmyTo( int _army, int _to );
 	void ArmyTransport( int _army, int _to );

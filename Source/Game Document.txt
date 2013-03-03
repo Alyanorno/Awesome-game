@@ -1,6 +1,6 @@
 Step 1: Base
 DONE: Restructure graphic based on types
-DONE: Universal interface system
+DONE: Interface system
 Refine interface for construction of units
 Refine interface for supply management
 Add ability to move population
@@ -10,7 +10,7 @@ Add road construction
 
 
 Step 2: System
-Implement starving
+DONE: Implement starving
 Add resource system
 	Add map
 	Add forest

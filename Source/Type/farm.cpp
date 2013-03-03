@@ -27,17 +27,8 @@ void Farm::Update( Logic& l, float delta_time )
 	float efficency = population / population_needed;
 	if( efficency > 1.f )
 		efficency = 1.f;
-
 	food_contained += food_production * delta_time * efficency;
-	if( hunger > 0 )
-	{
-		food_contained -= hunger;
-		hunger = 0;
-	}
-	food_contained -= l.food_per_person * population * delta_time;
-	if( food_contained > food_storage )
-		food_contained = food_storage;
 
-	population += population * l.population_increase * delta_time;
+	l.PopulationCalculations( food_contained, population, hunger, delta_time );
 }
 

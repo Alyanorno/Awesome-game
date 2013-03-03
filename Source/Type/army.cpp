@@ -2,7 +2,7 @@
 #include "../Logic.h"
 
 
-Army::Army( int _rectangle, int _from, int _soldiers, int _carts ) : rectangle(_rectangle), soldiers(_soldiers), carts(_carts), food_stored(0), money_stored(0), food_consumed(0.1), money_consumed(0.1), speed(1), transporting(false), stationary(true), hunger(0)
+Army::Army( int _rectangle, int _from, int _soldiers, int _carts ) : rectangle(_rectangle), soldiers(_soldiers), carts(_carts), food_stored(0), money_stored(0), speed(1), transporting(false), stationary(true), hunger(0)
 {
 	from = _from;
 	x = rectangles[ (int)Type::Army ].v[rectangle].x;
@@ -13,6 +13,8 @@ Army::Army( int _rectangle, int _from, int _soldiers, int _carts ) : rectangle(_
 void Army::Calculate()
 {
 	storage_capacity = soldiers * 1 + carts * 10;
+	food_consumed = (float)(soldiers + carts) * 0.04f;
+	money_consumed = (float)soldiers * 0.01f;
 	rectangles[ (int)Type::Army ].v[rectangle].x = x;
 	rectangles[ (int)Type::Army ].v[rectangle].y = y;
 	rectangles[ (int)Type::Army ].v[rectangle].scale = sqrt( (soldiers + carts) / 3.14159 );
@@ -21,7 +23,7 @@ void Army::Calculate()
 Army::operator std::string()
 {
 	std::stringstream s;
-	s << "ARMY" << std::endl << (int)(soldiers+.5f) << " SOLDIERS " << (int)(carts+.5f) << " CARTS" << std::endl << (int)(food_stored+.5f) << "# " << (int)(money_stored+.5f) << "$" << std::endl;
+	s << "ARMY" << std::endl << (int)(soldiers+.5f) << " SOLDIERS " << (int)(carts+.5f) << " CARTS" << std::endl << (int)(food_stored+.5f) << "# " << (int)(money_stored+.5f) << "$" << std::endl << hunger << " HUNGER" << std::endl;
 	return s.str();
 }
 
@@ -92,6 +94,8 @@ void Army::Update( Logic& l, float delta_time, int& i )
 							carts += l.armies[j].carts;
 							rectangles[ (int)Type::Army ].erase( l.armies[j].rectangle );
 							l.armies.erase( l.armies.begin() + j );
+							if( j < i )
+								i--;
 							break;
 						}
 					from = to;
@@ -115,7 +119,7 @@ void Army::Update( Logic& l, float delta_time, int& i )
 	// If on farm, take food from farm.
 	int farm = 0;
 	bool on_farm = false;
-	if( !stationary )
+	if( stationary )
 		for( ; farm < l.farms.size(); farm++ )
 			if( from == l.farms[farm].rectangle )
 			{
@@ -127,6 +131,7 @@ void Army::Update( Logic& l, float delta_time, int& i )
 		if( hunger > 0 )
 		{
 			l.farms[farm].food_contained -= hunger;
+			hunger = 0;
 		}
 		l.farms[farm].food_contained -= food_consumed * delta_time;
 	}
@@ -134,9 +139,25 @@ void Army::Update( Logic& l, float delta_time, int& i )
 		if( food_stored <= 0 )
 		{
 			hunger += food_consumed * delta_time;
-			if( hunger > 1000 ) // TODO: Change random number to be less random
+			float limit = soldiers + carts;
+			if( hunger > limit )
 			{
-				// TODO: Start the starving... muahahahaha.
+				// Start the starving... muahahahaha.
+				if( soldiers )
+					soldiers -= soldiers * 0.1 <= 1 ? 1: soldiers * 0.1;
+				if( carts )
+					carts -= carts * 0.2 <= 1 ? 1: carts * 0.1;
+				limit = soldiers + carts;
+				hunger = limit - limit / 10;
+				Calculate();
+
+				if( soldiers + carts < 1 )
+				{
+					rectangles[ (int)Type::Army ].erase( l.armies[i].rectangle );
+					l.armies.erase( l.armies.begin() + i );
+					i--;
+					return;
+				}
 			}
 		}
 		else

@@ -15,7 +15,7 @@ void Logic::Road::Calculate()
 
 	length = sqrt( pow( L(to_r.x - from_r.x), 2 ) + pow( L(to_r.y - from_r.y), 2 ) );
 	r.scale_x = length;
-	r.scale = 1;
+	r.scale = 0.5f;
 
 	r.rotation = atan2( (to_r.x - from_r.x), (to_r.y - from_r.y) ) * (180 / 3.14159);
 }
@@ -287,6 +287,34 @@ std::string Logic::GetInfo( int _rectangle, Type _t )
 	return "NO INFO";
 }
 
+void Logic::PopulationCalculations( float& _food_contained, float& _population, float& _hunger, float _delta_time )
+{
+	if( _hunger > 0 && _food_contained > _hunger )
+	{
+		_food_contained -= _hunger;
+		_hunger = 0;
+	}
+	_food_contained -= food_per_person * _population * _delta_time;
+	if( _food_contained < 0 )
+	{
+		_hunger -= _food_contained;
+		_food_contained = 0;
+	}
+	float limit = _population / 10;
+	if( _hunger > limit )
+	{
+		if( _population > 200 )
+			_population *= 0.9;
+		else
+			_population -= 10;
+		if( _population < 1 )
+			_population = 0;
+		limit = _population / 10;
+		_hunger = limit - limit / 10;
+	}
+
+	_population += _population * population_increase * _delta_time;
+}
 
 void Logic::ArmyTo( int _army, int _to )
 {
@@ -356,7 +384,7 @@ void Logic::Initialize()
 {
 	last_time = glfwGetTime();
 	food_per_person = 0.01f;
-	population_increase = 0.01f;
+	population_increase = 0.001f;
 	int t = rectangles[ (int)Type::Farm ].insert( Rectangle( 0, 0, 1 ) );
 	farms.push_back( Farm( t ) );
 }

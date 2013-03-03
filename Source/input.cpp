@@ -49,8 +49,10 @@ void Input::Select::Input( float _x, float _y )
 	if( lock )
 	{
 		std::pair<float,float> t = logic.ArmyPosition( army_selected );
-		select_rectangle = graphic.AddRectangle( (int)Type::Structure, logic.ArmySize( army_selected ) ); // TODO: Add better texture
+		if( select_rectangle == -1 )
+			select_rectangle = graphic.AddRectangle( (int)Type::Structure, logic.ArmySize( army_selected ) ); // TODO: Add better texture
 		graphic.MoveRectangle( select_rectangle, t.first, t.second );
+		graphic.ResizeRectangle( select_rectangle, logic.ArmySize( army_selected ) );
 	}
 
 	if( glfwGetMouseButton( GLFW_MOUSE_BUTTON_1 ) )
@@ -74,7 +76,8 @@ void Input::Select::Input( float _x, float _y )
 					else
 						logic.ArmyTo( army_selected, closest.first );
 				}
-				graphic.RemoveRectangle( select_rectangle );
+				if( select_rectangle != -1 )
+					graphic.RemoveRectangle( select_rectangle );
 				select_rectangle = -1;
 				lock = false;
 			}
@@ -83,7 +86,8 @@ void Input::Select::Input( float _x, float _y )
 	}
 	else if( glfwGetMouseButton( GLFW_MOUSE_BUTTON_2 ) )
 	{
-		graphic.RemoveRectangle( select_rectangle );
+		if( select_rectangle != -1 )
+			graphic.RemoveRectangle( select_rectangle );
 		select_rectangle = -1;
 		lock = false;
 	}

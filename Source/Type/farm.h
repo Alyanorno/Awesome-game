@@ -11,7 +11,7 @@ struct Farm
 
 	float food_storage, food_contained, food_production;
 	float population, population_needed;
-	float hunger, moral;
+	float hunger;
 
 	Farm( int _rectangle );
 	operator std::string ();

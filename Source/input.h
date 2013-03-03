@@ -36,6 +36,7 @@ private:
 	{
 		int army_selected;
 		bool lock;
+		int select_rectangle;
 		Select( Graphic& _graphic, Logic& _logic, float& _mouse_wheel );
 		~Select();
 		void Input( float _x, float _y );
@@ -50,6 +51,7 @@ private:
 	struct BuildFarm : public State
 	{
 		float scale;
+		int rectangle;
 		BuildFarm( Graphic& _graphic, Logic& _logic, float& _mouse_wheel );
 		~BuildFarm();
 		void Input( float _x, float _y );
@@ -57,6 +59,7 @@ private:
 	struct BuildCity : public State
 	{
 		float scale;
+		int rectangle;
 		BuildCity( Graphic& _graphic, Logic& _logic, float& _mouse_wheel );
 		~BuildCity();
 		void Input( float _x, float _y );
@@ -66,7 +69,6 @@ private:
 	Graphic& graphic;
 	Logic& logic;
 	float mouse_wheel, mouse_wheel_z;
-	static const int inputRectangle = 0, selectRectangle = 1;
 public:
 	Input( Graphic& _graphic, Logic& _logic );
 

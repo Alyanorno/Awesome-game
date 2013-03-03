@@ -14,9 +14,10 @@ void Logic::Road::Calculate()
 	r.y = (to_r.y + from_r.y) / 2;
 
 	length = sqrt( pow( L(to_r.x - from_r.x), 2 ) + pow( L(to_r.y - from_r.y), 2 ) );
-	r.scale = length;
+	r.scale_x = length;
+	r.scale = 1;
 
-	r.rotation = atan( (to_r.x - from_r.x) / (to_r.y - from_r.y) ) * 180 / 3.14159;
+	r.rotation = atan2( (to_r.x - from_r.x), (to_r.y - from_r.y) ) * (180 / 3.14159);
 }
 
 

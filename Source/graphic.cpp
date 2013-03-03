@@ -69,38 +69,29 @@ float textureCoordinates[] = {
 	0.0f, 0.0f,
 	0.0f, 1.0f
 };
-void Graphic::DrawRectangle( Rectangle& r, Type type )
+float deapth = 0.f;
+void Graphic::DrawRectangle( Rectangle& r )
 {
 	if( r.used == false )
 		return;
 
 	glm::mat4 modelMatrix( glm::mat4( 1.0f ) );
+
+	// translate
+//	modelMatrix[3] = glm::vec4( r.x, r.y, deapth, 1.f );
 	modelMatrix[3][0] = r.x;
 	modelMatrix[3][1] = r.y;
-	if( type == Type::Road )
-		modelMatrix[3][2] = -.04;
-	else if( type == Type::Farm )
-		modelMatrix[3][2] = -.02;
-	else if( type == Type::City )
-		modelMatrix[3][2] = .00;
-	else if( type == Type::Army )
-		modelMatrix[3][2] = .02;
-	else if( type == Type::Structure )
-		modelMatrix[3][2] = .04;
-	modelMatrix[3][2] += small_difference;
-	small_difference += 0.001;
+	modelMatrix[3][2] = deapth;
 
-	modelMatrix[0][0] *= r.scale;
-	modelMatrix[1][1] *= r.scale;
-	modelMatrix[2][2] *= r.scale;
-
+	// rotate
 	if( r.rotation != 0 )
 		modelMatrix = glm::rotate( modelMatrix, r.rotation, glm::vec3( 0.f, 0.f, -1.f ) );
-	glm::mat4 modelViewMatrix = viewMatrix * modelMatrix;
-	glUniformMatrix4fv( glGetUniformLocation( shaderProgram, "modelViewMatrix" ), 1, GL_FALSE, &modelViewMatrix[0][0] );
 
-	glm::mat3 tempMatrix = glm::inverseTranspose( (glm::mat3)modelViewMatrix );
-	glUniformMatrix3fv( glGetUniformLocation( shaderProgram, "normalInverseTranspose"), 1, GL_FALSE, &tempMatrix[0][0] );
+	// scale
+	modelMatrix = glm::scale( modelMatrix, glm::vec3( r.scale, r.scale_x ? r.scale_x: r.scale, 0.f ) );
+
+	glUniformMatrix4fv( glGetUniformLocation( shaderProgram, "viewMatrix" ), 1, GL_FALSE, &viewMatrix[0][0] );
+	glUniformMatrix4fv( glGetUniformLocation( shaderProgram, "modelMatrix" ), 1, GL_FALSE, &modelMatrix[0][0] );
 
 	glDrawArrays( GL_TRIANGLE_STRIP, 0, 4 );
 }
@@ -113,8 +104,11 @@ void Graphic::DrawText( glm::mat4& projectionMatrix )
 	glEnableVertexAttribArray(3);
 	glDisableVertexAttribArray(1);
 
-	for each( Text t in texts )
+	for( int i(0); i < texts.v.size(); i++ )
 	{
+		Text& t( texts.v[i] );
+		if( t.used == false )
+			continue;
 		std::string& s(t.s);
 		glm::mat4 modelMatrix( glm::mat4( 1.0f ) );
 		modelMatrix[3][2] = 0.05;
@@ -231,58 +225,46 @@ std::pair< float, float > Graphic::GetIngameCoordinates( float _x, float _y )
 }
 
 
-void Graphic::AddText( std::string _s, float _x, float _y, float _size )
+int Graphic::AddText( std::string _s, float _x, float _y, float _size )
 {
-	texts.push_back( Text( _s, _x, _y, _size ) );
+	return texts.insert( Text( _s, _x, _y, _size ) );
 }
-void Graphic::RemoveText( float _x, float _y )
+void Graphic::RemoveText( int _i )
 {
-	for( int i(0); i < texts.size(); i++ )
-		if( texts[i].x == _x && texts[i].y == _y )
-		{
-			texts.erase( texts.begin() + i );
-			return;
-		}
+	texts.erase( _i );
 }
 void Graphic::RemoveTopText()
 {
-	texts.pop_back();
+	texts.v.pop_back();
 }
-void Graphic::MoveText( float _x, float _y, float __x, float __y )
+void Graphic::MoveText( int _i, float __x, float __y )
 {
-	for( int i(0); i < texts.size(); i++ )
-		if( texts[i].x == _x && texts[i].y == _y )
-		{
-			texts[i].x = __x;
-			texts[i].y = __y;
-			return;
-		}
+	texts.v[_i].x = __x;
+	texts.v[_i].y = __y;
 }
 void Graphic::MoveTopText( float _x, float _y )
 {
-	texts.back().x = _x;
-	texts.back().y = _y;
+	texts.v.back().x = _x;
+	texts.v.back().y = _y;
 }
 
 
-void Graphic::SetRectangle( int _i, float _scale, int _texture, bool _used )
+int Graphic::AddRectangle( int _texture, float _scale, float _x, float _y, float _rotation, float _scale_x )
 {
-	inputRectangles[_i].scale = _scale;
-	inputRectangles[_i].used = _used;
-	inputTextures[_i] = _texture;
+	return hud.insert( Hud( Rectangle( _x, _y, _scale, _rotation, _scale_x ), _texture ) );
 }
-void Graphic::SetRectangleVisibility( int _i, bool _used )
+void Graphic::RemoveRectangle( int _i )
 {
-	inputRectangles[_i].used = _used;
+	hud.erase( _i );
 }
 void Graphic::MoveRectangle( int _i, float _x, float _y )
 {
-	inputRectangles[_i].x = _x;
-	inputRectangles[_i].y = _y;
+	hud.v[_i].x = _x;
+	hud.v[_i].y = _y;
 }
 void Graphic::ResizeRectangle( int _i, float _scale )
 {
-	inputRectangles[_i].scale = _scale;
+	hud.v[_i].scale = _scale;
 }
 
 
@@ -303,7 +285,7 @@ void Graphic::Initialize()
 
 	glfwSetWindowTitle( "Hej!" );
 
-	glEnable( GL_DEPTH_TEST ); 
+	glEnable( GL_DEPTH_TEST );
 	glEnable( GL_CULL_FACE );
 	glEnable( GL_BLEND );
 
@@ -327,40 +309,35 @@ void Graphic::Initialize()
 
 	int i = 0;
 
+	#define DEFAULT_TEXTURE_OPTIONS \
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST ); \
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST ); \
+		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
+
 	t.LoadBmp( "road.bmp" );
 	assert( i == (int)Type::Road );
 	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
+	DEFAULT_TEXTURE_OPTIONS
 
 	t.LoadBmp( "farm.bmp" );
 	assert( i == (int)Type::Farm );
 	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
+	DEFAULT_TEXTURE_OPTIONS
 
 	t.LoadBmp( "city.bmp" );
 	assert( i == (int)Type::City );
 	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
+	DEFAULT_TEXTURE_OPTIONS
 
 	t.LoadBmp( "army.bmp" );
 	assert( i == (int)Type::Army );
 	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
+	DEFAULT_TEXTURE_OPTIONS
 
 	t.LoadBmp( "structure.bmp" );
 	assert( i == (int)Type::Structure );
 	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
+	DEFAULT_TEXTURE_OPTIONS
 	
 	// Load char numbers
 	for( char j(0); j < 10; j++ )
@@ -368,9 +345,7 @@ void Graphic::Initialize()
 		char_textures[ std::to_string(j)[0] ] = i;
 		t.LoadBmp( "Font/" + std::to_string(j) + ".bmp" );
 		glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
+		DEFAULT_TEXTURE_OPTIONS
 	}
 	// Load char letters
 	for( char j(0); j < 26; j++ )
@@ -380,44 +355,34 @@ void Graphic::Initialize()
 		s << "Font/" << (char)('A'+j) << ".bmp";
 		t.LoadBmp( s.str() );
 		glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
+		DEFAULT_TEXTURE_OPTIONS
 	}
 	char_textures[ '/' ] = i;
 	t.LoadBmp( "Font/forward_slash.bmp" );
 	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
+	DEFAULT_TEXTURE_OPTIONS
 
 	char_textures[ '+' ] = i;
 	t.LoadBmp( "Font/plus.bmp" );
 	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
+	DEFAULT_TEXTURE_OPTIONS
 
 	char_textures[ '-' ] = i;
 	t.LoadBmp( "Font/minus.bmp" );
 	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
+	DEFAULT_TEXTURE_OPTIONS
 
 	char_textures[ '#' ] = i;
 	t.LoadBmp( "food.bmp" );
 	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
+	DEFAULT_TEXTURE_OPTIONS
 
 	char_textures[ '$' ] = i;
 	t.LoadBmp( "money.bmp" );
 	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
+	DEFAULT_TEXTURE_OPTIONS
+
+	#undef DEFAULT_TEXTURE_OPTIONS
 
 
 	lines.push_back( Line( vertexs[0], vertexs[1], vertexs[3], vertexs[4] ) );
@@ -459,10 +424,6 @@ void Graphic::Initialize()
 
 
 	glBindVertexArray(Vao);
-
-	small_difference = 0.f;
-	inputRectangles[0].used = false;
-	inputRectangles[1].used = false;
 }
 
 
@@ -481,29 +442,32 @@ void Graphic::Update()
 	glUseProgram( shaderProgram );
 	glUniformMatrix4fv( glGetUniformLocation(shaderProgram, "projectionMatrix"), 1, GL_FALSE, &projectionMatrix[0][0] );
 
-	if( inputTextures[0] == (int)Type::Farm )
-	{
-		glBindTexture( GL_TEXTURE_2D, glTexture[ inputTextures[0] ] );
-		DrawRectangle( inputRectangles[0], (Type)inputTextures[0] );
-	}
-	glBindTexture( GL_TEXTURE_2D, glTexture[ inputTextures[1] ] );
-	DrawRectangle( inputRectangles[1], (Type)inputTextures[1] );
 	for( int i(0); i < rectangles.size(); i++ )
 	{
+		deapth = (float)i / 100;
+		glBindTexture( GL_TEXTURE_2D, glTexture[ i ] );
 		for( int j(0); j < rectangles[i].v.size(); j++ )
 		{
-			glBindTexture( GL_TEXTURE_2D, glTexture[ i ] );
-			DrawRectangle( rectangles[i].v[j], (Type)i );
+			DrawRectangle( rectangles[i].v[j] );
+			deapth += 0.001f;
 		}
-		small_difference = 0.f;
 	}
-	if( inputTextures[0] == (int)Type::City )
+
+
+	// 2D
+	glDepthMask( GL_FALSE );
+	glDisable( GL_DEPTH_TEST );
+
+	for( int i(0); i < hud.v.size(); i++ )
 	{
-		glBindTexture( GL_TEXTURE_2D, glTexture[ inputTextures[0] ] );
-		DrawRectangle( inputRectangles[0], (Type)inputTextures[0] );
+		glBindTexture( GL_TEXTURE_2D, glTexture[ hud.v[i].texture ] );
+		DrawRectangle( hud.v[i] );
 	}
 
 	DrawText( projectionMatrix );
+
+	glDepthMask( GL_TRUE );
+	glEnable( GL_DEPTH_TEST );
 
 	glUseProgram(0);
 

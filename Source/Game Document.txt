@@ -1,16 +1,15 @@
 Step 1: Base
 DONE: Restructure graphic based on types
+DONE: Universal interface system
 Refine interface for construction of units
 Refine interface for supply management
 Add ability to move population
 Add ability to select cities and farms
 Add pathfinding and faster or only movement if on road
 Add road construction
-#Universal interface system
 
 
 Step 2: System
-Add moral system
 Implement starving
 Add resource system
 	Add map
@@ -30,6 +29,7 @@ Population system
 	DONE: Efficency based on number of people
 	DONE: Increase
 	Solve inbalances by migration
+#Add moral system
 #Seasons
 
 

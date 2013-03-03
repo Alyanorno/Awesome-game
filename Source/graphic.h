@@ -36,23 +36,25 @@ private:
 
 	struct Text
 	{
-		Text( std::string _s, float _x, float _y, float _size ) : s(_s), x(_x), y(_y), size(_size) {}
+		Text( std::string _s, float _x, float _y, float _size ) : s(_s), x(_x), y(_y), size(_size), used(true) {}
 		std::string s;
 		float x, y;
 		float size;
+		bool used;
 	};
-	std::vector< Text > texts;
+	buffer< Text > texts;
 	std::map<int,int> char_textures;
 
-	// To allow for transparency
-	float small_difference;
-
-	int inputTextures[2];
-	Rectangle inputRectangles[2];
+	struct Hud : public Rectangle
+	{
+		Hud( Rectangle& _r, int _texture ) : Rectangle(_r), texture(_texture) {}
+		int texture;
+	};
+	buffer< Hud > hud;
 	glm::mat4 viewMatrix;
 	GLuint Vbo[3];
 	void DrawLines( glm::mat4& projectionMatrix );
-	void DrawRectangle( Rectangle& r, Type type );
+	void DrawRectangle( Rectangle& r );
 	void DrawText( glm::mat4& projectionMatrix );
 
 	enum ShaderType { Vertex, Fragment, Geometry };
@@ -68,14 +70,14 @@ public:
 
 	std::pair< float, float > GetIngameCoordinates( float _x, float _y );
 
-	void AddText( std::string _s, float _x = 0, float _y = 0, float _size = 1 );
-	void RemoveText( float _x, float _y );
+	int AddText( std::string _s, float _x = 0, float _y = 0, float _size = 1 );
+	void RemoveText( int _i );
 	void RemoveTopText();
-	void MoveText( float _x, float _y, float __x, float __y );
+	void MoveText( int _i, float __x, float __y );
 	void MoveTopText( float _x, float _y );
 
-	void SetRectangle( int _i, float _scale, int _texture, bool _used = true );
-	void SetRectangleVisibility( int _i, bool _used );
+	int AddRectangle( int _texture, float _scale, float _x = 0, float _y = 0, float _rotation = 0, float _scale_x = 0 );
+	void RemoveRectangle( int _i );
 	void MoveRectangle( int _i, float _x, float _y );
 	void ResizeRectangle( int _i, float _scale );
 

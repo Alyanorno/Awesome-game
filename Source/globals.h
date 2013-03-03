@@ -28,9 +28,9 @@ struct buffer
 struct Rectangle
 {
 	Rectangle() {}
-	Rectangle( float _x, float _y, float _scale, float _rotation = 0 )
-		: x(_x), y(_y), scale(_scale), rotation(_rotation), used(true) {}
-	float x, y, scale, rotation;
+	Rectangle( float _x, float _y, float _scale, float _rotation = 0, float _scale_x = 0 )
+		: x(_x), y(_y), scale(_scale), scale_x(_scale_x), rotation(_rotation), used(true) {}
+	float x, y, scale, scale_x, rotation;
 	bool used;
 };
 extern std::vector< buffer< Rectangle > > rectangles;

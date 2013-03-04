@@ -2,24 +2,10 @@
 
 Road::Road( int _rectangle, int _from, int _to ) : rectangle(_rectangle), from(_from), to(_to)
 {
-	Calculate();
-}
-void Road::Calculate()
-{
-	Rectangle& r( rectangles[ (int)Type::Road ].v[rectangle] );
-	Rectangle& to_r( rectangles[ (int)Type::Farm ].v[from] );
-	Rectangle& from_r( rectangles[ (int)Type::Farm ].v[to] );
-
-	r.x = (to_r.x + from_r.x) / 2;
-	r.y = (to_r.y + from_r.y) / 2;
-
+	Rectangle& from_r( rectangles[ (int)Type::Farm ].v[_from] );
+	Rectangle& to_r( rectangles[ (int)Type::Farm ].v[_to] );
 	length = sqrt( pow( Logic::L(to_r.x - from_r.x), 2 ) + pow( Logic::L(to_r.y - from_r.y), 2 ) );
-	r.scale_x = length;
-	r.scale = 0.5f;
-
-	r.rotation = atan2( (to_r.x - from_r.x), (to_r.y - from_r.y) ) * (180 / 3.14159);
 }
-
 
 
 
@@ -99,9 +85,9 @@ void Logic::ToggleSoldierProduction( int _rectangle )
 
 void Logic::BuildRoad( int _from, int _to )
 {
-	// TODO: Add construction of road
-	int t = rectangles[ (int)Type::Road ].insert( Rectangle( 0, 0, 0 ) );
-	roads.push_back( Road( t, _from, _to ) );
+	int t = rectangles[ (int)Type::Structure ].insert( Rectangle( 0, 0, 0 ) );
+	ChangeRoad( t, Type::Structure, _from, _to );
+	structures.push_back( Structure( t, Type::Road, _from, _to ) );
 }
 void Logic::BuildFarm( float _x, float _y, float _scale )
 {
@@ -112,6 +98,23 @@ void Logic::BuildCity( float _x, float _y, float _scale )
 {
 	int t = rectangles[ (int)Type::Structure ].insert( Rectangle( _x, _y, _scale ) );
 	structures.push_back( Structure( t, Type::City ) );
+}
+
+
+void Logic::ChangeRoad( int _rectangle, Type _type, int _from, int _to )
+{
+	Rectangle& r( rectangles[ (int)_type ].v[_rectangle] );
+	Rectangle& from_r( rectangles[ (int)Type::Farm ].v[_from] );
+	Rectangle& to_r( rectangles[ (int)Type::Farm ].v[_to] );
+
+	r.x = (to_r.x + from_r.x) / 2;
+	r.y = (to_r.y + from_r.y) / 2;
+
+	float length = sqrt( pow( Logic::L(to_r.x - from_r.x), 2 ) + pow( Logic::L(to_r.y - from_r.y), 2 ) );
+	r.scale_x = length;
+	r.scale = 0.5f;
+
+	r.rotation = atan2( (to_r.x - from_r.x), (to_r.y - from_r.y) ) * (180 / 3.14159);
 }
 void Logic::ExpandFarm( int _rectangle, float _size )
 {

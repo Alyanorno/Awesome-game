@@ -262,9 +262,10 @@ void Graphic::MoveRectangle( int _i, float _x, float _y )
 	hud.v[_i].x = _x;
 	hud.v[_i].y = _y;
 }
-void Graphic::ResizeRectangle( int _i, float _scale )
+void Graphic::ResizeRectangle( int _i, float _scale, float _scale_x )
 {
 	hud.v[_i].scale = _scale;
+	hud.v[_i].scale_x = _scale_x;
 }
 
 

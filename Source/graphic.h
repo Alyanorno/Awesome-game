@@ -79,7 +79,7 @@ public:
 	int AddRectangle( int _texture, float _scale, float _x = 0, float _y = 0, float _rotation = 0, float _scale_x = 0 );
 	void RemoveRectangle( int _i );
 	void MoveRectangle( int _i, float _x, float _y );
-	void ResizeRectangle( int _i, float _scale );
+	void ResizeRectangle( int _i, float _scale, float _scale_x = 0 );
 
 	void Initialize();
 	void Update();

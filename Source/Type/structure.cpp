@@ -2,13 +2,15 @@
 #include "../logic.h"
 
 
-Structure::Structure( int _rectangle, Type _type ) : rectangle(_rectangle), type(_type), food_contained(0), money_supplied(0), hunger(0)
+Structure::Structure( int _rectangle, Type _type, int _from, int _to ) : rectangle(_rectangle), type(_type), from(_from), to(_to), food_contained(0), money_supplied(0), hunger(0)
 {
-	float size = 3.14159 * rectangles[ (int)Type::Structure ].v[rectangle].scale * rectangles[ (int)Type::Structure ].v[rectangle].scale;
+	Rectangle& r( rectangles[ (int)Type::Structure ].v[rectangle] );
+	float size = 3.14159 * r.scale * r.scale;
 	switch( type )
 	{
 		case Type::Road:
-			// Doesnt exist right now
+			money_needed = 1 * r.scale_x;
+			production_time = 0.1 * r.scale_x;
 			break;
 		case Type::Farm:
 			money_needed = 100 * size;
@@ -57,7 +59,9 @@ void Structure::Update( Logic& l, float delta_time, int& i )
 		switch( type )
 		{
 			case Type::Road:
-				// TODO: Add later when road have been changed to using texture.
+				t = rectangles[ (int)Type::Road ].insert( Rectangle( 0, 0, 0 ) );
+				l.ChangeRoad( t, Type::Road, from, to );
+				l.GetRoads().push_back( Road( t, from, to ) );
 				break;
 			case Type::Farm:
 				t = rectangles[ (int)Type::Farm ].insert( Rectangle( sr.x, sr.y, sr.scale ) );

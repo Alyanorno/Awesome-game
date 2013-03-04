@@ -2,10 +2,10 @@ Step 1: Base
 DONE: Restructure graphic based on types
 DONE: Interface system
 DONE: Refine interface for construction of units
+DONE: Add road construction
 Refine interface for supply management
 Add ability to move population
 Add pathfinding and faster or only movement if on road
-Add road construction
 #Add ability to select cities and farms -- Not needed?
 
 

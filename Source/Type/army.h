@@ -10,6 +10,7 @@ struct Army
 	int rectangle;
 	int soldiers;
 	int carts;
+	int people;
 	float storage_capacity;
 	float food_stored, money_stored;
 	float food_consumed, money_consumed;
@@ -17,11 +18,14 @@ struct Army
 	float x, y;
 	float speed;
 	int from, to, final_to;
-	bool transporting;
+	Resource transporting;
 	int transporting_from, transporting_to;
 	bool stationary;
 
 	float hunger;
+
+	void Move( Logic& l, float delta_time, int& i );
+	void Transport( Logic& l, float delta_time );
 
 	Army( int _rectangle, int _from, int _soldiers, int _carts );
 	operator std::string ();

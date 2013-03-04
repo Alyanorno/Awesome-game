@@ -12,21 +12,16 @@
 #include "Type/structure.h"
 #include "Type/army.h"
 
-
+struct Road
+{
+	Road( int _rectangle, int _from, int _to );
+	void Calculate();
+	int rectangle, from, to;
+	float length;
+};
 class Logic
 {
-friend void Farm::Update( Logic& l, float delta_time );
-friend void City::Update( Logic& l, float delta_time );
-friend void Structure::Update( Logic& l, float delta_time, int& i );
-friend void Army::Update( Logic& l, float delta_time, int& i );
 private:
-	struct Road
-	{
-		Road( int _rectangle, int _from, int _to );
-		void Calculate();
-		int rectangle, from, to;
-		float length;
-	};
 	std::vector< Road > roads;
 	std::vector< Farm > farms;
 	std::vector< City > cities;
@@ -34,12 +29,37 @@ private:
 	std::vector< Army > armies;
 
 	double last_time;
-	float food_per_person, population_increase;
-	int CalculatePathTo( Army& _a, int _to );
-	static float L( float _x ) { return _x < 0 ? -_x: _x; }
 public:
-	void BuildCarts( int _rectangle, int _amount );
-	void BuildSoldiers( int _rectangle, int _amount );
+	float food_per_person, population_increase;
+	static float L( float _x ) { return _x < 0 ? -_x: _x; }
+#define GET( NAME, PLURAL, LOWER_CASE ) \
+	std::vector< NAME >& Get##PLURAL() { return LOWER_CASE; } \
+	NAME& Get##NAME( int _rectangle ) \
+	{ \
+		for( int i(0); i < LOWER_CASE.size(); i++ ) \
+			if( LOWER_CASE[i].rectangle == _rectangle ) \
+				return LOWER_CASE[i]; \
+		throw std::string("Could not find NAME" ); \
+	} \
+	int Get##NAME##Index( int _rectangle ) \
+	{ \
+		for( int i(0); i < LOWER_CASE.size(); i++ ) \
+			if( LOWER_CASE[i].rectangle == _rectangle ) \
+				return i; \
+		return -1; \
+	}
+	GET( Road, Roads, roads )
+	GET( Farm, Farms, farms )
+	GET( City, Cities, cities )
+	GET( Structure, Structures, structures )
+	GET( Army, Armies, armies )
+#undef GET
+
+	int CalculatePathTo( Army& _a, int _to );
+
+	// Interface to Input
+	void ToggleCartProduction( int _rectangle );
+	void ToggleSoldierProduction( int _rectangle );
 
 	void BuildRoad( int _from, int _to );
 	void BuildFarm( float _x, float _y, float _scale );
@@ -67,7 +87,7 @@ public:
 	void PopulationCalculations( float& _food_contained, float& _population, float& _hunger, float _delta_time );
 
 	void ArmyTo( int _army, int _to );
-	void ArmyTransport( int _army, int _to );
+	void ArmyTransport( int _army, int _to, Resource _transporting );
 	std::pair<float,float> ArmyPosition( int _army );
 	float ArmySize( int _army );
 

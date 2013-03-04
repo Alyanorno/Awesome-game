@@ -3,6 +3,7 @@
 #include <vector>
 
 enum class Type { Road, Farm, City, Army, Structure, Size };
+enum class Resource { Nothing, Rock, Tree, Food, Gold };
 
 template <class T>
 struct buffer

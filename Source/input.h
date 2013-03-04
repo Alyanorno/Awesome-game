@@ -35,8 +35,8 @@ private:
 	struct Select : public State
 	{
 		int army_selected;
-		bool lock;
 		int select_rectangle;
+		bool lock, lock_cart_production, lock_soldier_production;
 		Select( Graphic& _graphic, Logic& _logic, float& _mouse_wheel );
 		~Select();
 		void Input( float _x, float _y );

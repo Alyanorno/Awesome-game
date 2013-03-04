@@ -61,23 +61,23 @@ void Structure::Update( Logic& l, float delta_time, int& i )
 				break;
 			case Type::Farm:
 				t = rectangles[ (int)Type::Farm ].insert( Rectangle( sr.x, sr.y, sr.scale ) );
-				l.farms.push_back( Farm( t ) );
+				l.GetFarms().push_back( Farm( t ) );
 				break;
 			case Type::City:
-				for each( Farm f in l.farms )
+				for each( Farm f in l.GetFarms() )
 				{
 					Rectangle& fr( rectangles[ (int)Type::Farm ].v[f.rectangle] );
 					if( fr.x == sr.x && fr.y == fr.y )
 					{
 						t = rectangles[ (int)Type::City ].insert( Rectangle( sr.x, sr.y, sr.scale ) );
-						l.cities.push_back( City( t, f.rectangle ) );
+						l.GetCities().push_back( City( t, f.rectangle ) );
 						break;
 					}
 				}
 				break;
 		}
 		rectangles[ (int)Type::Structure ].erase( rectangle );
-		l.structures.erase( l.structures.begin() + i );
+		l.GetStructures().erase( l.GetStructures().begin() + i );
 		i--;
 	}
 	l.PopulationCalculations( food_contained, population, hunger, delta_time );

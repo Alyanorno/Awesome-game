@@ -2,7 +2,67 @@
 #include "../Logic.h"
 
 
-Army::Army( int _rectangle, int _from, int _soldiers, int _carts ) : rectangle(_rectangle), soldiers(_soldiers), carts(_carts), food_stored(0), money_stored(0), speed(1), transporting(false), stationary(true), hunger(0)
+void Army::Move( Logic& l, float delta_time, int& i )
+{
+	if( to == final_to )
+	{
+		for( int j(0); j < l.GetArmies().size(); j++ )
+			if( i != j && x == l.GetArmies()[j].x && y == l.GetArmies()[j].y )
+			{
+				soldiers += l.GetArmies()[j].soldiers;
+				carts += l.GetArmies()[j].carts;
+				rectangles[ (int)Type::Army ].erase( l.GetArmies()[j].rectangle );
+				l.GetArmies().erase( l.GetArmies().begin() + j );
+				if( j < i )
+					i--;
+				break;
+			}
+		from = to;
+		stationary = true;
+	}
+	else
+	{
+		from = to;
+		to = l.CalculatePathTo( *this, final_to );
+	}
+}
+void Army::Transport( Logic& l, float delta_time )
+{
+	if( to == final_to )
+	{
+		int j = l.GetFarmIndex( to );
+		if( j != -1 )
+		{
+			Farm& f( l.GetFarms()[j] );
+			if( to == transporting_to )
+			{
+				f.food_contained += food_stored;
+				food_stored = 0;
+
+				final_to = from;
+				from = to;
+				to = l.CalculatePathTo( *this, final_to );
+			}
+			else if( to == transporting_from )
+			{
+				food_stored = storage_capacity;
+				f.food_contained -= food_stored;
+
+				final_to = from;
+				from = to;
+				to = l.CalculatePathTo( *this, final_to );
+			}
+		}
+	}
+	else
+	{
+		from = to;
+		to = l.CalculatePathTo( *this, final_to );
+	}
+}
+
+
+Army::Army( int _rectangle, int _from, int _soldiers, int _carts ) : rectangle(_rectangle), soldiers(_soldiers), carts(_carts), food_stored(0), money_stored(0), speed(1), transporting(Resource::Nothing), stationary(true), hunger(0)
 {
 	from = _from;
 	x = rectangles[ (int)Type::Army ].v[rectangle].x;
@@ -48,65 +108,10 @@ void Army::Update( Logic& l, float delta_time, int& i )
 
 		if( x == r.x && y == r.y )
 		{
-			if( transporting )
-			{
-				bool found = false;
-				for( int j(0); j < l.farms.size(); j++ )
-					if( l.farms[j].rectangle == to )
-					{
-						if( to == transporting_to )
-						{
-							l.farms[j].food_contained += food_stored;
-							food_stored = 0;
-
-							final_to = from;
-							from = to;
-							to = l.CalculatePathTo( *this, final_to );
-							found = true;
-							break;
-						}
-						else if( to == transporting_from )
-						{
-							food_stored = storage_capacity;
-							l.farms[j].food_contained -= food_stored;
-
-							final_to = from;
-							from = to;
-							to = l.CalculatePathTo( *this, final_to );
-							found = true;
-							break;
-						}
-					}
-				if( !found )
-				{
-					from = to;
-					to = l.CalculatePathTo( *this, final_to );
-				}
-			}
+			if( (bool)transporting )
+				Transport( l, delta_time );
 			else
-			{
-				if( to == final_to )
-				{
-					for( int j(0); j < l.armies.size(); j++ )
-						if( i != j && x == l.armies[j].x && y == l.armies[j].y )
-						{
-							soldiers += l.armies[j].soldiers;
-							carts += l.armies[j].carts;
-							rectangles[ (int)Type::Army ].erase( l.armies[j].rectangle );
-							l.armies.erase( l.armies.begin() + j );
-							if( j < i )
-								i--;
-							break;
-						}
-					from = to;
-					stationary = true;
-				}
-				else
-				{
-					from = to;
-					to = l.CalculatePathTo( *this, final_to );
-				}
-			}
+				Move( l, delta_time, i );
 		}
 		else
 		{
@@ -117,23 +122,16 @@ void Army::Update( Logic& l, float delta_time, int& i )
 	}
 
 	// If on farm, take food from farm.
-	int farm = 0;
-	bool on_farm = false;
-	if( stationary )
-		for( ; farm < l.farms.size(); farm++ )
-			if( from == l.farms[farm].rectangle )
-			{
-				on_farm = true;
-				break;
-			}
-	if( stationary && on_farm )
+	int farm = l.GetFarmIndex( from );
+	if( stationary && farm != -1 )
 	{
+		Farm& f( l.GetFarm( farm ) );
 		if( hunger > 0 )
 		{
-			l.farms[farm].food_contained -= hunger;
+			f.food_contained -= hunger;
 			hunger = 0;
 		}
-		l.farms[farm].food_contained -= food_consumed * delta_time;
+		f.food_contained -= food_consumed * delta_time;
 	}
 	else
 		if( food_stored <= 0 )
@@ -153,8 +151,8 @@ void Army::Update( Logic& l, float delta_time, int& i )
 
 				if( soldiers + carts < 1 )
 				{
-					rectangles[ (int)Type::Army ].erase( l.armies[i].rectangle );
-					l.armies.erase( l.armies.begin() + i );
+					rectangles[ (int)Type::Army ].erase( l.GetArmies()[i].rectangle );
+					l.GetArmies().erase( l.GetArmies().begin() + i );
 					i--;
 					return;
 				}

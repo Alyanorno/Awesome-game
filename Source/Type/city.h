@@ -12,10 +12,10 @@ struct City
 	int rectangle, farm_rectangle;
 	float money_storage, money_contained, money_production;
 
-	int carts;
+	bool producing_carts;
 	float cart_production_time, current_cart_production, cart_money;
 
-	int soldiers;
+	bool producing_soldiers;
 	float soldier_production_time, current_soldier_production, soldier_money;
 
 	float population, population_needed;

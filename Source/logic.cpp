@@ -1,10 +1,10 @@
 #include "logic.h"
 
-Logic::Road::Road( int _rectangle, int _from, int _to ) : rectangle(_rectangle), from(_from), to(_to)
+Road::Road( int _rectangle, int _from, int _to ) : rectangle(_rectangle), from(_from), to(_to)
 {
 	Calculate();
 }
-void Logic::Road::Calculate()
+void Road::Calculate()
 {
 	Rectangle& r( rectangles[ (int)Type::Road ].v[rectangle] );
 	Rectangle& to_r( rectangles[ (int)Type::Farm ].v[from] );
@@ -13,7 +13,7 @@ void Logic::Road::Calculate()
 	r.x = (to_r.x + from_r.x) / 2;
 	r.y = (to_r.y + from_r.y) / 2;
 
-	length = sqrt( pow( L(to_r.x - from_r.x), 2 ) + pow( L(to_r.y - from_r.y), 2 ) );
+	length = sqrt( pow( Logic::L(to_r.x - from_r.x), 2 ) + pow( Logic::L(to_r.y - from_r.y), 2 ) );
 	r.scale_x = length;
 	r.scale = 0.5f;
 
@@ -82,18 +82,18 @@ int Logic::CalculatePathTo( Army& _a, int _to )
 
 
 
-void Logic::BuildCarts( int _rectangle, int _amount )
+void Logic::ToggleCartProduction( int _rectangle )
 {
 	for( int i(0); i < cities.size(); i++ )
 		if( cities[i].rectangle == _rectangle )
-			cities[i].carts += _amount;
+			cities[i].producing_carts = cities[i].producing_carts ? false: true;
 }
 
-void Logic::BuildSoldiers( int _rectangle, int _amount )
+void Logic::ToggleSoldierProduction( int _rectangle )
 {
 	for( int i(0); i < cities.size(); i++ )
 		if( cities[i].rectangle == _rectangle )
-			cities[i].soldiers += _amount;
+			cities[i].producing_soldiers = cities[i].producing_soldiers ? false: true;
 }
 
 
@@ -322,9 +322,9 @@ void Logic::ArmyTo( int _army, int _to )
 	a.final_to = _to;
 	a.to = CalculatePathTo( a, a.final_to );
 	a.stationary = false;
-	a.transporting = false;
+	a.transporting = Resource::Nothing;
 }
-void Logic::ArmyTransport( int _army, int _to )
+void Logic::ArmyTransport( int _army, int _to, Resource _transporting )
 {
 	Army& a( armies[_army] );
 	a.final_to = _to;
@@ -332,18 +332,10 @@ void Logic::ArmyTransport( int _army, int _to )
 	a.transporting_from = a.from;
 	a.transporting_to = a.to;
 	a.stationary = false;
-	a.transporting = true;
+	a.transporting = _transporting;
 
-	bool found = false;
-	for( int j(0); j < farms.size(); j++ )
-		if( farms[j].rectangle == a.from )
-		{
-			a.food_stored = a.storage_capacity;
-			farms[j].food_contained -= a.food_stored;
-			found = true;
-		}
-	if( !found )
-		throw std::string("Invalid target for transporting food"); // TODO: Do this better
+	a.food_stored = a.storage_capacity;
+	GetFarm( a.from ).food_contained -= a.food_stored;
 }
 std::pair<float,float> Logic::ArmyPosition( int _army )
 {

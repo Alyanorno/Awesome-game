@@ -1,7 +1,7 @@
 #include "input.h"
 
 Input::Select::Select( Graphic& _graphic, Logic& _logic, float& _mouse_wheel )
-	: State( _graphic, _logic, _mouse_wheel ), lock(false), select_rectangle(-1)
+	: State( _graphic, _logic, _mouse_wheel ), select_rectangle(-1), lock(false), lock_cart_production(false), lock_soldier_production(false)
 {
 	graphic.AddText( "", 0, 0, .5f );
 }
@@ -31,11 +31,21 @@ void Input::Select::Input( float _x, float _y )
 	if( closest.first != - 1 && closest.second <= rectangles[ (int)Type::City ].v[closest.first].scale )
 	{
 		temp = temp + logic.GetInfo( closest.first, Type::City );
-		if( glfwGetKey( 'E' ) )
-			logic.BuildSoldiers( closest.first, 1 );
-		if( glfwGetKey( 'R' ) )
-			logic.BuildCarts( closest.first, 1 );
+		if( !lock_soldier_production && glfwGetKey( 'E' ) )
+		{
+			logic.ToggleSoldierProduction( closest.first );
+			lock_soldier_production = true;
+		}
+		if( !lock_cart_production && glfwGetKey( 'R' ) )
+		{
+			logic.ToggleCartProduction( closest.first );
+			lock_cart_production = true;
+		}
 	}
+	if( lock_soldier_production && !glfwGetKey( 'E' ) )
+		lock_soldier_production = false;
+	if( lock_cart_production && !glfwGetKey( 'E' ) )
+		lock_cart_production = false;
 
 	closest = logic.ClosestStructure( _x, _y );
 	if( closest.first != - 1 && closest.second <= rectangles[ (int)Type::Structure ].v[closest.first].scale )
@@ -72,7 +82,7 @@ void Input::Select::Input( float _x, float _y )
 				{
 					if( glfwGetKey( GLFW_KEY_LSHIFT ) )
 						// Set up transport route
-						logic.ArmyTransport( army_selected, closest.first );
+						logic.ArmyTransport( army_selected, closest.first, Resource::Food );
 					else
 						logic.ArmyTo( army_selected, closest.first );
 				}

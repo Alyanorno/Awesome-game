@@ -1,13 +1,17 @@
 #pragma once
 
 #include <vector>
+#include <functional>
 
 enum class Type { Road, Farm, City, Army, Structure, Size };
 enum class Resource { Nothing, Rock, Tree, Food, Gold };
 
 template <class T>
-struct buffer
+class buffer
 {
+private:
+	std::vector<T> v;
+public:
 	int insert( T _t )
 	{
 		for( int i(0); i < v.size(); i++ )
@@ -23,7 +27,29 @@ struct buffer
 	{
 		v[_i].used = false;
 	}
-	std::vector<T> v;
+	void push_back( T& _t ) { v.push_back(_t); }
+	void pop_back() { v.pop_back(); }
+	T& back() { return v.back(); }
+	int size() { return v.size(); }
+	T& operator []( int _i ) { return v[_i]; }
+
+	void apply( std::function<void(T&)> _foo )
+	{
+		for( int i(0); i < v.size(); i++ )
+			if( v[i].used )
+				_foo( v[i] );
+	}
+	T& find( std::function<bool(T&)> _foo )
+	{
+		for( int i(0); i < v.size(); i++ )
+			if( v[i].used && _foo( v[i] ) )
+				return v[i];
+	}
+
+	typename std::vector<T>::iterator begin() { return v.begin(); }
+	typename std::vector<T>::const_iterator begin() const { return v.begin(); }
+	typename std::vector<T>::iterator end() { return v.end(); }
+	typename std::vector<T>::const_iterator end() const { return v.end(); }
 };
 
 struct Rectangle

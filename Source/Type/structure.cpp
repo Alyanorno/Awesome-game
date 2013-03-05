@@ -2,9 +2,9 @@
 #include "../logic.h"
 
 
-Structure::Structure( int _rectangle, Type _type, int _from, int _to ) : rectangle(_rectangle), type(_type), from(_from), to(_to), food_contained(0), money_supplied(0), hunger(0)
+Structure::Structure( int _rectangle, Type _type, int _point, int _from, int _to ) : rectangle(_rectangle), type(_type), point(_point), from(_from), to(_to), food_contained(0), money_supplied(0), hunger(0), used(true)
 {
-	Rectangle& r( rectangles[ (int)Type::Structure ].v[rectangle] );
+	Rectangle& r( rectangles[ (int)Type::Structure ][rectangle] );
 	float size = 3.14159 * r.scale * r.scale;
 	switch( type )
 	{
@@ -38,8 +38,13 @@ Structure::operator std::string()
 	return s.str();
 }
 
-void Structure::Update( Logic& l, float delta_time, int& i )
+void Structure::Update( Logic& l, float delta_time, int i )
 {
+	if( !used )
+		return;
+
+	l.PopulationCalculations( food_contained, population, hunger, delta_time );
+
 	if( money_supplied <= -0.001 )
 		return;
 
@@ -52,38 +57,46 @@ void Structure::Update( Logic& l, float delta_time, int& i )
 	money_needed -= (money_needed / production_time) * delta_time * efficency;
 
 	int t;
+	std::map< Type, int >& p( l.GetPoint( point ).on_point );
 	Rectangle r;
-	Rectangle& sr( rectangles[ (int)Type::Structure ].v[rectangle] );
+	Rectangle& sr( rectangles[ (int)Type::Structure ][rectangle] );
 	if( production_time <= 0.1 )
 	{
 		switch( type )
 		{
 			case Type::Road:
 				t = rectangles[ (int)Type::Road ].insert( Rectangle( 0, 0, 0 ) );
-				l.ChangeRoad( rectangles[ (int)Type::Road ].v[t], from, to );
-				l.GetRoads().push_back( Road( t, from, to ) );
+				l.ChangeRoad( rectangles[ (int)Type::Road ][t], from, to );
+				t = l.GetRoads().insert( Road( t, from, to ) );
+				l.GetRoad( t ).length = sqrt( pow( Logic::L(l.GetPoint(to).x - l.GetPoint(from).x), 2 ) + pow( Logic::L(l.GetPoint(to).y - l.GetPoint(from).y), 2 ) );
+				p.erase( Type::Structure );
+				p[ Type::Road ] = t;
 				break;
 			case Type::Farm:
 				t = rectangles[ (int)Type::Farm ].insert( Rectangle( sr.x, sr.y, sr.scale ) );
-				l.GetFarms().push_back( Farm( t ) );
+				t = l.GetFarms().insert( Farm( t, point ) );
+				p.erase( Type::Structure );
+				p[ Type::Farm ] = t;
 				break;
 			case Type::City:
 				for each( Farm f in l.GetFarms() )
 				{
-					Rectangle& fr( rectangles[ (int)Type::Farm ].v[f.rectangle] );
+					if( !f.used )
+						continue;
+					Rectangle& fr( rectangles[ (int)Type::Farm ][f.rectangle] );
 					if( fr.x == sr.x && fr.y == fr.y )
 					{
 						t = rectangles[ (int)Type::City ].insert( Rectangle( sr.x, sr.y, sr.scale ) );
-						l.GetCities().push_back( City( t, f.rectangle ) );
+						t = l.GetCities().insert( City( t, point ) );
+						p.erase( Type::Structure );
+						p[ Type::City ] = t;
 						break;
 					}
 				}
 				break;
 		}
 		rectangles[ (int)Type::Structure ].erase( rectangle );
-		l.GetStructures().erase( l.GetStructures().begin() + i );
-		i--;
+		l.GetStructures().erase( i );
 	}
-	l.PopulationCalculations( food_contained, population, hunger, delta_time );
 }
 

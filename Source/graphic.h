@@ -80,7 +80,7 @@ public:
 	void RemoveRectangle( int _i );
 	void MoveRectangle( int _i, float _x, float _y );
 	void ResizeRectangle( int _i, float _scale, float _scale_x = 0 );
-	Rectangle& GetRectangle( int _i ) { return hud.v[_i]; }
+	Rectangle& GetRectangle( int _i ) { return hud[_i]; }
 
 	void Initialize();
 	void Update();

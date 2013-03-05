@@ -104,9 +104,9 @@ void Graphic::DrawText( glm::mat4& projectionMatrix )
 	glEnableVertexAttribArray(3);
 	glDisableVertexAttribArray(1);
 
-	for( int i(0); i < texts.v.size(); i++ )
+	for( int i(0); i < texts.size(); i++ )
 	{
-		Text& t( texts.v[i] );
+		Text& t( texts[i] );
 		if( t.used == false )
 			continue;
 		std::string& s(t.s);
@@ -235,17 +235,17 @@ void Graphic::RemoveText( int _i )
 }
 void Graphic::RemoveTopText()
 {
-	texts.v.pop_back();
+	texts.pop_back();
 }
 void Graphic::MoveText( int _i, float __x, float __y )
 {
-	texts.v[_i].x = __x;
-	texts.v[_i].y = __y;
+	texts[_i].x = __x;
+	texts[_i].y = __y;
 }
 void Graphic::MoveTopText( float _x, float _y )
 {
-	texts.v.back().x = _x;
-	texts.v.back().y = _y;
+	texts.back().x = _x;
+	texts.back().y = _y;
 }
 
 
@@ -259,13 +259,13 @@ void Graphic::RemoveRectangle( int _i )
 }
 void Graphic::MoveRectangle( int _i, float _x, float _y )
 {
-	hud.v[_i].x = _x;
-	hud.v[_i].y = _y;
+	hud[_i].x = _x;
+	hud[_i].y = _y;
 }
 void Graphic::ResizeRectangle( int _i, float _scale, float _scale_x )
 {
-	hud.v[_i].scale = _scale;
-	hud.v[_i].scale_x = _scale_x;
+	hud[_i].scale = _scale;
+	hud[_i].scale_x = _scale_x;
 }
 
 
@@ -447,9 +447,9 @@ void Graphic::Update()
 	{
 		deapth = (float)i / 100;
 		glBindTexture( GL_TEXTURE_2D, glTexture[ i ] );
-		for( int j(0); j < rectangles[i].v.size(); j++ )
+		for( int j(0); j < rectangles[i].size(); j++ )
 		{
-			DrawRectangle( rectangles[i].v[j] );
+			DrawRectangle( rectangles[i][j] );
 			deapth += 0.001f;
 		}
 	}
@@ -459,10 +459,10 @@ void Graphic::Update()
 	glDepthMask( GL_FALSE );
 	glDisable( GL_DEPTH_TEST );
 
-	for( int i(0); i < hud.v.size(); i++ )
+	for( int i(0); i < hud.size(); i++ )
 	{
-		glBindTexture( GL_TEXTURE_2D, glTexture[ hud.v[i].texture ] );
-		DrawRectangle( hud.v[i] );
+		glBindTexture( GL_TEXTURE_2D, glTexture[ hud[i].texture ] );
+		DrawRectangle( hud[i] );
 	}
 
 	DrawText( projectionMatrix );

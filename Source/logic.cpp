@@ -1,12 +1,5 @@
 #include "logic.h"
 
-Road::Road( int _rectangle, int _from, int _to ) : rectangle(_rectangle), from(_from), to(_to)
-{
-	Rectangle& from_r( rectangles[ (int)Type::Farm ].v[_from] );
-	Rectangle& to_r( rectangles[ (int)Type::Farm ].v[_to] );
-	length = sqrt( pow( Logic::L(to_r.x - from_r.x), 2 ) + pow( Logic::L(to_r.y - from_r.y), 2 ) );
-}
-
 
 
 // TODO: Implement
@@ -68,73 +61,67 @@ int Logic::CalculatePathTo( Army& _a, int _to )
 
 
 
-void Logic::ToggleCartProduction( int _rectangle )
+void Logic::ToggleCartProduction( int _point )
 {
-	for( int i(0); i < cities.size(); i++ )
-		if( cities[i].rectangle == _rectangle )
-			cities[i].producing_carts = cities[i].producing_carts ? false: true;
+	City& c( cities[ points[_point].on_point[ Type::City ] ] );
+	c.producing_carts = c.producing_carts ? false: true;
 }
 
-void Logic::ToggleSoldierProduction( int _rectangle )
+void Logic::ToggleSoldierProduction( int _point )
 {
-	for( int i(0); i < cities.size(); i++ )
-		if( cities[i].rectangle == _rectangle )
-			cities[i].producing_soldiers = cities[i].producing_soldiers ? false: true;
+	City& c( cities[ points[_point].on_point[ Type::City ] ] );
+	c.producing_soldiers = c.producing_soldiers ? false: true;
 }
 
 
 void Logic::BuildRoad( int _from, int _to )
 {
 	int t = rectangles[ (int)Type::Structure ].insert( Rectangle( 0, 0, 0 ) );
-	ChangeRoad( rectangles[ (int)Type::Structure].v[t], _from, _to );
-	structures.push_back( Structure( t, Type::Road, _from, _to ) );
+	int t2 = points.insert( Point( 0, 0 ) );
+	ChangeRoad( rectangles[ (int)Type::Structure][t], _from, _to, t2 );
+	structures.push_back( Structure( t, Type::Road, t2, _from, _to ) );
 }
 void Logic::BuildFarm( float _x, float _y, float _scale )
 {
 	int t = rectangles[ (int)Type::Structure ].insert( Rectangle( _x, _y, _scale ) );
-	structures.push_back( Structure( t, Type::Farm ) );
+	int t2 = points.insert( Point( _x, _y ) );
+	structures.push_back( Structure( t, Type::Farm, t2 ) );
 }
 void Logic::BuildCity( float _x, float _y, float _scale )
 {
 	int t = rectangles[ (int)Type::Structure ].insert( Rectangle( _x, _y, _scale ) );
-	structures.push_back( Structure( t, Type::City ) );
+	int t2 = points.insert( Point( _x, _y ) );
+	structures.push_back( Structure( t, Type::City, t2 ) );
 }
 
 
-void Logic::ChangeRoad( Rectangle& _rectangle, int _from, int _to )
+void Logic::ChangeRoad( Rectangle& _rectangle, int _from, int _to, int _point )
 {
 	Rectangle& r( _rectangle );
-	Rectangle& from_r( rectangles[ (int)Type::Farm ].v[_from] );
-	Rectangle& to_r( rectangles[ (int)Type::Farm ].v[_to] );
+	Point& from_p( points[_from] );
+	Point& to_p( points[_to] );
 
-	r.x = (to_r.x + from_r.x) / 2;
-	r.y = (to_r.y + from_r.y) / 2;
+	r.x = (to_p.x + from_p.x) / 2;
+	r.y = (to_p.y + from_p.y) / 2;
+	if( _point != -1 )
+	{
+		points[_point].x = r.x;
+		points[_point].y = r.y;
+	}
 
-	float length = sqrt( pow( Logic::L(to_r.x - from_r.x), 2 ) + pow( Logic::L(to_r.y - from_r.y), 2 ) );
+	float length = sqrt( pow( Logic::L(to_p.x - from_p.x), 2 ) + pow( Logic::L(to_p.y - from_p.y), 2 ) );
 	r.scale_x = length;
 	r.scale = 0.5f;
 
-	r.rotation = atan2( (to_r.x - from_r.x), (to_r.y - from_r.y) ) * (180 / 3.14159);
+	r.rotation = atan2( (to_p.x - from_p.x), (to_p.y - from_p.y) ) * (180 / 3.14159);
 }
 void Logic::ExpandFarm( int _rectangle, float _size )
 {
-	// TODO: Add construction before expanding.
-	for each( Farm f in farms )
-		if( f.rectangle == _rectangle )
-		{
-			f.Calculate();
-			break;
-		}
+	// TODO: Add construction.
 }
 void Logic::ExpandCity( int _rectangle, float _size )
 {
-	// TODO: Add construction before expanding.
-	for each( City c in cities )
-		if( c.rectangle == _rectangle )
-		{
-			c.Calculate();
-			break;
-		}
+	// TODO: Add construction.
 }
 void Logic::DestroyRoad( int _line )
 {
@@ -146,7 +133,7 @@ void Logic::DestroyFarm( int _rectangle )
 	for( ; i < farms.size(); i++ )
 		if( farms[i].rectangle == _rectangle )
 			break;
-	farms.erase( farms.begin() + i );
+	farms.erase( i );
 }
 void Logic::DestroyCity( int _rectangle )
 {
@@ -154,7 +141,7 @@ void Logic::DestroyCity( int _rectangle )
 	for( ; i < cities.size(); i++ )
 		if( cities[i].rectangle == _rectangle )
 			break;
-	cities.erase( cities.begin() + i );
+	cities.erase( i );
 }
 void Logic::RemoveStructure( int _rectangle )
 {
@@ -162,7 +149,7 @@ void Logic::RemoveStructure( int _rectangle )
 	for( ; i < structures.size(); i++ )
 		if( structures[i].rectangle == _rectangle )
 			break;
-	structures.erase( structures.begin() + i );
+	structures.erase( i );
 }
 
 
@@ -170,57 +157,21 @@ float Logic::Distance( float _x, float _y, float __x, float __y )
 {
 	return (_x - __x) * (_x - __x) + (_y - __y) * (_y - __y);
 }
-std::pair< int, float > Logic::ClosestFarm( float _x, float _y )
+std::pair< int, float > Logic::Closest( Type _type, float _x, float _y )
 {
 	float distance = 10000;
 	int closest = -1;
-	for( int i(0); i < rectangles[ (int)Type::Farm ].v.size(); i++ )
+	for( int i(0); i < points.size(); i++ )
 	{
-		float t = Distance( _x, _y, rectangles[ (int)Type::Farm ].v[i].x, rectangles[ (int)Type::Farm ].v[i].y );
+		if( !points[i].used )
+			continue;
+		if( points[i].on_point.find( _type ) == points[i].on_point.end() )
+			continue;
+		float t = Distance( _x, _y, points[i].x, points[i].y );
 		if( t < distance )
 		{
 			distance = t;
 			closest = i; 
-		}
-	}
-	return std::make_pair( closest, distance );
-}
-std::pair< int, float > Logic::ClosestCity( float _x, float _y )
-{
-	float distance = 10000;
-	int closest = -1;
-	for( int i(0); i < rectangles[ (int)Type::City ].v.size(); i++ )
-	{
-		float t = Distance( _x, _y, rectangles[ (int)Type::City ].v[i].x, rectangles[ (int)Type::City ].v[i].y );
-		if( t < distance )
-		{
-			distance = t;
-			closest = i; 
-		}
-	}
-	return std::make_pair( closest, distance );
-}
-std::pair< int, float > Logic::ClosestStructure( float _x, float _y )
-{
-	float distance = 10000;
-	int closest = -1;
-	for( int i(0); i < rectangles[ (int)Type::Structure ].v.size(); i++ )
-	{
-		float t = Distance( _x, _y, rectangles[ (int)Type::Structure ].v[i].x, rectangles[ (int)Type::Structure ].v[i].y );
-		if( t < distance )
-		{
-			bool structure = false;
-			for each( Structure s in structures )
-				if( s.rectangle == i )
-				{
-					structure = true;
-					break;
-				}
-			if( structure )
-			{
-				distance = t;
-				closest = i; 
-			}
 		}
 	}
 	return std::make_pair( closest, distance );
@@ -246,7 +197,7 @@ bool Logic::OverLappingFarm( float _x, float _y, float _scale )
 {
 	for each( Farm f in farms )
 	{
-		Rectangle& r( rectangles[ (int)Type::Farm ].v[f.rectangle] );
+		Rectangle& r( rectangles[ (int)Type::Farm ][f.rectangle] );
 		if( (_scale + r.scale) / 2 >= sqrt( pow( _x - r.x, 2) + pow( _y - r.y, 2 ) ) )
 			return true;
 	}
@@ -256,7 +207,7 @@ bool Logic::OverLappingCity( float _x, float _y, float _scale )
 {
 	for each( City c in cities )
 	{
-		Rectangle& r( rectangles[ (int)Type::City ].v[c.rectangle] );
+		Rectangle& r( rectangles[ (int)Type::City ][c.rectangle] );
 		if( (_scale + r.scale) / 2 >= sqrt( pow( _x - r.x, 2) + pow( _y - r.y, 2 ) ) )
 			return true;
 	}
@@ -264,30 +215,23 @@ bool Logic::OverLappingCity( float _x, float _y, float _scale )
 }
 
 
-std::string Logic::GetInfo( int _rectangle, Type _t )
+std::string Logic::GetInfo( int _point, Type _t )
 {
 	switch( _t )
 	{
 		case Type::Structure:
-			for each( Structure s in structures )
-				if( s.rectangle == _rectangle )
-					return s;
-			break;
+			return structures[ (int)points[_point].on_point[ _t ] ];
 		case Type::Farm:
-			for each( Farm f in farms )
-				if( f.rectangle == _rectangle )
-					return f;
-			break;
+			return farms[ (int)points[_point].on_point[ _t ] ];
 		case Type::City:
-			for each( City c in cities )
-				if( c.rectangle == _rectangle )
-					return c;
-			break;
-		case Type::Army:
-			return armies[_rectangle];
-			break;
+			return cities[ (int)points[_point].on_point[ _t ] ];
+		default:
+			return "NO INFO";
 	}
-	return "NO INFO";
+}
+std::string Logic::GetArmyInfo( int _army )
+{
+	return armies[_army];
 }
 
 void Logic::PopulationCalculations( float& _food_contained, float& _population, float& _hunger, float _delta_time )
@@ -346,7 +290,7 @@ std::pair<float,float> Logic::ArmyPosition( int _army )
 }
 float Logic::ArmySize( int _army )
 {
-	return rectangles[ (int)Type::Army ].v[ armies[_army].rectangle ].scale;
+	return rectangles[ (int)Type::Army ][ armies[_army].rectangle ].scale;
 }
 
 
@@ -380,8 +324,6 @@ void Logic::Initialize()
 	last_time = glfwGetTime();
 	food_per_person = 0.01f;
 	population_increase = 0.001f;
-	int t = rectangles[ (int)Type::Farm ].insert( Rectangle( 0, 0, 1 ) );
-	farms.push_back( Farm( t ) );
 }
 
 void Logic::Update()

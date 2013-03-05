@@ -8,12 +8,15 @@ class Logic;
 struct Farm
 {
 	int rectangle;
+	int point;
 
 	float food_storage, food_contained, food_production;
 	float population, population_needed;
 	float hunger;
 
-	Farm( int _rectangle );
+	bool used;
+
+	Farm( int _rectangle, int _point );
 	operator std::string ();
 	void Calculate();
 	void Update( Logic& l, float delta_time );

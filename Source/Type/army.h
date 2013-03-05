@@ -24,12 +24,14 @@ struct Army
 
 	float hunger;
 
+	bool used;
+
 	void Move( Logic& l, float delta_time, int& i );
 	void Transport( Logic& l, float delta_time );
 
 	Army( int _rectangle, int _from, int _soldiers, int _carts );
 	operator std::string ();
 	void Calculate();
-	void Update( Logic& l, float delta_time, int& i );
+	void Update( Logic& l, float delta_time, int i );
 };
 

@@ -66,22 +66,25 @@ void Input::Select::Input( float _x, float _y )
 
 	if( select == Type::Farm )
 	{
-		closest = logic.ClosestFarm( _x, _y );
-		if( closest.first != - 1 && closest.second <= rectangles[ (int)Type::Farm ].v[closest.first].scale )
+		closest = logic.Closest( Type::Farm, _x, _y );
+		if( closest.first != - 1 && closest.second <= rectangles[ (int)Type::Farm ][ logic.GetPoint( closest.first ).on_point[ Type::Farm ] ].scale )
 		{
+			Point& p( logic.GetPoint( closest.first ) );
+			Rectangle& r( rectangles[ (int)Type::Farm ][ p.on_point[ Type::Farm ] ] );
 			temp = temp + logic.GetInfo( closest.first, Type::Farm );
-			Rectangle& r( rectangles[ (int)Type::Farm ].v[closest.first] );
 			if( select_rectangle == -1 )
-				select_rectangle = graphic.AddRectangle( (int)Type::Structure, r.scale ); // TODO: Add better texture
-			graphic.MoveRectangle( select_rectangle, r.x, r.y );
+				select_rectangle = graphic.AddRectangle( (int)Type::Structure, 0 ); // TODO: Add better texture
+			graphic.MoveRectangle( select_rectangle, p.x, p.y );
 			graphic.ResizeRectangle( select_rectangle, r.scale );
 		}
 	}
 	else if( select == Type::City )
 	{
-		closest = logic.ClosestCity( _x, _y );
-		if( closest.first != - 1 && closest.second <= rectangles[ (int)Type::City ].v[closest.first].scale )
+		closest = logic.Closest( Type::City, _x, _y );
+		if( closest.first != - 1 && closest.second <= rectangles[ (int)Type::City ][ logic.GetPoint( closest.first ).on_point[ Type::City ] ].scale )
 		{
+			Point& p( logic.GetPoint( closest.first ) );
+			Rectangle& r( rectangles[ (int)Type::City ][ p.on_point[ Type::City ] ] );
 			temp = temp + logic.GetInfo( closest.first, Type::City );
 			if( !lock_soldier_production && glfwGetKey( 'R' ) )
 			{
@@ -94,10 +97,9 @@ void Input::Select::Input( float _x, float _y )
 				lock_cart_production = true;
 			}
 
-			Rectangle& r( rectangles[ (int)Type::City ].v[closest.first] );
 			if( select_rectangle == -1 )
-				select_rectangle = graphic.AddRectangle( (int)Type::Structure, r.scale ); // TODO: Add better texture
-			graphic.MoveRectangle( select_rectangle, r.x, r.y );
+				select_rectangle = graphic.AddRectangle( (int)Type::Structure, 0 ); // TODO: Add better texture
+			graphic.MoveRectangle( select_rectangle, p.x, p.y );
 			graphic.ResizeRectangle( select_rectangle, r.scale );
 		}
 		if( lock_soldier_production && !glfwGetKey( 'R' ) )
@@ -107,14 +109,15 @@ void Input::Select::Input( float _x, float _y )
 	}
 	else if( select == Type::Structure )
 	{
-		closest = logic.ClosestStructure( _x, _y );
-		if( closest.first != - 1 && closest.second <= rectangles[ (int)Type::Structure ].v[closest.first].scale )
+		closest = logic.Closest( Type::Structure, _x, _y );
+		if( closest.first != - 1 && closest.second <= rectangles[ (int)Type::Structure ][ logic.GetPoint( closest.first ).on_point[ Type::Structure ] ].scale )
 		{
-			temp = temp + logic.GetInfo( closest.first, Type::Structure );
-			Rectangle& r( rectangles[ (int)Type::Structure ].v[closest.first] );
+			Point& p( logic.GetPoint( closest.first ) );
+			Rectangle& r( rectangles[ (int)Type::Structure ][ p.on_point[ Type::Structure ] ] );
+			temp = temp + logic.GetInfo( closest.first, Type::Farm );
 			if( select_rectangle == -1 )
-				select_rectangle = graphic.AddRectangle( (int)Type::Structure, r.scale ); // TODO: Add better texture
-			graphic.MoveRectangle( select_rectangle, r.x, r.y );
+				select_rectangle = graphic.AddRectangle( (int)Type::Structure, 0 ); // TODO: Add better texture
+			graphic.MoveRectangle( select_rectangle, p.x, p.y );
 			graphic.ResizeRectangle( select_rectangle, r.scale );
 		}
 	}
@@ -123,7 +126,7 @@ void Input::Select::Input( float _x, float _y )
 		closest = logic.ClosestArmy( _x, _y );
 		if( closest.first != - 1 && closest.second <= 5 )
 		{
-			temp = temp + logic.GetInfo( closest.first, Type::Army );
+			temp = temp + logic.GetArmyInfo( closest.first );
 		}
 	}
 
@@ -160,7 +163,7 @@ void Input::Select::Input( float _x, float _y )
 			}
 			else
 			{
-				closest = logic.ClosestFarm( _x, _y );
+				closest = logic.Closest( Type::Farm, _x, _y );
 				if( closest.first != -1 )
 				{
 					if( glfwGetKey( GLFW_KEY_LSHIFT ) )
@@ -204,7 +207,7 @@ void Input::BuildRoad::Input( float _x, float _y )
 
 	if( create )
 	{
-		closest = logic.ClosestFarm( _x, _y );
+		closest = logic.Closest( Type::Farm, _x, _y );
 		if( closest.first == -1 )
 		{
 			logic.RemoveTopLine();
@@ -218,9 +221,7 @@ void Input::BuildRoad::Input( float _x, float _y )
 		else
 		{
 			to = closest.first;
-			_x = rectangles[ (int)Type::Farm ].v[to].x;
-			_y = rectangles[ (int)Type::Farm ].v[to].y;
-			logic.MoveTopLine( _x, _y );
+			logic.MoveTopLine( logic.GetPoint(to).x, logic.GetPoint(to).y );
 			if( rectangle == -1 )
 				rectangle = graphic.AddRectangle( (int)Type::Road, 0 );
 			logic.ChangeRoad( graphic.GetRectangle( rectangle ), from, to );
@@ -241,11 +242,11 @@ void Input::BuildRoad::Input( float _x, float _y )
 	{
 		if( !create )
 		{
-			closest = logic.ClosestFarm( _x, _y );
+			closest = logic.Closest( Type::Farm, _x, _y );
 			if( closest.first != -1 )
 			{
 				from = closest.first;
-				logic.AddLine( rectangles[ (int)Type::Farm ].v[from].x, rectangles[ (int)Type::Farm ].v[from].y, 0, 0 );
+				logic.AddLine( logic.GetPoint(from).x, logic.GetPoint(from).y, 0, 0 );
 			}
 		}
 		create = true;
@@ -340,11 +341,11 @@ void Input::BuildCity::Input( float _x, float _y )
 	}
 
 	// Draw not completed city
-	closest = logic.ClosestFarm( _x, _y );
+	closest = logic.Closest( Type::Farm, _x, _y );
 	if( closest.first != -1 )
 	{
-		_x = rectangles[ (int)Type::Farm ].v[closest.first].x;
-		_y = rectangles[ (int)Type::Farm ].v[closest.first].y;
+		_x = logic.GetPoint( closest.first ).x;
+		_y = logic.GetPoint( closest.first ).y;
 		if( !logic.OverLappingCity( _x, _y, scale ) )
 		{
 			if( rectangle == -1 )

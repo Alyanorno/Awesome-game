@@ -1,7 +1,7 @@
 #include "farm.h"
 #include "../logic.h"
 
-Farm::Farm( int _rectangle ) : rectangle(_rectangle), food_contained(0), hunger(0)
+Farm::Farm( int _rectangle, int _point ) : rectangle(_rectangle), point(_point), food_contained(0), hunger(0), used(true)
 {
 	Calculate();
 }
@@ -14,7 +14,7 @@ Farm::operator std::string ()
 
 void Farm::Calculate()
 {
-	float size = 3.14159 * rectangles[ (int)Type::Farm ].v[rectangle].scale * rectangles[ (int)Type::Farm ].v[rectangle].scale;
+	float size = 3.14159 * rectangles[ (int)Type::Farm ][rectangle].scale * rectangles[ (int)Type::Farm ][rectangle].scale;
 	food_storage = size * 1000;
 	food_production = size * 10;
 
@@ -24,6 +24,9 @@ void Farm::Calculate()
 
 void Farm::Update( Logic& l, float delta_time )
 {
+	if( !used )
+		return;
+
 	float efficency = population / population_needed;
 	if( efficency > 1.f )
 		efficency = 1.f;

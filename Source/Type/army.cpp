@@ -12,7 +12,7 @@ void Army::Move( Logic& l, float delta_time, int& i )
 				soldiers += l.GetArmies()[j].soldiers;
 				carts += l.GetArmies()[j].carts;
 				rectangles[ (int)Type::Army ].erase( l.GetArmies()[j].rectangle );
-				l.GetArmies().erase( l.GetArmies().begin() + j );
+				l.GetArmies().erase( j );
 				if( j < i )
 					i--;
 				break;
@@ -68,11 +68,11 @@ void Army::Transport( Logic& l, float delta_time )
 }
 
 
-Army::Army( int _rectangle, int _from, int _soldiers, int _carts ) : rectangle(_rectangle), soldiers(_soldiers), carts(_carts), food_stored(0), money_stored(0), speed(1), transporting(Resource::Nothing), stationary(true), hunger(0)
+Army::Army( int _rectangle, int _from, int _soldiers, int _carts ) : rectangle(_rectangle), soldiers(_soldiers), carts(_carts), food_stored(0), money_stored(0), speed(1), transporting(Resource::Nothing), stationary(true), hunger(0), used(true)
 {
 	from = _from;
-	x = rectangles[ (int)Type::Army ].v[rectangle].x;
-	y = rectangles[ (int)Type::Army ].v[rectangle].y;
+	x = rectangles[ (int)Type::Army ][rectangle].x;
+	y = rectangles[ (int)Type::Army ][rectangle].y;
 	Calculate();
 }
 
@@ -81,9 +81,9 @@ void Army::Calculate()
 	storage_capacity = soldiers * 1 + carts * 10;
 	food_consumed = (float)(soldiers + carts) * 0.04f;
 	money_consumed = (float)soldiers * 0.01f;
-	rectangles[ (int)Type::Army ].v[rectangle].x = x;
-	rectangles[ (int)Type::Army ].v[rectangle].y = y;
-	rectangles[ (int)Type::Army ].v[rectangle].scale = sqrt( (soldiers + carts) / 3.14159 );
+	rectangles[ (int)Type::Army ][rectangle].x = x;
+	rectangles[ (int)Type::Army ][rectangle].y = y;
+	rectangles[ (int)Type::Army ][rectangle].scale = sqrt( (soldiers + carts) / 3.14159 );
 }
 
 Army::operator std::string()
@@ -93,26 +93,29 @@ Army::operator std::string()
 	return s.str();
 }
 
-void Army::Update( Logic& l, float delta_time, int& i )
+void Army::Update( Logic& l, float delta_time, int i )
 {
+	if( !used )
+		return;
+
 	// Movement
 	if( !stationary )
 	{
-		Rectangle& r = rectangles[ (int)Type::Farm ].v[to];
+		Point& p = l.GetPoint( to );
 		float distance = speed * delta_time;
-		float d_x = r.x - x;
-		float d_y = r.y - y;
+		float d_x = p.x - x;
+		float d_y = p.y - y;
 		if( d_y == 0 )
 			d_y = 0.0001;
 		float t = Logic::L(d_x) / ( Logic::L(d_x) + Logic::L(d_y) );
-		float x_ = (r.x > x ? distance : -distance) * t;
-		float y_ = (r.y > y ? distance : -distance) * (1-t);
-		if( Logic::L(r.x - x) <= Logic::L(x_) )
-			x = r.x;
-		if( Logic::L(r.y - y) <= Logic::L(y_) )
-			y = r.y;
+		float x_ = (p.x > x ? distance : -distance) * t;
+		float y_ = (p.y > y ? distance : -distance) * (1-t);
+		if( Logic::L(p.x - x) <= Logic::L(x_) )
+			x = p.x;
+		if( Logic::L(p.y - y) <= Logic::L(y_) )
+			y = p.y;
 
-		if( x == r.x && y == r.y )
+		if( x == p.x && y == p.y )
 		{
 			if( (bool)transporting )
 				Transport( l, delta_time );
@@ -158,8 +161,7 @@ void Army::Update( Logic& l, float delta_time, int& i )
 				if( soldiers + carts < 1 )
 				{
 					rectangles[ (int)Type::Army ].erase( l.GetArmies()[i].rectangle );
-					l.GetArmies().erase( l.GetArmies().begin() + i );
-					i--;
+					l.GetArmies().erase( i );
 					return;
 				}
 			}

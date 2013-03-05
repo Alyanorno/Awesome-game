@@ -9,7 +9,8 @@
 class Logic;
 struct City
 {
-	int rectangle, farm_rectangle;
+	int rectangle;
+	int point;
 	float money_storage, money_contained, money_production;
 
 	bool producing_carts;
@@ -22,7 +23,9 @@ struct City
 
 	float hunger;
 
-	City( int _rectangle, int _farm_rectangle );
+	bool used;
+
+	City( int _rectangle , int _point );
 	operator std::string ();
 	void Calculate();
 	void Update( Logic& l, float delta_time );

@@ -2,14 +2,14 @@
 #include "../Logic.h"
 
 
-City::City( int _rectangle, int _farm_rectangle ) : rectangle(_rectangle), farm_rectangle(_farm_rectangle), money_contained(0), producing_carts(0), cart_production_time(1), current_cart_production( cart_production_time ), cart_money(1), producing_soldiers(0), soldier_production_time(1), current_soldier_production( soldier_production_time ), soldier_money(1), hunger(0)
+City::City( int _rectangle, int _point ) : rectangle(_rectangle), point(_point), money_contained(0), producing_carts(0), cart_production_time(1), current_cart_production( cart_production_time ), cart_money(1), producing_soldiers(0), soldier_production_time(1), current_soldier_production( soldier_production_time ), soldier_money(1), hunger(0), used(true)
 {
 	Calculate();
 }
 
 void City::Calculate()
 {
-	float size = 3.14159 * rectangles[ (int)Type::City ].v[rectangle].scale * rectangles[ (int)Type::City ].v[rectangle].scale;
+	float size = 3.14159 * rectangles[ (int)Type::City ][rectangle].scale * rectangles[ (int)Type::City ][rectangle].scale;
 	money_storage = size * 10;
 	money_production = size * 2;
 
@@ -26,11 +26,14 @@ City::operator std::string()
 
 void City::Update( Logic& l, float delta_time )
 {
+	if( !used )
+		return;
+
 	float efficency = population / population_needed;
 	if( efficency > 1.f )
 		efficency = 1.f;
 
-	Farm& f( l.GetFarm( farm_rectangle ) );
+	Farm& f( l.GetFarm( point ) );
 	if( f.food_contained <= 0 )
 	{
 		hunger -= l.food_per_person * population * delta_time;
@@ -48,8 +51,8 @@ void City::Update( Logic& l, float delta_time )
 		current_##NAME##_production -= delta_time * efficency; \
 		if( current_##NAME##_production <= 0 ) \
 		{ \
-			float x = rectangles[ (int)Type::City ].v[rectangle].x; \
-			float y = rectangles[ (int)Type::City ].v[rectangle].y; \
+			float x = rectangles[ (int)Type::City ][rectangle].x; \
+			float y = rectangles[ (int)Type::City ][rectangle].y; \
 			bool army_in_city = false; \
 			for( int k(0); k < l.GetArmies().size(); k++ ) \
 			{ \

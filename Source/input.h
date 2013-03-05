@@ -34,9 +34,10 @@ private:
 	};
 	struct Select : public State
 	{
-		int army_selected;
+		int army_selected, army_select_rectangle;
 		int select_rectangle;
-		bool lock, lock_cart_production, lock_soldier_production;
+		Type select;
+		bool lock, lock_cart_production, lock_soldier_production, lock_select;
 		Select( Graphic& _graphic, Logic& _logic, float& _mouse_wheel );
 		~Select();
 		void Input( float _x, float _y );
@@ -44,6 +45,7 @@ private:
 	struct BuildRoad : public State
 	{
 		int from, to;
+		int rectangle;
 		BuildRoad( Graphic& _graphic, Logic& _logic, float& _mouse_wheel );
 		~BuildRoad();
 		void Input( float _x, float _y );

@@ -86,7 +86,7 @@ void Logic::ToggleSoldierProduction( int _rectangle )
 void Logic::BuildRoad( int _from, int _to )
 {
 	int t = rectangles[ (int)Type::Structure ].insert( Rectangle( 0, 0, 0 ) );
-	ChangeRoad( t, Type::Structure, _from, _to );
+	ChangeRoad( rectangles[ (int)Type::Structure].v[t], _from, _to );
 	structures.push_back( Structure( t, Type::Road, _from, _to ) );
 }
 void Logic::BuildFarm( float _x, float _y, float _scale )
@@ -101,9 +101,9 @@ void Logic::BuildCity( float _x, float _y, float _scale )
 }
 
 
-void Logic::ChangeRoad( int _rectangle, Type _type, int _from, int _to )
+void Logic::ChangeRoad( Rectangle& _rectangle, int _from, int _to )
 {
-	Rectangle& r( rectangles[ (int)_type ].v[_rectangle] );
+	Rectangle& r( _rectangle );
 	Rectangle& from_r( rectangles[ (int)Type::Farm ].v[_from] );
 	Rectangle& to_r( rectangles[ (int)Type::Farm ].v[_to] );
 

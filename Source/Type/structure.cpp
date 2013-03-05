@@ -60,7 +60,7 @@ void Structure::Update( Logic& l, float delta_time, int& i )
 		{
 			case Type::Road:
 				t = rectangles[ (int)Type::Road ].insert( Rectangle( 0, 0, 0 ) );
-				l.ChangeRoad( t, Type::Road, from, to );
+				l.ChangeRoad( rectangles[ (int)Type::Road ].v[t], from, to );
 				l.GetRoads().push_back( Road( t, from, to ) );
 				break;
 			case Type::Farm:

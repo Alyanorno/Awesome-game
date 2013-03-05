@@ -45,6 +45,12 @@ void Army::Transport( Logic& l, float delta_time )
 			}
 			else if( to == transporting_from )
 			{
+				if( hunger > 0 )
+				{
+					f.food_contained -= hunger;
+					hunger = 0;
+				}
+
 				food_stored = storage_capacity;
 				f.food_contained -= food_stored;
 

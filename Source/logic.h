@@ -64,7 +64,7 @@ public:
 	void BuildFarm( float _x, float _y, float _scale );
 	void BuildCity( float _x, float _y, float _scale );
 
-	void ChangeRoad( int _rectangle, Type _type, int _from, int _to );
+	void ChangeRoad( Rectangle& _rectangle, int _from, int _to );
 	void ExpandFarm( int _rectangle, float _size );
 	void ExpandCity( int _rectangle, float _size );
 

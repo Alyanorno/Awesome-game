@@ -3,10 +3,11 @@ DONE: Restructure graphic based on types
 DONE: Interface system
 DONE: Refine interface for construction of units
 DONE: Add road construction
+DONE: Add ability to select cities and farms
 Refine interface for supply management
+Add interface for army options
 Add ability to move population
 Add pathfinding and faster or only movement if on road
-#Add ability to select cities and farms -- Not needed?
 
 
 Step 2: System
@@ -30,7 +31,7 @@ Population system
 	DONE: Increase
 	Solve inbalances by migration
 #Seasons
-#Add moral system
+#Add moral system -- Not needed?
 
 
 

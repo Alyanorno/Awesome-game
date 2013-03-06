@@ -4,7 +4,7 @@
 #include <functional>
 
 enum class Type { Road, Farm, City, Army, Structure, Size };
-enum class Resource { Nothing, Rock, Tree, Food, Gold };
+enum class Resource { Nothing, Stone, Wood, Food, Gold };
 
 template <class T>
 class buffer

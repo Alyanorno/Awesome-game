@@ -249,6 +249,11 @@ std::string Logic::GetArmyInfo( int _army )
 {
 	return armies[_army];
 }
+void Logic::SetArmyState( int _army, Army::State _state )
+{
+	armies[_army].state = _state;
+}
+
 
 void Logic::PopulationCalculations( float& _food_contained, float& _population, float& _hunger, float _delta_time )
 {

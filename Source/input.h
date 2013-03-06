@@ -37,6 +37,7 @@ private:
 		int army_selected, army_select_rectangle;
 		int select_rectangle;
 		Type select;
+		Resource selected_resource;
 		bool lock, lock_cart_production, lock_soldier_production, lock_select;
 		Select( Graphic& _graphic, Logic& _logic, float& _mouse_wheel );
 		~Select();

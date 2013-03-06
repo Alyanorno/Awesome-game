@@ -6,8 +6,9 @@ DONE: Add road construction
 DONE: Add ability to select cities and farms
 DONE: Move food storage to cities
 DONE: Find solution to food balance between city and farm
+DONE: Add interface for army options
+Implement army options
 Refine interface for supply management
-Add interface for army options
 Add ability to move population
 Add pathfinding and faster or only movement if on road
 
@@ -22,7 +23,7 @@ Add resource system
 	Have forests expand over time
 	Resources
 		Tree
-		Rock
+		Stone
 		#Iron
 		#Fertile soil
 Implement destroying/damage citys/farms/structures

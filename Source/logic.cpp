@@ -64,13 +64,13 @@ int Logic::CalculatePathTo( Army& _a, int _to )
 void Logic::ToggleCartProduction( int _point )
 {
 	City& c( cities[ points[_point].on_point[ Type::City ] ] );
-	c.producing_carts = c.producing_carts ? false: true;
+	c.cart.isProducing = c.cart.isProducing ? false: true;
 }
 
 void Logic::ToggleSoldierProduction( int _point )
 {
 	City& c( cities[ points[_point].on_point[ Type::City ] ] );
-	c.producing_soldiers = c.producing_soldiers ? false: true;
+	c.soldier.isProducing = c.soldier.isProducing ? false: true;
 }
 
 
@@ -156,6 +156,23 @@ void Logic::RemoveStructure( int _rectangle )
 float Logic::Distance( float _x, float _y, float __x, float __y )
 {
 	return (_x - __x) * (_x - __x) + (_y - __y) * (_y - __y);
+}
+std::pair< int, float > Logic::Closest( float _x, float _y )
+{
+	float distance = 10000;
+	int closest = -1;
+	for( int i(0); i < points.size(); i++ )
+	{
+		if( !points[i].used )
+			continue;
+		float t = Distance( _x, _y, points[i].x, points[i].y );
+		if( t < distance )
+		{
+			distance = t;
+			closest = i; 
+		}
+	}
+	return std::make_pair( closest, distance );
 }
 std::pair< int, float > Logic::Closest( Type _type, float _x, float _y )
 {
@@ -282,7 +299,7 @@ void Logic::ArmyTransport( int _army, int _to, Resource _transporting )
 	a.transporting = _transporting;
 
 	a.food_stored = a.storage_capacity;
-	GetFarm( a.from ).food_contained -= a.food_stored;
+	GetCity( a.from ).food_contained -= a.food_stored;
 }
 std::pair<float,float> Logic::ArmyPosition( int _army )
 {

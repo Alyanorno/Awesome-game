@@ -11,17 +11,22 @@ struct City
 {
 	int rectangle;
 	int point;
+	float food_storage, food_contained;
 	float money_storage, money_contained, money_production;
 
-	bool producing_carts;
-	float cart_production_time, current_cart_production, cart_money;
-
-	bool producing_soldiers;
-	float soldier_production_time, current_soldier_production, soldier_money;
+	struct Producing
+	{
+		Producing( float _time, float _resource ) : isProducing(false), time(_time), current_time(time), resource(_resource) {}
+		bool isProducing;
+		float time, current_time;
+		float resource;
+	};
+	Producing cart;
+	Producing soldier;
 
 	float population, population_needed;
-
 	float hunger;
+	float size;
 
 	bool used;
 

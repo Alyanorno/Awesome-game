@@ -30,13 +30,13 @@ void Army::Transport( Logic& l, float delta_time )
 {
 	if( to == final_to )
 	{
-		int j = l.GetFarmIndex( to );
+		int j = l.GetCityIndex( to );
 		if( j != -1 )
 		{
-			Farm& f( l.GetFarms()[j] );
+			City& c( l.GetCity(j) );
 			if( to == transporting_to )
 			{
-				f.food_contained += food_stored;
+				c.food_contained += food_stored;
 				food_stored = 0;
 
 				final_to = from;
@@ -47,12 +47,12 @@ void Army::Transport( Logic& l, float delta_time )
 			{
 				if( hunger > 0 )
 				{
-					f.food_contained -= hunger;
+					c.food_contained -= hunger;
 					hunger = 0;
 				}
 
 				food_stored = storage_capacity;
-				f.food_contained -= food_stored;
+				c.food_contained -= food_stored;
 
 				final_to = from;
 				from = to;
@@ -130,17 +130,27 @@ void Army::Update( Logic& l, float delta_time, int i )
 		Calculate();
 	}
 
-	// If on farm, take food from farm.
+	int city = l.GetCityIndex( from );
 	int farm = l.GetFarmIndex( from );
-	if( stationary && farm != -1 )
+	if( stationary && city != -1 )
+	{
+		City& c( l.GetCity( city ) );
+		if( hunger > 0 )
+		{
+			c.food_contained -= hunger;
+			hunger = 0;
+		}
+		c.food_contained -= food_consumed * delta_time;
+	}
+	else if( stationary && farm != -1 )
 	{
 		Farm& f( l.GetFarm( farm ) );
 		if( hunger > 0 )
 		{
-			f.food_contained -= hunger;
+			f.food -= hunger;
 			hunger = 0;
 		}
-		f.food_contained -= food_consumed * delta_time;
+		f.food -= food_consumed * delta_time;
 	}
 	else
 		if( food_stored <= 0 )
@@ -168,6 +178,7 @@ void Army::Update( Logic& l, float delta_time, int i )
 		}
 		else
 			food_stored -= food_consumed * delta_time;
+
 
 	if( money_stored <= 0 )
 	{

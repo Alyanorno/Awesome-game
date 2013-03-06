@@ -113,6 +113,7 @@ public:
 	void RemoveStructure( int _rectangle );
 
 	float Distance( float _x, float _y, float __x, float __y );
+	std::pair< int, float > Closest( float _x, float _y );
 	std::pair< int, float > Closest( Type _type, float _x, float _y );
 	std::pair< int, float > ClosestArmy( float _x, float _y );
 

@@ -72,7 +72,7 @@ float textureCoordinates[] = {
 float deapth = 0.f;
 void Graphic::DrawRectangle( Rectangle& r )
 {
-	if( r.used == false )
+	if( !r.used )
 		return;
 
 	glm::mat4 modelMatrix( glm::mat4( 1.0f ) );

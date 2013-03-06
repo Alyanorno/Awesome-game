@@ -4,6 +4,8 @@ DONE: Interface system
 DONE: Refine interface for construction of units
 DONE: Add road construction
 DONE: Add ability to select cities and farms
+DONE: Move food storage to cities
+DONE: Find solution to food balance between city and farm
 Refine interface for supply management
 Add interface for army options
 Add ability to move population
@@ -23,6 +25,8 @@ Add resource system
 		Rock
 		#Iron
 		#Fertile soil
+Implement destroying/damage citys/farms/structures
+Implement army combat
 Limit construction further
 	No farm/city on mountain
 	No road on mountain

@@ -138,10 +138,6 @@ void Input::Select::Input( float _x, float _y )
 		}
 
 
-	graphic.RemoveTopText();
-	graphic.AddText( temp );
-	graphic.MoveTopText( _x, _y );
-
 	if( lock )
 	{
 		std::pair<float,float> t = logic.ArmyPosition( army_selected );
@@ -151,7 +147,25 @@ void Input::Select::Input( float _x, float _y )
 		graphic.ResizeRectangle( army_select_rectangle, logic.ArmySize( army_selected ) );
 	}
 
-	if( select == Type::Army && glfwGetMouseButton( GLFW_MOUSE_BUTTON_1 ) )
+
+	if( glfwGetKey( GLFW_KEY_LCTRL ) )
+	{
+		// TODO: Show army options
+
+		if( glfwGetKey('1') )
+		{
+		}
+		else if( glfwGetKey('2') )
+		{
+		}
+		else if( glfwGetKey('3') )
+		{
+		}
+		else if( glfwGetKey('4') )
+		{
+		}
+	}
+	if( glfwGetMouseButton( GLFW_MOUSE_BUTTON_1 ) )
 	{
 		if( !create )
 		{
@@ -163,7 +177,7 @@ void Input::Select::Input( float _x, float _y )
 			}
 			else
 			{
-				closest = logic.Closest( Type::Farm, _x, _y );
+				closest = logic.Closest( _x, _y );
 				if( closest.first != -1 )
 				{
 					if( glfwGetKey( GLFW_KEY_LSHIFT ) )
@@ -189,10 +203,14 @@ void Input::Select::Input( float _x, float _y )
 	}
 	else
 		create = false;
+
+	graphic.RemoveTopText();
+	graphic.AddText( temp );
+	graphic.MoveTopText( _x, _y );
 }
 
-Input::BuildRoad::BuildRoad( Graphic& _graphic, Logic& _logic, float& _mouse_wheel )
-	: State( _graphic, _logic, _mouse_wheel ), rectangle(-1)
+	Input::BuildRoad::BuildRoad( Graphic& _graphic, Logic& _logic, float& _mouse_wheel )
+: State( _graphic, _logic, _mouse_wheel ), rectangle(-1)
 {}
 Input::BuildRoad::~BuildRoad()
 {
@@ -393,28 +411,29 @@ void Input::Update()
 	if( glfwGetKey( GLFW_KEY_ESC ) )
 		throw exit_success();
 
-	if( glfwGetKey( '1' ) && !dynamic_cast<Select*>( state.get() ) )
+	bool ctrl = glfwGetKey( GLFW_KEY_LCTRL );
+	if( !ctrl && glfwGetKey( '1' ) && !dynamic_cast<Select*>( state.get() ) )
 	{
 		state.reset();
 		state = std::unique_ptr<State>( new Select( graphic, logic, mouse_wheel ) );
 	}
-	else if( glfwGetKey( '2' ) && !dynamic_cast<BuildRoad*>( state.get() ) )
+	else if( !ctrl && glfwGetKey( '2' ) && !dynamic_cast<BuildRoad*>( state.get() ) )
 	{
 		state.reset();
 		state = std::unique_ptr<State>( new BuildRoad( graphic, logic, mouse_wheel ) );
 	}
-	else if( glfwGetKey( '3' ) && !dynamic_cast<BuildFarm*>( state.get() ) )
+	else if( !ctrl && glfwGetKey( '3' ) && !dynamic_cast<BuildFarm*>( state.get() ) )
 	{
 		state.reset();
 		state = std::unique_ptr<State>( new BuildFarm( graphic, logic, mouse_wheel ) );
 	}
-	else if( glfwGetKey( '4' ) && !dynamic_cast<BuildCity*>( state.get() ) )
+	else if( !ctrl && glfwGetKey( '4' ) && !dynamic_cast<BuildCity*>( state.get() ) )
 	{
 		state.reset();
 		state = std::unique_ptr<State>( new BuildCity( graphic, logic, mouse_wheel ) );
 	}
 
-	if( !glfwGetKey( GLFW_KEY_LCTRL ) )
+	if( !ctrl )
 		graphic.Zoom( glfwGetMouseWheel() - mouse_wheel );
 
 

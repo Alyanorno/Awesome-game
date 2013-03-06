@@ -10,7 +10,7 @@ struct Army
 	int rectangle;
 	int soldiers;
 	int carts;
-	int people;
+	int people, people_max;
 	float storage_capacity;
 	float food_stored, money_stored;
 	float food_consumed, money_consumed;
@@ -20,7 +20,7 @@ struct Army
 	int from, to, final_to;
 	Resource transporting;
 	int transporting_from, transporting_to;
-	enum { Stationary, Moving, CollectingFood, Fighting } state;
+	enum State { Stationary, Moving, CollectFood, CollectPeople, DestroyFarm, DestroyCity, DestroyStructure, Fighting } state;
 
 	float hunger;
 

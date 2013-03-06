@@ -80,7 +80,7 @@ void Army::Transport( Logic& l, float delta_time )
 }
 
 
-Army::Army( int _rectangle, int _from, int _soldiers, int _carts ) : rectangle(_rectangle), soldiers(_soldiers), carts(_carts), food_stored(0), money_stored(0), speed(1), transporting(Resource::Nothing), state(Stationary), hunger(0), used(true)
+Army::Army( int _rectangle, int _from, int _soldiers, int _carts ) : rectangle(_rectangle), soldiers(_soldiers), carts(_carts), people(0), food_stored(0), money_stored(0), speed(1), transporting(Resource::Nothing), state(Stationary), hunger(0), used(true)
 {
 	from = _from;
 	x = rectangles[ (int)Type::Army ][rectangle].x;
@@ -90,6 +90,7 @@ Army::Army( int _rectangle, int _from, int _soldiers, int _carts ) : rectangle(_
 
 void Army::Calculate()
 {
+	people_max = soldiers * 10;
 	storage_capacity = soldiers * 1 + carts * 10;
 	food_consumed = (float)(soldiers + carts) * 0.04f;
 	money_consumed = (float)soldiers * 0.01f;

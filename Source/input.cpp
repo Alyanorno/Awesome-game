@@ -148,21 +148,45 @@ void Input::Select::Input( float _x, float _y )
 	}
 
 
-	if( glfwGetKey( GLFW_KEY_LCTRL ) )
+#define DESELECT_ARMY \
+	if( army_select_rectangle != -1 ) \
+		graphic.RemoveRectangle( army_select_rectangle ); \
+	army_select_rectangle = -1; \
+	lock = false
+
+	if( lock && glfwGetKey( GLFW_KEY_LCTRL ) )
 	{
-		// TODO: Show army options
+		// Show army options
+		temp = temp + "1 - COLLECT PEOPLE\n2 - RELEASE PEOPLE\n3 - COLLECT FOOD FROM FARM\n4 - DESTROY";
 
 		if( glfwGetKey('1') )
 		{
+			// Collect people
+			logic.SetArmyState( army_selected, Army::CollectPeople );
+			DESELECT_ARMY;
 		}
 		else if( glfwGetKey('2') )
 		{
+			// TODO: Release people
+
+			DESELECT_ARMY;
 		}
 		else if( glfwGetKey('3') )
 		{
+			// Collect food from farm
+			logic.SetArmyState( army_selected, Army::CollectFood );
+			DESELECT_ARMY;
 		}
 		else if( glfwGetKey('4') )
 		{
+			// Destroy farm/city/structure
+			if( select == Type::Farm )
+				logic.SetArmyState( army_selected, Army::DestroyFarm );
+			else if( select == Type::City )
+				logic.SetArmyState( army_selected, Army::DestroyCity );
+			else if( select == Type::Structure )
+				logic.SetArmyState( army_selected, Army::DestroyStructure );
+			DESELECT_ARMY;
 		}
 	}
 	if( glfwGetMouseButton( GLFW_MOUSE_BUTTON_1 ) )
@@ -196,13 +220,11 @@ void Input::Select::Input( float _x, float _y )
 	}
 	else if( glfwGetMouseButton( GLFW_MOUSE_BUTTON_2 ) )
 	{
-		if( army_select_rectangle != -1 )
-			graphic.RemoveRectangle( army_select_rectangle );
-		army_select_rectangle = -1;
-		lock = false;
+		DESELECT_ARMY;
 	}
 	else
 		create = false;
+#undef DESELECT_ARMY
 
 	graphic.RemoveTopText();
 	graphic.AddText( temp );
@@ -413,22 +435,22 @@ void Input::Update()
 		throw exit_success();
 
 	bool ctrl = glfwGetKey( GLFW_KEY_LCTRL );
-	if( !ctrl && glfwGetKey( '1' ) && !dynamic_cast<Select*>( state.get() ) )
+	if( !ctrl && ( glfwGetKey( 'Q' ) || glfwGetKey( 'E' ) ) && !dynamic_cast<Select*>( state.get() ) )
 	{
 		state.reset();
 		state = std::unique_ptr<State>( new Select( graphic, logic, mouse_wheel ) );
 	}
-	else if( !ctrl && glfwGetKey( '2' ) && !dynamic_cast<BuildRoad*>( state.get() ) )
+	else if( !ctrl && glfwGetKey( '1' ) && !dynamic_cast<BuildRoad*>( state.get() ) )
 	{
 		state.reset();
 		state = std::unique_ptr<State>( new BuildRoad( graphic, logic, mouse_wheel ) );
 	}
-	else if( !ctrl && glfwGetKey( '3' ) && !dynamic_cast<BuildFarm*>( state.get() ) )
+	else if( !ctrl && glfwGetKey( '2' ) && !dynamic_cast<BuildFarm*>( state.get() ) )
 	{
 		state.reset();
 		state = std::unique_ptr<State>( new BuildFarm( graphic, logic, mouse_wheel ) );
 	}
-	else if( !ctrl && glfwGetKey( '4' ) && !dynamic_cast<BuildCity*>( state.get() ) )
+	else if( !ctrl && glfwGetKey( '3' ) && !dynamic_cast<BuildCity*>( state.get() ) )
 	{
 		state.reset();
 		state = std::unique_ptr<State>( new BuildCity( graphic, logic, mouse_wheel ) );

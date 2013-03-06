@@ -122,6 +122,7 @@ public:
 
 	std::string GetInfo( int _point, Type _t );
 	std::string GetArmyInfo( int _army );
+	void SetArmyState( int _army, Army::State _state );
 
 	void PopulationCalculations( float& _food_contained, float& _population, float& _hunger, float _delta_time );
 

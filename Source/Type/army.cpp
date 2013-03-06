@@ -7,18 +7,16 @@ void Army::Move( Logic& l, float delta_time, int& i )
 	if( to == final_to )
 	{
 		for( int j(0); j < l.GetArmies().size(); j++ )
-			if( i != j && x == l.GetArmies()[j].x && y == l.GetArmies()[j].y )
+			if( l.GetArmy(j).used && i != j && x == l.GetArmy(j).x && y == l.GetArmy(j).y )
 			{
-				soldiers += l.GetArmies()[j].soldiers;
-				carts += l.GetArmies()[j].carts;
-				rectangles[ (int)Type::Army ].erase( l.GetArmies()[j].rectangle );
+				soldiers += l.GetArmy(j).soldiers;
+				carts += l.GetArmy(j).carts;
+				rectangles[ (int)Type::Army ].erase( l.GetArmy(j).rectangle );
 				l.GetArmies().erase( j );
-				if( j < i )
-					i--;
 				break;
 			}
 		from = to;
-		stationary = true;
+		state = Stationary;
 	}
 	else
 	{
@@ -30,21 +28,21 @@ void Army::Transport( Logic& l, float delta_time )
 {
 	if( to == final_to )
 	{
-		int j = l.GetCityIndex( to );
-		if( j != -1 )
+		int i = l.GetCityIndex( to );
+		if( to == transporting_to )
 		{
-			City& c( l.GetCity(j) );
-			if( to == transporting_to )
-			{
-				c.food_contained += food_stored;
-				food_stored = 0;
+			if( i == -1 )
+				throw std::string("Must transport to a city");
+			City& c( l.GetCity(i) );
 
-				final_to = from;
-				from = to;
-				to = l.CalculatePathTo( *this, final_to );
-			}
-			else if( to == transporting_from )
+			c.food_contained += food_stored;
+			food_stored = 0;
+		}
+		else if( to == transporting_from )
+		{
+			if( i != -1 )
 			{
+				City& c( l.GetCity(i) );
 				if( hunger > 0 )
 				{
 					c.food_contained -= hunger;
@@ -53,12 +51,26 @@ void Army::Transport( Logic& l, float delta_time )
 
 				food_stored = storage_capacity;
 				c.food_contained -= food_stored;
+			}
+			else
+			{
+				int j = l.GetFarmIndex( to );
+				if( j == -1 )
+					throw std::string("Must transport from a city or farm");
+				Farm& f( l.GetFarm( j ) );
+				if( hunger > 0 )
+				{
+					f.food -= hunger;
+					hunger = 0;
+				}
 
-				final_to = from;
-				from = to;
-				to = l.CalculatePathTo( *this, final_to );
+				food_stored = storage_capacity;
+				f.food -= food_stored;
 			}
 		}
+		final_to = from;
+		from = to;
+		to = l.CalculatePathTo( *this, final_to );
 	}
 	else
 	{
@@ -68,7 +80,7 @@ void Army::Transport( Logic& l, float delta_time )
 }
 
 
-Army::Army( int _rectangle, int _from, int _soldiers, int _carts ) : rectangle(_rectangle), soldiers(_soldiers), carts(_carts), food_stored(0), money_stored(0), speed(1), transporting(Resource::Nothing), stationary(true), hunger(0), used(true)
+Army::Army( int _rectangle, int _from, int _soldiers, int _carts ) : rectangle(_rectangle), soldiers(_soldiers), carts(_carts), food_stored(0), money_stored(0), speed(1), transporting(Resource::Nothing), state(Stationary), hunger(0), used(true)
 {
 	from = _from;
 	x = rectangles[ (int)Type::Army ][rectangle].x;
@@ -99,7 +111,7 @@ void Army::Update( Logic& l, float delta_time, int i )
 		return;
 
 	// Movement
-	if( !stationary )
+	if( state == Moving )
 	{
 		Point& p = l.GetPoint( to );
 		float distance = speed * delta_time;
@@ -117,7 +129,7 @@ void Army::Update( Logic& l, float delta_time, int i )
 
 		if( x == p.x && y == p.y )
 		{
-			if( (bool)transporting )
+			if( transporting != Resource::Nothing )
 				Transport( l, delta_time );
 			else
 				Move( l, delta_time, i );
@@ -132,7 +144,7 @@ void Army::Update( Logic& l, float delta_time, int i )
 
 	int city = l.GetCityIndex( from );
 	int farm = l.GetFarmIndex( from );
-	if( stationary && city != -1 )
+	if( state == Stationary && city != -1 )
 	{
 		City& c( l.GetCity( city ) );
 		if( hunger > 0 )
@@ -142,7 +154,7 @@ void Army::Update( Logic& l, float delta_time, int i )
 		}
 		c.food_contained -= food_consumed * delta_time;
 	}
-	else if( stationary && farm != -1 )
+	else if( state == Stationary && farm != -1 )
 	{
 		Farm& f( l.GetFarm( farm ) );
 		if( hunger > 0 )

@@ -62,6 +62,7 @@ private:
 	{
 		float scale;
 		int rectangle;
+		int farm;
 		BuildCity( Graphic& _graphic, Logic& _logic, float& _mouse_wheel );
 		~BuildCity();
 		void Input( float _x, float _y );

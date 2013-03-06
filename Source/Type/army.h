@@ -20,7 +20,7 @@ struct Army
 	int from, to, final_to;
 	Resource transporting;
 	int transporting_from, transporting_to;
-	bool stationary;
+	enum { Stationary, Moving, CollectingFood, Fighting } state;
 
 	float hunger;
 

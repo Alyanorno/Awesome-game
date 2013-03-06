@@ -360,10 +360,11 @@ void Input::BuildCity::Input( float _x, float _y )
 
 	// Draw not completed city
 	closest = logic.Closest( Type::Farm, _x, _y );
-	if( closest.first != -1 )
+	farm = closest.first;
+	if( farm != -1 )
 	{
-		_x = logic.GetPoint( closest.first ).x;
-		_y = logic.GetPoint( closest.first ).y;
+		_x = logic.GetPoint( farm ).x;
+		_y = logic.GetPoint( farm ).y;
 		if( !logic.OverLappingCity( _x, _y, scale ) )
 		{
 			if( rectangle == -1 )
@@ -389,7 +390,7 @@ void Input::BuildCity::Input( float _x, float _y )
 	{
 		if( !create && rectangle != -1 )
 		{
-			logic.BuildCity( _x, _y, scale );
+			logic.BuildCity( farm, scale );
 			create = true;
 		}
 	}

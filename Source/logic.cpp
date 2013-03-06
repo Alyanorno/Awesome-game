@@ -55,7 +55,7 @@ int Logic::CalculatePathTo( Army& _a, int _to )
 	}
 
 	// Path not found
-	_a.stationary = true;
+	_a.state = Army::Stationary;
 	return _a.from;
 }
 
@@ -87,11 +87,10 @@ void Logic::BuildFarm( float _x, float _y, float _scale )
 	int t2 = points.insert( Point( _x, _y ) );
 	structures.push_back( Structure( t, Type::Farm, t2 ) );
 }
-void Logic::BuildCity( float _x, float _y, float _scale )
+void Logic::BuildCity( int _point, float _scale )
 {
-	int t = rectangles[ (int)Type::Structure ].insert( Rectangle( _x, _y, _scale ) );
-	int t2 = points.insert( Point( _x, _y ) );
-	structures.push_back( Structure( t, Type::City, t2 ) );
+	int t = rectangles[ (int)Type::Structure ].insert( Rectangle( points[_point].x, points[_point].y, _scale ) );
+	structures.push_back( Structure( t, Type::City, _point ) );
 }
 
 
@@ -285,7 +284,7 @@ void Logic::ArmyTo( int _army, int _to )
 	Army& a( armies[_army] );
 	a.final_to = _to;
 	a.to = CalculatePathTo( a, a.final_to );
-	a.stationary = false;
+	a.state = Army::Moving;
 	a.transporting = Resource::Nothing;
 }
 void Logic::ArmyTransport( int _army, int _to, Resource _transporting )
@@ -295,7 +294,7 @@ void Logic::ArmyTransport( int _army, int _to, Resource _transporting )
 	a.to = CalculatePathTo( a, a.final_to );
 	a.transporting_from = a.from;
 	a.transporting_to = a.to;
-	a.stationary = false;
+	a.state = Army::Moving;
 	a.transporting = _transporting;
 
 	a.food_stored = a.storage_capacity;

@@ -101,7 +101,7 @@ public:
 
 	void BuildRoad( int _from, int _to );
 	void BuildFarm( float _x, float _y, float _scale );
-	void BuildCity( float _x, float _y, float _scale );
+	void BuildCity( int _point, float _scale );
 
 	void ChangeRoad( Rectangle& _rectangle, int _from, int _to, int _point = -1 );
 	void ExpandFarm( int _rectangle, float _size );

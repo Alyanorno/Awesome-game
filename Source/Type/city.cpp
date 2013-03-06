@@ -47,7 +47,7 @@ void City::Update( Logic& l, float delta_time )
 	Farm& f( l.GetFarm( point ) );
 	if( food_contained < food_storage * 0.95f && f.food > -0.01f )
 	{
-		float tax = size * delta_time * efficency;
+		float tax = size * 10 * delta_time * efficency;
 		f.food -= tax;
 		food_contained += tax;
 	}

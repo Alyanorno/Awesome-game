@@ -68,7 +68,7 @@ void Structure::Update( Logic& l, float delta_time, int i )
 				t = rectangles[ (int)Type::Road ].insert( Rectangle( 0, 0, 0 ) );
 				l.ChangeRoad( rectangles[ (int)Type::Road ][t], from, to );
 				t = l.GetRoads().insert( Road( t, from, to ) );
-				l.GetRoad( t ).length = sqrt( pow( Logic::L(l.GetPoint(to).x - l.GetPoint(from).x), 2 ) + pow( Logic::L(l.GetPoint(to).y - l.GetPoint(from).y), 2 ) );
+				l.GetRoadByIndex( t ).length = sqrt( pow( Logic::L(l.GetPoint(to).x - l.GetPoint(from).x), 2 ) + pow( Logic::L(l.GetPoint(to).y - l.GetPoint(from).y), 2 ) );
 				p.erase( Type::Structure );
 				p[ Type::Road ] = t;
 				break;

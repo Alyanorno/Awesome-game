@@ -251,7 +251,8 @@ std::string Logic::GetArmyInfo( int _army )
 }
 void Logic::SetArmyState( int _army, Army::State _state )
 {
-	armies[_army].state = _state;
+	if( armies[_army].state != Army::Moving )
+		armies[_army].state = _state;
 }
 
 
@@ -303,7 +304,7 @@ void Logic::ArmyTransport( int _army, int _to, Resource _transporting )
 	a.transporting = _transporting;
 
 	a.food_stored = a.storage_capacity;
-	GetCity( a.from ).food_contained -= a.food_stored;
+	GetCityByPoint( a.from ).food_contained -= a.food_stored;
 }
 std::pair<float,float> Logic::ArmyPosition( int _army )
 {

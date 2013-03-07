@@ -7,9 +7,10 @@ DONE: Add ability to select cities and farms
 DONE: Move food storage to cities
 DONE: Find solution to food balance between city and farm
 DONE: Add interface for army options
-Implement army options
-Refine interface for supply management
-Add ability to move population
+DONE: Implement army options
+DONE: Refine interface for supply management
+DONE: Move extra population from farm to city
+DONE: Add ability to move population
 Add pathfinding and faster or only movement if on road
 
 

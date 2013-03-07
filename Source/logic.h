@@ -45,7 +45,11 @@ public:
 	static float L( float _x ) { return _x < 0 ? -_x: _x; }
 #define GET( NAME, PLURAL, LOWER_CASE ) \
 	buffer< NAME >& Get##PLURAL() { return LOWER_CASE; } \
-	NAME& Get##NAME( int _point ) \
+	NAME& Get##NAME##ByIndex( int _index ) \
+	{ \
+		return LOWER_CASE[_index]; \
+	} \
+	NAME& Get##NAME##ByPoint( int _point ) \
 	{ \
 		return LOWER_CASE[ GetPoint( _point ).on_point[ Type::NAME ] ]; \
 	} \
@@ -63,7 +67,11 @@ public:
 	GET( Structure, Structures, structures )
 #undef GET
 	buffer< Army >& GetArmies() { return armies; }
-	Army& GetArmy( int _rectangle )
+	Army& GetArmyByIndex( int _i )
+	{
+		return armies[_i];
+	}
+	Army& GetArmyByRectangle( int _rectangle )
 	{
 		for( int i(0); i < armies.size(); i++ )
 			if( armies[i].used && armies[i].rectangle == _rectangle )

@@ -35,6 +35,18 @@ void Farm::Update( Logic& l, float delta_time )
 	if( food > food_max )
 		food = food_max;
 
+	// Move extra population to city if possible
+	if( population > population_needed )
+	{
+		int i = l.GetCityIndex( point );
+		if( i != -1 )
+		{
+			City& c( l.GetCityByIndex( i ) );
+			c.population += population - population_needed;
+			population = population_needed;
+		}
+	}
+
 	l.PopulationCalculations( food, population, hunger, delta_time );
 }
 

@@ -158,7 +158,7 @@ void Input::Select::Input( float _x, float _y )
 		if( glfwGetKey( GLFW_KEY_LCTRL ) )
 		{
 			// Show army options
-			temp = temp + "1 - COLLECT PEOPLE\n2 - RELEASE PEOPLE\n3 - COLLECT FOOD FROM FARM\n4 - DESTROY";
+			temp = temp + "1 - COLLECT PEOPLE\n2 - RELEASE PEOPLE\n3 - COLLECT FOOD FROM FARM\n4 - KILL PEOPLE\n5 - DESTROY";
 
 			if( glfwGetKey('1') )
 			{
@@ -168,7 +168,26 @@ void Input::Select::Input( float _x, float _y )
 			}
 			else if( glfwGetKey('2') )
 			{
-				// TODO: Release people
+				// Release people
+				Army& a( logic.GetArmyByIndex( army_selected ) );
+				if( select == Type::Farm && closest.first != -1 )
+				{
+					Farm& f( logic.GetFarmByPoint( closest.first ) );
+					f.population += a.people;
+					a.people = 0;
+				}
+				else if( select == Type::City && closest.first != -1 )
+				{
+					City& c( logic.GetCityByPoint( closest.first ) );
+					c.population += a.people;
+					a.people = 0;
+				}
+				else if( select == Type::Structure && closest.first != -1 )
+				{
+					Structure& s( logic.GetStructureByPoint( closest.first ) );
+					s.population += a.people;
+					a.people = 0;
+				}
 
 				DESELECT_ARMY;
 			}
@@ -179,6 +198,12 @@ void Input::Select::Input( float _x, float _y )
 				DESELECT_ARMY;
 			}
 			else if( glfwGetKey('4') )
+			{
+				// Kill people
+				logic.SetArmyState( army_selected, Army::KillPeople );
+				DESELECT_ARMY;
+			}
+			else if( glfwGetKey('5') )
 			{
 				// Destroy farm/city/structure
 				if( select == Type::Farm )

@@ -22,6 +22,7 @@ struct Structure
 	bool used;
 
 	Structure( int _rectangle, Type _type, int _point, int _from = -1, int _to = -1 );
+	void Calculate();
 	operator std::string ();
 	void Update( Logic& l, float delta_time, int i );
 };

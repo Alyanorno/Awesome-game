@@ -2,7 +2,7 @@
 #include "../Logic.h"
 
 
-City::City( int _rectangle, int _point ) : rectangle(_rectangle), point(_point), money_contained(0), cart( 1, 1 ), soldier( 1, 1 ), hunger(0), used(true)
+City::City( int _rectangle, int _point ) : rectangle(_rectangle), point(_point), money_contained(0), cart( 1, 1 ), soldier( 1, 1 ), population(0), hunger(0), used(true)
 {
 	Calculate();
 }
@@ -14,7 +14,6 @@ void City::Calculate()
 	money_production = size * 2;
 
 	population_needed = size * 100;
-	population = population_needed; // temp
 }
 
 City::operator std::string()

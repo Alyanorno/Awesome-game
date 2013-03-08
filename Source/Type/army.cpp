@@ -221,9 +221,13 @@ void Army::Update( Logic& l, float delta_time, int i )
 			float collected = soldiers * 10 * delta_time;
 			people += collected;
 			f.population -= collected;
-			if( people > people_max || f.population < 0 )
+			if( people > people_max )
 			{
 				people = people_max;
+				state = Stationary;
+			}
+			else if( f.population < 0 )
+			{
 				f.population = 0;
 				state = Stationary;
 			}
@@ -234,9 +238,13 @@ void Army::Update( Logic& l, float delta_time, int i )
 			float collected = soldiers * 10 * delta_time;
 			people += collected;
 			c.population -= collected;
-			if( people > people_max || c.population < 0 )
+			if( people > people_max )
 			{
 				people = people_max;
+				state = Stationary;
+			}
+			else if( c.population < 0 )
+			{
 				c.population = 0;
 				state = Stationary;
 			}
@@ -247,9 +255,13 @@ void Army::Update( Logic& l, float delta_time, int i )
 			float collected = soldiers * 10 * delta_time;
 			people += collected;
 			s.population -= collected;
-			if( people > people_max || s.population < 0 )
+			if( people > people_max )
 			{
 				people = people_max;
+				state = Stationary;
+			}
+			else if( s.population < 0 )
+			{
 				s.population = 0;
 				state = Stationary;
 			}
@@ -288,17 +300,59 @@ void Army::Update( Logic& l, float delta_time, int i )
 			}
 		}
 	}
-	else if( state == DestroyFarm )
+	else if( state == DestroyFarm && farm != -1 )
 	{
-		// TODO: Add later
+		Farm& f( l.GetFarmByIndex( farm ) );
+		Rectangle& r( rectangles[ (int)Type::Farm ][f.rectangle] );
+
+		float size = r.scale * r.scale;
+		size -= soldiers * 0.1 * delta_time;
+		if( size <= 0.1 )
+		{
+			l.RemoveFarm( from );
+			state = Stationary;
+		}
+		else
+		{
+			r.scale = size / r.scale;
+			f.Calculate();
+		}
 	}
-	else if( state == DestroyCity )
+	else if( state == DestroyCity && city != -1 )
 	{
-		// TODO: Add later
+		City& c( l.GetCityByIndex( city ) );
+		Rectangle& r( rectangles[ (int)Type::City ][c.rectangle] );
+
+		float size = r.scale * r.scale;
+		size -= soldiers * 0.1 * delta_time;
+		if( size <= 0.1 )
+		{
+			l.RemoveCity( from );
+			state = Stationary;
+		}
+		else
+		{
+			r.scale = size / r.scale;
+			c.Calculate();
+		}
 	}
-	else if( state == DestroyStructure )
+	else if( state == DestroyStructure && structure != -1 )
 	{
-		// TODO: Add later
+		Structure& s( l.GetStructureByIndex( structure ) );
+		Rectangle& r( rectangles[ (int)Type::Structure ][s.rectangle] );
+
+		float size = r.scale * r.scale;
+		size -= soldiers * 0.1 * delta_time;
+		if( size <= 0.1 )
+		{
+			l.RemoveStructure( from );
+			state = Stationary;
+		}
+		else
+		{
+			r.scale = size / r.scale;
+			s.Calculate();
+		}
 	}
 	else if( state == Fighting )
 	{

@@ -1,7 +1,7 @@
 #include "farm.h"
 #include "../logic.h"
 
-Farm::Farm( int _rectangle, int _point ) : rectangle(_rectangle), point(_point), food(0), hunger(0), used(true)
+Farm::Farm( int _rectangle, int _point ) : rectangle(_rectangle), point(_point), population(0), food(0), hunger(0), used(true)
 {
 	Calculate();
 }
@@ -19,7 +19,6 @@ void Farm::Calculate()
 	food_production = size * 10;
 
 	population_needed = size * 100;
-	population = population_needed; // temp
 }
 
 void Farm::Update( Logic& l, float delta_time )

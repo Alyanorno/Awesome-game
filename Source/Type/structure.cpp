@@ -4,6 +4,10 @@
 
 Structure::Structure( int _rectangle, Type _type, int _point, int _from, int _to ) : rectangle(_rectangle), type(_type), point(_point), from(_from), to(_to), food_contained(0), money_supplied(0), hunger(0), used(true)
 {
+	Calculate();
+}
+void Structure::Calculate()
+{
 	Rectangle& r( rectangles[ (int)Type::Structure ][rectangle] );
 	float size = 3.14159 * r.scale * r.scale;
 	switch( type )
@@ -21,14 +25,14 @@ Structure::Structure( int _rectangle, Type _type, int _point, int _from, int _to
 			production_time = 1 * size;
 			break;
 		default:
-			throw std::string( "Invalid type for construction: " + std::to_string( (int)_type ) );
+			throw std::string( "Invalid type for construction: " + std::to_string( (int)type ) );
 	}
 
 	money_supplied = money_needed; // temp
 
 	population_needed = size * 100;
 	population = population_needed; // temp
-	food_contained = population * 1000; // temp
+	food_contained = population * 100; // temp
 }
 
 Structure::operator std::string()
@@ -71,12 +75,18 @@ void Structure::Update( Logic& l, float delta_time, int i )
 				l.GetRoadByIndex( t ).length = sqrt( pow( Logic::L(l.GetPoint(to).x - l.GetPoint(from).x), 2 ) + pow( Logic::L(l.GetPoint(to).y - l.GetPoint(from).y), 2 ) );
 				p.erase( Type::Structure );
 				p[ Type::Road ] = t;
+
+				l.GetFarmByPoint(from).population += population;
+				l.GetFarmByPoint(from).food += food_contained;
 				break;
 			case Type::Farm:
 				t = rectangles[ (int)Type::Farm ].insert( Rectangle( sr.x, sr.y, sr.scale ) );
 				t = l.GetFarms().insert( Farm( t, point ) );
 				p.erase( Type::Structure );
 				p[ Type::Farm ] = t;
+
+				l.GetFarmByIndex(t).population += population;
+				l.GetFarmByIndex(t).food += food_contained;
 				break;
 			case Type::City:
 				for each( Farm f in l.GetFarms() )
@@ -90,6 +100,9 @@ void Structure::Update( Logic& l, float delta_time, int i )
 						t = l.GetCities().insert( City( t, point ) );
 						p.erase( Type::Structure );
 						p[ Type::City ] = t;
+
+						l.GetCityByIndex(t).population += population;
+						l.GetCityByIndex(t).food_contained += food_contained;
 						break;
 					}
 				}

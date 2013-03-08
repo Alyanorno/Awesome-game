@@ -114,41 +114,13 @@ void Logic::ChangeRoad( Rectangle& _rectangle, int _from, int _to, int _point )
 
 	r.rotation = atan2( (to_p.x - from_p.x), (to_p.y - from_p.y) ) * (180 / 3.14159);
 }
-void Logic::ExpandFarm( int _rectangle, float _size )
+void Logic::ExpandFarm( int _point, float _size )
 {
 	// TODO: Add construction.
 }
-void Logic::ExpandCity( int _rectangle, float _size )
+void Logic::ExpandCity( int _point, float _size )
 {
 	// TODO: Add construction.
-}
-void Logic::DestroyRoad( int _line )
-{
-	// Not possible at the moment
-}
-void Logic::DestroyFarm( int _rectangle )
-{
-	int i = 0;
-	for( ; i < farms.size(); i++ )
-		if( farms[i].rectangle == _rectangle )
-			break;
-	farms.erase( i );
-}
-void Logic::DestroyCity( int _rectangle )
-{
-	int i = 0;
-	for( ; i < cities.size(); i++ )
-		if( cities[i].rectangle == _rectangle )
-			break;
-	cities.erase( i );
-}
-void Logic::RemoveStructure( int _rectangle )
-{
-	int i = 0;
-	for( ; i < structures.size(); i++ )
-		if( structures[i].rectangle == _rectangle )
-			break;
-	structures.erase( i );
 }
 
 

@@ -60,6 +60,17 @@ public:
 			return -1; \
 		else \
 			return p[ Type::NAME ]; \
+	} \
+	void Remove##NAME( int _point ) \
+	{ \
+		std::map< Type, int >& p( GetPoint(_point).on_point ); \
+		if( p.find( Type::NAME ) == p.end() ) \
+			return; \
+		rectangles[ (int)Type::NAME ].erase( p[ Type::NAME ] ); \
+		LOWER_CASE.erase( p[ Type::NAME ] ); \
+		p.erase( Type::NAME ); \
+		if( p.empty() ) \
+			points.erase(_point); \
 	}
 	GET( Road, Roads, roads )
 	GET( Farm, Farms, farms )
@@ -112,13 +123,8 @@ public:
 	void BuildCity( int _point, float _scale );
 
 	void ChangeRoad( Rectangle& _rectangle, int _from, int _to, int _point = -1 );
-	void ExpandFarm( int _rectangle, float _size );
-	void ExpandCity( int _rectangle, float _size );
-
-	void DestroyRoad( int _line );
-	void DestroyFarm( int _rectangle );
-	void DestroyCity( int _rectangle );
-	void RemoveStructure( int _rectangle );
+	void ExpandFarm( int _point, float _size );
+	void ExpandCity( int _point, float _size );
 
 	float Distance( float _x, float _y, float __x, float __y );
 	std::pair< int, float > Closest( float _x, float _y );

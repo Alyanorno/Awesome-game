@@ -27,8 +27,9 @@ Add resource system
 		Stone
 		#Iron
 		#Fertile soil
-Implement destroying/damage citys/farms/structures
-Implement army combat
+DONE: Implement destroying/damage citys/farms/structures
+Add interface for expanding citys/farms
+Implement expanding citys/farms
 Limit construction further
 	No farm/city on mountain
 	No road on mountain
@@ -93,6 +94,7 @@ Step 3: Game
 Add other teams
 Implement simple AI
 Add interaction with AI (diplomacy)
+Implement combat
 #Height map
 #other graphical enchantments
 #Network (multiplayer)

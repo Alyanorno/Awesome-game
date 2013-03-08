@@ -13,7 +13,6 @@ struct Farm
 	float food, food_max, food_production;
 	float population, population_needed;
 	float hunger;
-	float size;
 
 	bool used;
 

@@ -341,18 +341,13 @@ void Army::Update( Logic& l, float delta_time, int i )
 		Structure& s( l.GetStructureByIndex( structure ) );
 		Rectangle& r( rectangles[ (int)Type::Structure ][s.rectangle] );
 
-		float size = r.scale * r.scale;
-		size -= soldiers * 0.1 * delta_time;
-		if( size <= 0.1 )
+		if( s.build_progress <= 0.1 )
 		{
 			l.RemoveStructure( from );
 			state = Stationary;
 		}
 		else
-		{
-			r.scale = size / r.scale;
-			s.Calculate();
-		}
+			s.build_progress -= soldiers * delta_time;
 	}
 	else if( state == Fighting )
 	{

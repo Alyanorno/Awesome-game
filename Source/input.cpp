@@ -114,7 +114,7 @@ void Input::Select::Input( float _x, float _y )
 		{
 			Point& p( logic.GetPoint( closest.first ) );
 			Rectangle& r( rectangles[ (int)Type::Structure ][ p.on_point[ Type::Structure ] ] );
-			temp = temp + logic.GetInfo( closest.first, Type::Farm );
+			temp = temp + logic.GetInfo( closest.first, Type::Structure );
 			if( select_rectangle == -1 )
 				select_rectangle = graphic.AddRectangle( (int)Type::Structure, 0 ); // TODO: Add better texture
 			graphic.MoveRectangle( select_rectangle, p.x, p.y );
@@ -348,7 +348,7 @@ void Input::BuildRoad::Input( float _x, float _y )
 }
 
 Input::BuildFarm::BuildFarm( Graphic& _graphic, Logic& _logic, float& _mouse_wheel )
-	: State( _graphic, _logic, _mouse_wheel ), scale(1.f)
+	: State( _graphic, _logic, _mouse_wheel ), scale(1.f), expand(false)
 {
 	mouse_wheel = glfwGetMouseWheel() - graphic.GetZoom();
 	scale = 1 + mouse_wheel / 10;

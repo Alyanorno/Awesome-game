@@ -79,18 +79,18 @@ void Logic::BuildRoad( int _from, int _to )
 	int t = rectangles[ (int)Type::Structure ].insert( Rectangle( 0, 0, 0 ) );
 	int t2 = points.insert( Point( 0, 0 ) );
 	ChangeRoad( rectangles[ (int)Type::Structure][t], _from, _to, t2 );
-	structures.push_back( Structure( t, Type::Road, t2, _from, _to ) );
+	structures.push_back( Structure( *this, t, Type::Road, t2, false, _from, _to ) );
 }
 void Logic::BuildFarm( float _x, float _y, float _scale )
 {
 	int t = rectangles[ (int)Type::Structure ].insert( Rectangle( _x, _y, _scale ) );
 	int t2 = points.insert( Point( _x, _y ) );
-	structures.push_back( Structure( t, Type::Farm, t2 ) );
+	structures.push_back( Structure( *this, t, Type::Farm, t2 ) );
 }
 void Logic::BuildCity( int _point, float _scale )
 {
 	int t = rectangles[ (int)Type::Structure ].insert( Rectangle( points[_point].x, points[_point].y, _scale ) );
-	structures.push_back( Structure( t, Type::City, _point ) );
+	structures.push_back( Structure( *this, t, Type::City, _point ) );
 }
 
 

@@ -14,7 +14,7 @@ Farm::operator std::string ()
 
 void Farm::Calculate()
 {
-	size = 3.14159 * rectangles[ (int)Type::Farm ][rectangle].scale * rectangles[ (int)Type::Farm ][rectangle].scale;
+	float size = 3.14159 * rectangles[ (int)Type::Farm ][rectangle].scale * rectangles[ (int)Type::Farm ][rectangle].scale;
 	food_max = size * 1000;
 	food_production = size * 10;
 

@@ -47,6 +47,7 @@ private:
 	{
 		int from, to;
 		int rectangle;
+		bool expand;
 		BuildRoad( Graphic& _graphic, Logic& _logic, float& _mouse_wheel );
 		~BuildRoad();
 		void Input( float _x, float _y );
@@ -55,6 +56,7 @@ private:
 	{
 		float scale;
 		int rectangle;
+		bool expand;
 		BuildFarm( Graphic& _graphic, Logic& _logic, float& _mouse_wheel );
 		~BuildFarm();
 		void Input( float _x, float _y );

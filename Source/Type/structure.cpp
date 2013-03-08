@@ -2,9 +2,12 @@
 #include "../logic.h"
 
 
-Structure::Structure( int _rectangle, Type _type, int _point, int _from, int _to ) : rectangle(_rectangle), type(_type), point(_point), from(_from), to(_to), food_contained(0), money_supplied(0), hunger(0), used(true)
+Structure::Structure( Logic& l, int _rectangle, Type _type, int _point, bool _expand, int _from, int _to ) : rectangle(_rectangle), type(_type), point(_point), from(_from), to(_to), food_contained(0), build_progress(0), build_complete(0), hunger(0), used(true), expand(_expand)
 {
-	Calculate();
+	if( !expand )
+		Calculate();
+	else
+		CalculateExpansion(l);
 }
 void Structure::Calculate()
 {
@@ -13,22 +16,44 @@ void Structure::Calculate()
 	switch( type )
 	{
 		case Type::Road:
-			money_needed = 1 * r.scale_x;
-			production_time = 0.1 * r.scale_x;
+			build_complete = 0.1 * r.scale_x;
 			break;
 		case Type::Farm:
-			money_needed = 100 * size;
-			production_time = 1 * size;
+			build_complete = 1 * size;
 			break;
 		case Type::City:
-			money_needed = 100 * size;
-			production_time = 1 * size;
+			build_complete = 1 * size;
 			break;
 		default:
 			throw std::string( "Invalid type for construction: " + std::to_string( (int)type ) );
 	}
 
-	money_supplied = money_needed; // temp
+	population_needed = size * 100;
+	population = population_needed; // temp
+	food_contained = population * 100; // temp
+}
+void Structure::CalculateExpansion( Logic& l )
+{
+	Rectangle& s_r( rectangles[ (int)Type::Structure ][rectangle] );
+	float s_size = 3.14159 * s_r.scale * s_r.scale;
+	float size;
+
+	if( type == Type::Farm )
+	{
+		Farm& f( l.GetFarmByPoint( point ) );
+		Rectangle& r( rectangles[ (int)Type::Farm ][ f.rectangle ] );
+		size = 3.14159 * r.scale * r.scale - s_size;
+		build_complete = 1 * size;
+	}
+	else if( type == Type::City )
+	{
+		City& c( l.GetCityByPoint( point ) );
+		Rectangle& r( rectangles[ (int)Type::City ][ c.rectangle ] );
+		size = 3.14159 * r.scale * r.scale - s_size;
+		build_complete = 1 * size;
+	}
+	else
+			throw std::string( "Invalid type for construction: " + std::to_string( (int)type ) );
 
 	population_needed = size * 100;
 	population = population_needed; // temp
@@ -38,7 +63,7 @@ void Structure::Calculate()
 Structure::operator std::string()
 {
 	std::stringstream s;
-	s << "STRUCTURE" << std::endl << (int)(money_supplied+.5f) << "/" << (int)(money_needed+.5f) << "$" << std::endl << (int)(production_time+.5f) << " PRODUCTION TIME" << std::endl << (int)(population+.5f) << "/" << (int)(population_needed+.5f) << " PEOPLE" << std::endl;
+	s << "STRUCTURE" << std::endl << (int)(build_progress+.5f) << "/" << (int)(build_complete+.5f) << " PROGRESS" << std::endl << (int)(population+.5f) << "/" << (int)(population_needed+.5f) << " PEOPLE" << std::endl;
 	return s.str();
 }
 
@@ -49,22 +74,17 @@ void Structure::Update( Logic& l, float delta_time, int i )
 
 	l.PopulationCalculations( food_contained, population, hunger, delta_time );
 
-	if( money_supplied <= -0.001 )
-		return;
-
 	float efficency = population / population_needed;
 	if( efficency > 1.f )
 		efficency = 1.f;
 
 	production_time -= delta_time * efficency;
-	money_supplied -= (money_needed / production_time) * delta_time * efficency;
-	money_needed -= (money_needed / production_time) * delta_time * efficency;
+	build_progress += (population_needed / 100) * delta_time * efficency;
 
 	int t;
 	std::map< Type, int >& p( l.GetPoint( point ).on_point );
-	Rectangle r;
 	Rectangle& sr( rectangles[ (int)Type::Structure ][rectangle] );
-	if( production_time <= 0.1 )
+	if( build_progress > build_complete )
 	{
 		switch( type )
 		{
@@ -80,32 +100,48 @@ void Structure::Update( Logic& l, float delta_time, int i )
 				l.GetFarmByPoint(from).food += food_contained;
 				break;
 			case Type::Farm:
-				t = rectangles[ (int)Type::Farm ].insert( Rectangle( sr.x, sr.y, sr.scale ) );
-				t = l.GetFarms().insert( Farm( t, point ) );
-				p.erase( Type::Structure );
-				p[ Type::Farm ] = t;
+				if( expand )
+				{
+					t = l.GetFarmIndex( point );
+					rectangles[ (int)Type::Farm ][ l.GetFarmByIndex(t).rectangle ].scale = sr.scale;
+					l.GetFarmByIndex(t).Calculate();
+				}
+				else
+				{
+					t = rectangles[ (int)Type::Farm ].insert( Rectangle( sr.x, sr.y, sr.scale ) );
+					t = l.GetFarms().insert( Farm( t, point ) );
+					p.erase( Type::Structure );
+					p[ Type::Farm ] = t;
+				}
 
 				l.GetFarmByIndex(t).population += population;
 				l.GetFarmByIndex(t).food += food_contained;
 				break;
 			case Type::City:
-				for each( Farm f in l.GetFarms() )
+				if( expand )
 				{
-					if( !f.used )
-						continue;
-					Rectangle& fr( rectangles[ (int)Type::Farm ][f.rectangle] );
-					if( fr.x == sr.x && fr.y == fr.y )
-					{
-						t = rectangles[ (int)Type::City ].insert( Rectangle( sr.x, sr.y, sr.scale ) );
-						t = l.GetCities().insert( City( t, point ) );
-						p.erase( Type::Structure );
-						p[ Type::City ] = t;
-
-						l.GetCityByIndex(t).population += population;
-						l.GetCityByIndex(t).food_contained += food_contained;
-						break;
-					}
+					t = l.GetCityIndex( point );
+					rectangles[ (int)Type::City ][ l.GetCityByIndex(t).rectangle ].scale = sr.scale;
+					l.GetCityByIndex(t).Calculate();
 				}
+				else
+					for each( Farm f in l.GetFarms() )
+					{
+						if( !f.used )
+							continue;
+						Rectangle& fr( rectangles[ (int)Type::Farm ][f.rectangle] );
+						if( fr.x == sr.x && fr.y == fr.y )
+						{
+							t = rectangles[ (int)Type::City ].insert( Rectangle( sr.x, sr.y, sr.scale ) );
+							t = l.GetCities().insert( City( t, point ) );
+							p.erase( Type::Structure );
+							p[ Type::City ] = t;
+
+							l.GetCityByIndex(t).population += population;
+							l.GetCityByIndex(t).food_contained += food_contained;
+							break;
+						}
+					}
 				break;
 		}
 		rectangles[ (int)Type::Structure ].erase( rectangle );

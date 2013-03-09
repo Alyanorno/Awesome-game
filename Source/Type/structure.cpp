@@ -16,13 +16,13 @@ void Structure::Calculate()
 	switch( type )
 	{
 		case Type::Road:
-			build_complete = 0.1 * r.scale_x;
+			build_complete = 0.5 * r.scale_x;
 			break;
 		case Type::Farm:
-			build_complete = 1 * size;
+			build_complete = 5 * size;
 			break;
 		case Type::City:
-			build_complete = 1 * size;
+			build_complete = 5 * size;
 			break;
 		default:
 			throw std::string( "Invalid type for construction: " + std::to_string( (int)type ) );
@@ -42,15 +42,15 @@ void Structure::CalculateExpansion( Logic& l )
 	{
 		Farm& f( l.GetFarmByPoint( point ) );
 		Rectangle& r( rectangles[ (int)Type::Farm ][ f.rectangle ] );
-		size = 3.14159 * r.scale * r.scale - s_size;
-		build_complete = 1 * size;
+		size = s_size - 3.14159 * r.scale * r.scale;
+		build_complete = 5 * size;
 	}
 	else if( type == Type::City )
 	{
 		City& c( l.GetCityByPoint( point ) );
 		Rectangle& r( rectangles[ (int)Type::City ][ c.rectangle ] );
-		size = 3.14159 * r.scale * r.scale - s_size;
-		build_complete = 1 * size;
+		size = s_size - 3.14159 * r.scale * r.scale;
+		build_complete = 5 * size;
 	}
 	else
 			throw std::string( "Invalid type for construction: " + std::to_string( (int)type ) );
@@ -110,9 +110,9 @@ void Structure::Update( Logic& l, float delta_time, int i )
 				{
 					t = rectangles[ (int)Type::Farm ].insert( Rectangle( sr.x, sr.y, sr.scale ) );
 					t = l.GetFarms().insert( Farm( t, point ) );
-					p.erase( Type::Structure );
-					p[ Type::Farm ] = t;
 				}
+				p.erase( Type::Structure );
+				p[ Type::Farm ] = t;
 
 				l.GetFarmByIndex(t).population += population;
 				l.GetFarmByIndex(t).food += food_contained;
@@ -123,6 +123,7 @@ void Structure::Update( Logic& l, float delta_time, int i )
 					t = l.GetCityIndex( point );
 					rectangles[ (int)Type::City ][ l.GetCityByIndex(t).rectangle ].scale = sr.scale;
 					l.GetCityByIndex(t).Calculate();
+					p.erase( Type::Structure );
 				}
 				else
 					for each( Farm f in l.GetFarms() )

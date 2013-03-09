@@ -66,6 +66,8 @@ private:
 		float scale;
 		int rectangle;
 		int farm;
+		bool expand;
+		int expand_size;
 		BuildCity( Graphic& _graphic, Logic& _logic, float& _mouse_wheel );
 		~BuildCity();
 		void Input( float _x, float _y );

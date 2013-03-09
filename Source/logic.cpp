@@ -79,18 +79,19 @@ void Logic::BuildRoad( int _from, int _to )
 	int t = rectangles[ (int)Type::Structure ].insert( Rectangle( 0, 0, 0 ) );
 	int t2 = points.insert( Point( 0, 0 ) );
 	ChangeRoad( rectangles[ (int)Type::Structure][t], _from, _to, t2 );
-	structures.push_back( Structure( *this, t, Type::Road, t2, false, _from, _to ) );
+	points[t2].on_point[ Type::Structure ] = structures.insert( Structure( *this, t, Type::Road, t2, false, _from, _to ) );
 }
 void Logic::BuildFarm( float _x, float _y, float _scale )
 {
 	int t = rectangles[ (int)Type::Structure ].insert( Rectangle( _x, _y, _scale ) );
 	int t2 = points.insert( Point( _x, _y ) );
-	structures.push_back( Structure( *this, t, Type::Farm, t2 ) );
+	points[t2].on_point[ Type::Structure ] =  structures.insert( Structure( *this, t, Type::Farm, t2 ) );
 }
 void Logic::BuildCity( int _point, float _scale )
 {
-	int t = rectangles[ (int)Type::Structure ].insert( Rectangle( points[_point].x, points[_point].y, _scale ) );
-	structures.push_back( Structure( *this, t, Type::City, _point ) );
+	Point& p( points[_point] );
+	int t = rectangles[ (int)Type::Structure ].insert( Rectangle( p.x, p.y, _scale ) );
+	p.on_point[ Type::Structure ] = structures.insert( Structure( *this, t, Type::City, _point ) );
 }
 
 
@@ -114,13 +115,23 @@ void Logic::ChangeRoad( Rectangle& _rectangle, int _from, int _to, int _point )
 
 	r.rotation = atan2( (to_p.x - from_p.x), (to_p.y - from_p.y) ) * (180 / 3.14159);
 }
-void Logic::ExpandFarm( int _point, float _size )
+void Logic::ExpandFarm( int _point, float _scale )
 {
-	// TODO: Add construction.
+	Point& p( points[_point] );
+	float scale = rectangles[ (int)Type::Farm ][ farms[ p.on_point[ Type::Farm ] ].rectangle ].scale;
+	if( _scale <= scale )
+		return;
+	int t = rectangles[ (int)Type::Structure ].insert( Rectangle( p.x, p.y, _scale ) );
+	p.on_point[ Type::Structure ] = structures.insert( Structure( *this, t, Type::Farm, _point, true ) );
 }
-void Logic::ExpandCity( int _point, float _size )
+void Logic::ExpandCity( int _point, float _scale )
 {
-	// TODO: Add construction.
+	Point& p( points[_point] );
+	float scale = rectangles[ (int)Type::City ][ cities[ p.on_point[ Type::City ] ].rectangle ].scale;
+	if( _scale <= scale )
+		return;
+	int t = rectangles[ (int)Type::Structure ].insert( Rectangle( p.x, p.y, _scale ) );
+	p.on_point[ Type::Structure ] = structures.insert( Structure( *this, t, Type::City, _point, true ) );
 }
 
 
@@ -196,6 +207,8 @@ bool Logic::OverLappingCity( float _x, float _y, float _scale )
 	for each( City c in cities )
 	{
 		Rectangle& r( rectangles[ (int)Type::City ][c.rectangle] );
+		if( r.x == _x && r.y == _y )
+			continue;
 		if( (_scale + r.scale) / 2 >= sqrt( pow( _x - r.x, 2) + pow( _y - r.y, 2 ) ) )
 			return true;
 	}

@@ -76,7 +76,7 @@ public:
 	GET( Farm, Farms, farms )
 	GET( City, Cities, cities )
 	GET( Structure, Structures, structures )
-#undef GET
+#undef GEa
 	buffer< Army >& GetArmies() { return armies; }
 	Army& GetArmyByIndex( int _i )
 	{
@@ -123,8 +123,8 @@ public:
 	void BuildCity( int _point, float _scale );
 
 	void ChangeRoad( Rectangle& _rectangle, int _from, int _to, int _point = -1 );
-	void ExpandFarm( int _point, float _size );
-	void ExpandCity( int _point, float _size );
+	void ExpandFarm( int _point, float _scale );
+	void ExpandCity( int _point, float _scale );
 
 	float Distance( float _x, float _y, float __x, float __y );
 	std::pair< int, float > Closest( float _x, float _y );

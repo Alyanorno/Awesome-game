@@ -30,7 +30,7 @@ Add resource system
 		#Fertile soil
 DONE: Implement destroying/damage cities/farms/structures
 DONE: Implement expanding cities/farms
-Add interface for expanding cities/farms
+DONE: Add interface for expanding cities/farms
 Limit construction further
 	No farm/city on mountain
 	No road on mountain

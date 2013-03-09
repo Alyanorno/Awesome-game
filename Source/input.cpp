@@ -355,7 +355,7 @@ Input::BuildFarm::BuildFarm( Graphic& _graphic, Logic& _logic, float& _mouse_whe
 	rectangle = graphic.AddRectangle( (int)Type::Farm, scale );
 }
 Input::BuildFarm::~BuildFarm()
-	{ if( rectangle != -1 ) graphic.RemoveRectangle( rectangle ); }
+	{ graphic.RemoveRectangle( rectangle ); }
 void Input::BuildFarm::Input( float _x, float _y )
 {
 	std::pair<int,float> closest;
@@ -363,31 +363,30 @@ void Input::BuildFarm::Input( float _x, float _y )
 	{
 		mouse_wheel = glfwGetMouseWheel() - graphic.GetZoom();
 		scale = 1 + mouse_wheel / 10;
-		if( rectangle != -1 )
-			graphic.ResizeRectangle( rectangle, scale );
+		graphic.ResizeRectangle( rectangle, scale );
 	}
 
 	if( logic.OverLappingFarm( _x, _y, scale ) )
 	{
-		if( rectangle != -1 )
-		{
-			graphic.RemoveRectangle( rectangle );
-			rectangle = -1;
-		}
+		closest = logic.Closest( Type::Farm, _x, _y );
+		_x = logic.GetPoint( closest.first ).x;
+		_y = logic.GetPoint( closest.first ).y;
+		expand = true;
 	}
 	else
-		if( rectangle == -1 )
-			rectangle = graphic.AddRectangle( (int)Type::Farm, scale );
+		expand = false;
 
 	// Draw not completed farm
-	if( rectangle != -1 )
-		graphic.MoveRectangle( rectangle, _x, _y );
+	graphic.MoveRectangle( rectangle, _x, _y );
 
 	if( glfwGetMouseButton( GLFW_MOUSE_BUTTON_1 ) )
 	{
-		if( !create && rectangle != -1 )
+		if( !create )
 		{
-			logic.BuildFarm( _x, _y, scale );
+			if( !expand )
+				logic.BuildFarm( _x, _y, scale );
+			else
+				logic.ExpandFarm( closest.first, scale );
 			create = true;
 		}
 	}
@@ -398,7 +397,7 @@ void Input::BuildFarm::Input( float _x, float _y )
 
 
 Input::BuildCity::BuildCity( Graphic& _graphic, Logic& _logic, float& _mouse_wheel )
-	: State( _graphic, _logic, _mouse_wheel ), scale(1.f)
+	: State( _graphic, _logic, _mouse_wheel ), scale(1.f), expand(false)
 {
 	mouse_wheel = glfwGetMouseWheel() - graphic.GetZoom();
 	scale = 1 + mouse_wheel / 10;
@@ -423,6 +422,11 @@ void Input::BuildCity::Input( float _x, float _y )
 	farm = closest.first;
 	if( farm != -1 )
 	{
+		if( logic.GetPoint( closest.first ).on_point.find( Type::City ) != logic.GetPoint( closest.first ).on_point.end() )
+			expand = true;
+		else
+			expand = false;
+
 		_x = logic.GetPoint( farm ).x;
 		_y = logic.GetPoint( farm ).y;
 		if( !logic.OverLappingCity( _x, _y, scale ) )
@@ -432,11 +436,13 @@ void Input::BuildCity::Input( float _x, float _y )
 			graphic.MoveRectangle( rectangle, _x, _y );
 		}
 		else
+		{
 			if( rectangle != -1 )
 			{
 				graphic.RemoveRectangle( rectangle );
 				rectangle = -1;
 			}
+		}
 	}
 	else
 		if( rectangle != -1 )
@@ -450,7 +456,10 @@ void Input::BuildCity::Input( float _x, float _y )
 	{
 		if( !create && rectangle != -1 )
 		{
-			logic.BuildCity( farm, scale );
+			if( !expand )
+				logic.BuildCity( farm, scale );
+			else
+				logic.ExpandCity( closest.first, scale );
 			create = true;
 		}
 	}

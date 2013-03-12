@@ -3,7 +3,7 @@
 #include <vector>
 #include <functional>
 
-enum class Type { Road, Farm, City, Army, Structure, Size };
+enum class Type { Road, Farm, City, Quarry, LumberCamp, Army, Structure, Wall, Size };
 enum class Resource { Nothing, Stone, Wood, Food, Gold };
 
 template <class T>

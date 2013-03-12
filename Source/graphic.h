@@ -32,7 +32,7 @@ private:
 
 		void LoadBmp( std::string name );
 	};
-	GLuint glTexture[46];
+	GLuint glTexture[49];
 
 	struct Text
 	{

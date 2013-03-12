@@ -1,22 +1,10 @@
 Step 1: Base
-DONE: Restructure graphic based on types
-DONE: Interface system
-DONE: Refine interface for construction of units
-DONE: Add road construction
-DONE: Add ability to select cities and farms
-DONE: Move food storage to cities
-DONE: Find solution to food balance between city and farm
-DONE: Add interface for army options
-DONE: Implement army options
-DONE: Refine interface for supply management
-DONE: Move extra population from farm to city
-DONE: Add ability to move population
+Add textures for quarry, lumber camp and wall
 Take food/people from other types on same point for structure
 Add pathfinding and faster or only movement if on road
 
 
 Step 2: System
-DONE: Implement starving
 Add resource system
 	Add map
 	Add forest
@@ -24,23 +12,18 @@ Add resource system
 	Implement generation of resources on map
 	Have forests expand over time
 	Resources
-		Tree
+		Wood
 		Stone
 		#Iron
 		#Fertile soil
-DONE: Implement destroying/damage cities/farms/structures
-DONE: Implement expanding cities/farms
-DONE: Add interface for expanding cities/farms
 Limit construction further
 	No farm/city on mountain
 	No road on mountain
 Population system
-	DONE: Efficency based on number of people
-	DONE: Increase
-	Solve inbalances by migration -- Manually instead?
+	#Solve inbalances by migration -- Manually instead?
 #Seasons
 #Add moral system -- Not needed?
-
+#Water
 
 
 Graphic
@@ -50,44 +33,74 @@ Graphic
 	Zoom in/out
 	transparent textures
 	Draw text
-	Select highlightning
+	Hud rectangles
 Input
 	W/A/S/D -> move
 	Scroll	-> zoom/scale
 	Left	  -> confirm/select
-	Right	  -> regret/order
+	Right	  -> regret
+	Q/E  -> select farm<->city<->structure<->army
 	Numbers
-		1 -> select
-		2 -> build road (must start from center of city)
-		3 -> build farm (must be on end of road)
-		4 -> build city (must be on center of a farm)
+		1 -> build road (must start from center of city)
+		2 -> build farm (must be on end of road)
+		3 -> build city (must be on center of a farm)
 Logic
 	Entitys
-		City/Village/Farm
-			Farm field
-				Food storage
-			City field
-				Food and Money storage
+		Farm field
+			Have population
+			Food generation
+		City field
+			Have population
+			Food storage
+			Unit production
+		Wall
+			Made of wood/stone
+		Quarry
+			Have population
+			Limited food storage
+			Stone generation
+		Lumber camp
+			Have population
+			Limited food storage
+			Wood generation
 		Road
-		Units
-			--Citicens
-			Soldiers
-				Food and/or Money storage
-			Carts
-				Food and/or Money storage
+			Can be made of stone
 		Army
-			Contains units
-	Food
-	Money
+			Soldiers
+				Limited food storage
+			Carts
+				Transportation storage
+			Can
+				transport cargo
+				move/kill population
+				destroy entitys
+	Resources
+		Food
+#		Wood
+#		Stone
 
 
 Rules
-	Farm generate Food
-	City generate Money
-	City consume Food
-	Soldier consume Food
-	Soldier consume Money
-	Building Road/Farm/City/Soldier consume Money
+	Farm generate food
+	Farm require labor
+	City collects food
+	City require labor
+	City constructs units
+#	Unit construction require labor
+#	Quarry generate stone
+#	Quarry require labor
+#	Quarry require mountain
+#	Lumber camp generate wood
+#	Lumber camp require labor
+#	Lumber camp require forest
+
+	Construction require labor
+#	City construction require tree
+#	Wall construction require wood or stone
+#	Road construction may require stone
+
+	Population/Units consume food
+	Population generate labor
 
 
 

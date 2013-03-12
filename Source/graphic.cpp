@@ -306,7 +306,7 @@ void Graphic::Initialize()
 	shaderText = CreateShader( "Source/text.vertex", "Source/text.fragment" );
 
 	Texture t;
-	glGenTextures( 46, glTexture );
+	glGenTextures( 49, glTexture );
 
 	int i = 0;
 
@@ -330,6 +330,16 @@ void Graphic::Initialize()
 	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
 	DEFAULT_TEXTURE_OPTIONS
 
+	t.LoadBmp( "quarry.bmp" );
+	assert( i == (int)Type::Quarry );
+	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
+	DEFAULT_TEXTURE_OPTIONS
+
+	t.LoadBmp( "lumber_camp.bmp" );
+	assert( i == (int)Type::LumberCamp );
+	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
+	DEFAULT_TEXTURE_OPTIONS
+
 	t.LoadBmp( "army.bmp" );
 	assert( i == (int)Type::Army );
 	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
@@ -337,6 +347,11 @@ void Graphic::Initialize()
 
 	t.LoadBmp( "structure.bmp" );
 	assert( i == (int)Type::Structure );
+	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
+	DEFAULT_TEXTURE_OPTIONS
+
+	t.LoadBmp( "wall.bmp" );
+	assert( i == (int)Type::Wall );
 	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
 	DEFAULT_TEXTURE_OPTIONS
 	

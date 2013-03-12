@@ -11,6 +11,8 @@
 #include "Type/city.h"
 #include "Type/structure.h"
 #include "Type/army.h"
+#include "Type/quarry.h"
+#include "Type/lumber_camp.h"
 
 struct Point
 {
@@ -26,6 +28,12 @@ struct Road
 	int rectangle;
 	int from, to;
 	float length;
+	bool used;
+};
+struct Wall
+{
+	Wall( int _rectangle, int _point ) : rectangle(_rectangle), point(_point) {}
+	int rectangle, point;
 	bool used;
 };
 class Logic

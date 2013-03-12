@@ -57,6 +57,9 @@ for line in out_text:
 			week = w;
 			added = int(i[3])
 			removed = -int(i[4])
+total += added + removed;
+week_text.append( str(week) + '\t' + str(added) + '\t' + str(removed) + '\t' + str(total) + '\n' )
+
 
 out = open('graph.txt', 'w')
 for line in week_text:

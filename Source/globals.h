@@ -3,8 +3,39 @@
 #include <vector>
 #include <functional>
 
+
 enum class Type { Road, Farm, City, Quarry, LumberCamp, Army, Structure, Wall, Size };
 enum class Resource { Nothing, Stone, Wood, Food, Gold };
+
+
+struct Map
+{
+	float pos_x, pos_y;
+	int size_x, size_y;
+	float square_size;
+
+	struct Square
+	{
+		Square( Resource _contained = Resource::Nothing )
+			: contained(_contained), amount(0) {}
+		Resource contained;
+		float amount;
+	};
+	std::vector< Square > squares;
+
+
+	Map( int _size_x, int _size_y, float _square_size )
+		: pos_x(-_size_x/2), pos_y(-size_y/2), size_x(_size_x), size_y(_size_y), square_size(_square_size), squares( size_x * size_y )
+	{
+		// TODO: Generate resources on map
+	}
+	void Update( float delta_time )
+	{
+		// TODO: Have forest expand over time
+	}
+};
+extern Map map;
+
 
 template <class T>
 class buffer
@@ -51,6 +82,7 @@ public:
 	typename std::vector<T>::iterator end() { return v.end(); }
 	typename std::vector<T>::const_iterator end() const { return v.end(); }
 };
+
 
 struct Rectangle
 {

@@ -315,6 +315,8 @@ void Graphic::Initialize()
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST ); \
 		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
 
+	// TODO: Add textures for resources on map
+
 	t.LoadBmp( "road.bmp" );
 	assert( i == (int)Type::Road );
 	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
@@ -457,6 +459,8 @@ void Graphic::Update()
 
 	glUseProgram( shaderProgram );
 	glUniformMatrix4fv( glGetUniformLocation(shaderProgram, "projectionMatrix"), 1, GL_FALSE, &projectionMatrix[0][0] );
+
+	// TODO: Draw map
 
 	for( int i(0); i < rectangles.size(); i++ )
 	{

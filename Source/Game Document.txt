@@ -7,10 +7,10 @@ Add pathfinding and faster or only movement if on road
 Step 2: System
 Add resource system
 	DONE: Add map
-	Draw map
-	Add textures for resources on map
-	Add forest
-	Add mountain
+	DONE: Draw map
+	DONE: Add textures for resources on map
+	DONE: Add forest
+	DONE: Add mountain
 	Implement generation of resources on map
 	Have forests expand over time
 	Resources

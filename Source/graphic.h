@@ -32,7 +32,7 @@ private:
 
 		void LoadBmp( std::string name );
 	};
-	GLuint glTexture[49];
+	GLuint glTexture[51];
 
 	struct Text
 	{
@@ -53,6 +53,7 @@ private:
 	buffer< Hud > hud;
 	glm::mat4 viewMatrix;
 	GLuint Vbo[3];
+	int mountain, forest;
 	void DrawLines( glm::mat4& projectionMatrix );
 	void DrawRectangle( Rectangle& r );
 	void DrawText( glm::mat4& projectionMatrix );

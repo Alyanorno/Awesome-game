@@ -8,33 +8,22 @@ enum class Type { Road, Farm, City, Quarry, LumberCamp, Army, Structure, Wall, S
 enum class Resource { Nothing, Stone, Wood, Food, Gold };
 
 
-struct Map
+struct HeightMap
 {
-	float pos_x, pos_y;
+	float x, y;
 	int size_x, size_y;
 	float square_size;
 
-	struct Square
-	{
-		Square( Resource _contained = Resource::Nothing )
-			: contained(_contained), amount(0) {}
-		Resource contained;
-		float amount;
-	};
-	std::vector< Square > squares;
+	std::vector< Resource > square_contained;
+	std::vector< float > square_amount;
 
 
-	Map( int _size_x, int _size_y, float _square_size )
-		: pos_x(-_size_x/2), pos_y(-size_y/2), size_x(_size_x), size_y(_size_y), square_size(_square_size), squares( size_x * size_y )
-	{
-		// TODO: Generate resources on map
-	}
-	void Update( float delta_time )
-	{
-		// TODO: Have forest expand over time
-	}
+	HeightMap( int _size_x, int _size_y, float _square_size );
+	void Update( float delta_time );
+	int begin() { return 0; }
+	int end() { return square_contained.size(); }
 };
-extern Map map;
+extern HeightMap height_map;
 
 
 template <class T>
@@ -107,4 +96,40 @@ struct Line
 	} start, end;
 };
 extern std::vector< Line > lines;
+
+namespace utility
+{
+	template < class T, class Function > void map( T& t, Function f )
+		{ map( t.begin(), t.end(), f ); }
+
+	template < class Iterator, class Function > void map( Iterator first, Iterator last, Function f )
+	{
+		Iterator i( first );
+		while( i != last )
+			*(i++) = f( i - first );
+	}
+
+
+	template < class T, class Function > typename T::value_type fold( T& t, Function f )
+		{ return fold< T >( t.begin(), t.end(), f ); }
+
+	template < class T, class Iterator, class Function > typename T::value_type fold( Iterator first, Iterator last, Function f )
+	{
+		typename T::value_type result(0);
+		while( first != last )
+			result = f( result, *(first++) );
+		return result;
+	}
+
+
+	template < class T, class Function > void func( T& t, Function f )
+		{ func( t.begin(), t.end(), f ); }
+
+	template < class Iterator, class Function > void func( Iterator first, Iterator last, Function f )
+	{
+		Iterator i( first );
+		while( i != last )
+			f( i++ - first );
+	}
+}
 

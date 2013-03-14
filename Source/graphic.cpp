@@ -306,7 +306,7 @@ void Graphic::Initialize()
 	shaderText = CreateShader( "Source/text.vertex", "Source/text.fragment" );
 
 	Texture t;
-	glGenTextures( 49, glTexture );
+	glGenTextures( 51, glTexture );
 
 	int i = 0;
 
@@ -314,8 +314,6 @@ void Graphic::Initialize()
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST ); \
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST ); \
 		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
-
-	// TODO: Add textures for resources on map
 
 	t.LoadBmp( "road.bmp" );
 	assert( i == (int)Type::Road );
@@ -356,7 +354,19 @@ void Graphic::Initialize()
 	assert( i == (int)Type::Wall );
 	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
 	DEFAULT_TEXTURE_OPTIONS
-	
+
+
+	t.LoadBmp( "mountain.bmp" );
+	mountain = i;
+	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
+	DEFAULT_TEXTURE_OPTIONS
+
+	t.LoadBmp( "forest.bmp" );
+	forest = i;
+	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
+	DEFAULT_TEXTURE_OPTIONS
+
+
 	// Load char numbers
 	for( char j(0); j < 10; j++ )
 	{
@@ -460,7 +470,20 @@ void Graphic::Update()
 	glUseProgram( shaderProgram );
 	glUniformMatrix4fv( glGetUniformLocation(shaderProgram, "projectionMatrix"), 1, GL_FALSE, &projectionMatrix[0][0] );
 
-	// TODO: Draw map
+	deapth = -0.01;
+	utility::func( height_map, [&](int i)
+	{
+		HeightMap& m( height_map );
+		if( m.square_contained[i] == Resource::Stone )
+			glBindTexture( GL_TEXTURE_2D, glTexture[ mountain ] );
+		else if( m.square_contained[i] == Resource::Wood )
+			glBindTexture( GL_TEXTURE_2D, glTexture[ forest ] );
+		else
+			return;
+		Rectangle r( m.x + (i % m.size_x) * m.square_size, m.y + (i / m.size_x % m.size_y) * m.square_size, m.square_size );
+		DrawRectangle( r );
+	} );
+	deapth = 0;
 
 	for( int i(0); i < rectangles.size(); i++ )
 	{

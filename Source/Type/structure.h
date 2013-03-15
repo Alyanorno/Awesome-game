@@ -7,6 +7,7 @@
 class Logic;
 struct Structure
 {
+	typedef Structure type_of;
 	Type type;
 	int rectangle;
 	int from, to; // Only needed for road construction

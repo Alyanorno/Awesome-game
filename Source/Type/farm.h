@@ -7,6 +7,7 @@
 class Logic;
 struct Farm
 {
+	typedef Farm type_of;
 	int rectangle;
 	int point;
 

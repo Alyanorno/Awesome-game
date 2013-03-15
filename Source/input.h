@@ -72,6 +72,24 @@ private:
 		~BuildCity();
 		void Input( float _x, float _y );
 	};
+	struct BuildQuarry : public State
+	{
+		float scale;
+		int rectangle;
+		bool expand;
+		BuildQuarry( Graphic& _graphic, Logic& _logic, float& _mouse_wheel );
+		~BuildQuarry();
+		void Input( float _x, float _y );
+	};
+	struct BuildLumberCamp : public State
+	{
+		float scale;
+		int rectangle;
+		bool expand;
+		BuildLumberCamp( Graphic& _graphic, Logic& _logic, float& _mouse_wheel );
+		~BuildLumberCamp();
+		void Input( float _x, float _y );
+	};
 	std::unique_ptr< State > state;
 
 	Graphic& graphic;

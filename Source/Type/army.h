@@ -7,6 +7,7 @@
 class Logic;
 struct Army
 {
+	typedef Army type_of;
 	int rectangle;
 	int soldiers;
 	int carts;

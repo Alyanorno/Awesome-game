@@ -71,7 +71,7 @@ void Input::Select::Input( float _x, float _y )
 		{
 			Point& p( logic.GetPoint( closest.first ) );
 			Rectangle& r( rectangles[ (int)Type::Farm ][ p.on_point[ Type::Farm ] ] );
-			temp = temp + logic.GetInfo( closest.first, Type::Farm );
+			temp = temp + logic.GetInfo<Farm>( closest.first );
 			if( select_rectangle == -1 )
 				select_rectangle = graphic.AddRectangle( (int)Type::Structure, 0 ); // TODO: Add better texture
 			graphic.MoveRectangle( select_rectangle, p.x, p.y );
@@ -85,7 +85,7 @@ void Input::Select::Input( float _x, float _y )
 		{
 			Point& p( logic.GetPoint( closest.first ) );
 			Rectangle& r( rectangles[ (int)Type::City ][ p.on_point[ Type::City ] ] );
-			temp = temp + logic.GetInfo( closest.first, Type::City );
+			temp = temp + logic.GetInfo<City>( closest.first );
 			if( !lock_soldier_production && glfwGetKey( 'R' ) )
 			{
 				logic.ToggleSoldierProduction( closest.first );
@@ -114,7 +114,7 @@ void Input::Select::Input( float _x, float _y )
 		{
 			Point& p( logic.GetPoint( closest.first ) );
 			Rectangle& r( rectangles[ (int)Type::Structure ][ p.on_point[ Type::Structure ] ] );
-			temp = temp + logic.GetInfo( closest.first, Type::Structure );
+			temp = temp + logic.GetInfo<Structure>( closest.first );
 			if( select_rectangle == -1 )
 				select_rectangle = graphic.AddRectangle( (int)Type::Structure, 0 ); // TODO: Add better texture
 			graphic.MoveRectangle( select_rectangle, p.x, p.y );
@@ -269,8 +269,8 @@ void Input::Select::Input( float _x, float _y )
 	graphic.MoveTopText( _x, _y );
 }
 
-	Input::BuildRoad::BuildRoad( Graphic& _graphic, Logic& _logic, float& _mouse_wheel )
-: State( _graphic, _logic, _mouse_wheel ), rectangle(-1)
+Input::BuildRoad::BuildRoad( Graphic& _graphic, Logic& _logic, float& _mouse_wheel )
+	: State( _graphic, _logic, _mouse_wheel ), rectangle(-1)
 {}
 Input::BuildRoad::~BuildRoad()
 {
@@ -336,7 +336,7 @@ void Input::BuildRoad::Input( float _x, float _y )
 			if( logic.TopLineFromEqualsTo() || logic.TopLineEqualsOtherLine() )
 				logic.RemoveTopLine();
 			else
-				logic.BuildRoad( from, to );
+				logic.Build<Road>( from, to );
 			if( rectangle != -1 )
 			{
 				graphic.RemoveRectangle( rectangle );
@@ -384,17 +384,15 @@ void Input::BuildFarm::Input( float _x, float _y )
 		if( !create )
 		{
 			if( !expand )
-				logic.BuildFarm( _x, _y, scale );
+				logic.Build<Farm>( _x, _y, scale );
 			else
-				logic.ExpandFarm( closest.first, scale );
+				logic.Expand<Farm>( closest.first, scale );
 			create = true;
 		}
 	}
 	else
 		create = false;
 }
-
-
 
 Input::BuildCity::BuildCity( Graphic& _graphic, Logic& _logic, float& _mouse_wheel )
 	: State( _graphic, _logic, _mouse_wheel ), scale(1.f), expand(false)
@@ -457,15 +455,110 @@ void Input::BuildCity::Input( float _x, float _y )
 		if( !create && rectangle != -1 )
 		{
 			if( !expand )
-				logic.BuildCity( farm, scale );
+				logic.Build<City>( farm, scale );
 			else
-				logic.ExpandCity( closest.first, scale );
+				logic.Expand<City>( closest.first, scale );
 			create = true;
 		}
 	}
 	else
 		create = false;
 }
+
+Input::BuildQuarry::BuildQuarry( Graphic& _graphic, Logic& _logic, float& _mouse_wheel )
+	: State( _graphic, _logic, _mouse_wheel ), scale(1.f), expand(false)
+{
+	mouse_wheel = glfwGetMouseWheel() - graphic.GetZoom();
+	scale = 1 + mouse_wheel / 10;
+	rectangle = graphic.AddRectangle( (int)Type::Quarry, scale );
+}
+Input::BuildQuarry::~BuildQuarry()
+	{ graphic.RemoveRectangle( rectangle ); }
+void Input::BuildQuarry::Input( float _x, float _y )
+{
+	std::pair<int,float> closest;
+	if( glfwGetKey( GLFW_KEY_LCTRL ) )
+	{
+		mouse_wheel = glfwGetMouseWheel() - graphic.GetZoom();
+		scale = 1 + mouse_wheel / 10;
+		graphic.ResizeRectangle( rectangle, scale );
+	}
+
+	if( logic.OverLappingFarm( _x, _y, scale ) )
+	{
+		closest = logic.Closest( Type::Farm, _x, _y );
+		_x = logic.GetPoint( closest.first ).x;
+		_y = logic.GetPoint( closest.first ).y;
+		expand = true;
+	}
+	else
+		expand = false;
+
+	// Draw not completed farm
+	graphic.MoveRectangle( rectangle, _x, _y );
+
+	if( glfwGetMouseButton( GLFW_MOUSE_BUTTON_1 ) )
+	{
+		if( !create )
+		{
+			if( !expand )
+				logic.Build<Quarry>( _x, _y, scale );
+			else
+				logic.Expand<Quarry>( closest.first, scale );
+			create = true;
+		}
+	}
+	else
+		create = false;
+}
+
+Input::BuildLumberCamp::BuildLumberCamp( Graphic& _graphic, Logic& _logic, float& _mouse_wheel )
+	: State( _graphic, _logic, _mouse_wheel ), scale(1.f), expand(false)
+{
+	mouse_wheel = glfwGetMouseWheel() - graphic.GetZoom();
+	scale = 1 + mouse_wheel / 10;
+	rectangle = graphic.AddRectangle( (int)Type::LumberCamp, scale );
+}
+Input::BuildLumberCamp::~BuildLumberCamp()
+	{ graphic.RemoveRectangle( rectangle ); }
+void Input::BuildLumberCamp::Input( float _x, float _y )
+{
+	std::pair<int,float> closest;
+	if( glfwGetKey( GLFW_KEY_LCTRL ) )
+	{
+		mouse_wheel = glfwGetMouseWheel() - graphic.GetZoom();
+		scale = 1 + mouse_wheel / 10;
+		graphic.ResizeRectangle( rectangle, scale );
+	}
+
+	if( logic.OverLappingFarm( _x, _y, scale ) )
+	{
+		closest = logic.Closest( Type::Farm, _x, _y );
+		_x = logic.GetPoint( closest.first ).x;
+		_y = logic.GetPoint( closest.first ).y;
+		expand = true;
+	}
+	else
+		expand = false;
+
+	// Draw not completed farm
+	graphic.MoveRectangle( rectangle, _x, _y );
+
+	if( glfwGetMouseButton( GLFW_MOUSE_BUTTON_1 ) )
+	{
+		if( !create )
+		{
+			if( !expand )
+				logic.Build<LumberCamp>( _x, _y, scale );
+			else
+				logic.Expand<LumberCamp>( closest.first, scale );
+			create = true;
+		}
+	}
+	else
+		create = false;
+}
+
 
 
 Input::Input( Graphic& _graphic, Logic& _logic ) : graphic(_graphic), logic(_logic), mouse_wheel(0)

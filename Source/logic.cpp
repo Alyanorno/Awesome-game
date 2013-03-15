@@ -74,20 +74,25 @@ void Logic::ToggleSoldierProduction( int _point )
 }
 
 
-void Logic::BuildRoad( int _from, int _to )
+template < class T > void Logic::Build( int _from, int _to ) {}
+template <> void Logic::Build<Road>( int _from, int _to )
 {
 	int t = rectangles[ (int)Type::Structure ].insert( Rectangle( 0, 0, 0 ) );
 	int t2 = points.insert( Point( 0, 0 ) );
 	ChangeRoad( rectangles[ (int)Type::Structure][t], _from, _to, t2 );
 	points[t2].on_point[ Type::Structure ] = structures.insert( Structure( *this, t, Type::Road, t2, false, _from, _to ) );
 }
-void Logic::BuildFarm( float _x, float _y, float _scale )
+template < class T > void Logic::Build( float _x, float _y, float _scale )
 {
 	int t = rectangles[ (int)Type::Structure ].insert( Rectangle( _x, _y, _scale ) );
 	int t2 = points.insert( Point( _x, _y ) );
-	points[t2].on_point[ Type::Structure ] =  structures.insert( Structure( *this, t, Type::Farm, t2 ) );
+	points[t2].on_point[ Type::Structure ] =  structures.insert( Structure( *this, t, GetType<T>::result, t2 ) );
 }
-void Logic::BuildCity( int _point, float _scale )
+template void Logic::Build<Farm>( float _x, float _y, float _scale );
+template void Logic::Build<Quarry>( float _x, float _y, float _scale );
+template void Logic::Build<LumberCamp>( float _x, float _y, float _scale );
+template < class T > void Logic::Build( int _point, float _scale ) {}
+template <> void Logic::Build<City>( int _point, float _scale )
 {
 	Point& p( points[_point] );
 	int t = rectangles[ (int)Type::Structure ].insert( Rectangle( p.x, p.y, _scale ) );
@@ -115,6 +120,20 @@ void Logic::ChangeRoad( Rectangle& _rectangle, int _from, int _to, int _point )
 
 	r.rotation = atan2( (to_p.x - from_p.x), (to_p.y - from_p.y) ) * (180 / 3.14159);
 }
+template < class T > void Logic::Expand( int _point, float _scale )
+{
+	Type type( GetType<T>::result );
+	Point& p( points[_point] );
+	float scale = rectangles[ (int)type ][ GetBuffer<T>()[ p.on_point[ type ] ].rectangle ].scale;
+	if( _scale <= scale )
+		return;
+	int t = rectangles[ (int)Type::Structure ].insert( Rectangle( p.x, p.y, _scale ) );
+	p.on_point[ Type::Structure ] = structures.insert( Structure( *this, t, type, _point, true ) );
+}
+template void Logic::Expand<Farm>( int _point, float _scale );
+template void Logic::Expand<City>( int _point, float _scale );
+template void Logic::Expand<Quarry>( int _point, float _scale );
+template void Logic::Expand<LumberCamp>( int _point, float _scale );
 void Logic::ExpandFarm( int _point, float _scale )
 {
 	Point& p( points[_point] );
@@ -181,6 +200,8 @@ std::pair< int, float > Logic::ClosestArmy( float _x, float _y )
 	int closest = -1;
 	for( int i(0); i < armies.size(); i++ )
 	{
+		if( !armies[i].used )
+			continue;
 		float t = Distance( _x, _y, armies[i].x, armies[i].y );
 		if( t < distance )
 		{
@@ -192,6 +213,18 @@ std::pair< int, float > Logic::ClosestArmy( float _x, float _y )
 }
 
 
+template < class T > bool Logic::OverLapping( float _x, float _y, float _scale )
+{
+	for each( GetClass<T>::result i in GetBuffer<T>::result )
+	{
+		Rectangle& r( rectangles[ (int)_t ][i.rectangle] );
+		if( r.x == _x && r.y == _y )
+			continue;
+		if( (_scale + r.scale) / 2 >= sqrt( pow( _x - r.x, 2) + pow( _y - r.y, 2 ) ) )
+			return true;
+	}
+	return false;
+}
 bool Logic::OverLappingFarm( float _x, float _y, float _scale )
 {
 	for each( Farm f in farms )
@@ -216,20 +249,15 @@ bool Logic::OverLappingCity( float _x, float _y, float _scale )
 }
 
 
-std::string Logic::GetInfo( int _point, Type _t )
+template < class T > std::string Logic::GetInfo( int _point )
 {
-	switch( _t )
-	{
-		case Type::Structure:
-			return structures[ (int)points[_point].on_point[ _t ] ];
-		case Type::Farm:
-			return farms[ (int)points[_point].on_point[ _t ] ];
-		case Type::City:
-			return cities[ (int)points[_point].on_point[ _t ] ];
-		default:
-			return "NO INFO";
-	}
+	return GetBuffer<T>()[ (int)points[_point].on_point[ GetType<T>::result ] ];
 }
+template std::string Logic::GetInfo<Farm>( int _point );
+template std::string Logic::GetInfo<City>( int _point );
+template std::string Logic::GetInfo<Quarry>( int _point );
+template std::string Logic::GetInfo<LumberCamp>( int _point );
+template std::string Logic::GetInfo<Structure>( int _point );
 std::string Logic::GetArmyInfo( int _army )
 {
 	return armies[_army];

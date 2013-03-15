@@ -7,6 +7,7 @@
 class Logic;
 struct Quarry
 {
+	typedef Quarry type_of;
 	int rectangle;
 	int point;
 

@@ -24,6 +24,7 @@ struct Point
 };
 struct Road
 {
+	typedef Road type_of;
 	Road( int _rectangle, int _from, int _to ) : rectangle(_rectangle), from(_from), to(_to) {}
 	int rectangle;
 	int from, to;
@@ -42,15 +43,171 @@ private:
 	buffer< Road > roads;
 	buffer< Farm > farms;
 	buffer< City > cities;
+	buffer< Quarry > quarries;
+	buffer< LumberCamp > lumber_camps;
 	buffer< Structure > structures;
 	buffer< Army > armies;
+	buffer< Wall > walls;
 
 	buffer< Point > points;
 
 	double last_time;
+
+
+
+	template < class T > struct GetType
+		{ static const Type result = Type::Size; };
+	template <> struct GetType <Road>
+		{ static const Type result = Type::Road; };
+	template <> struct GetType <Farm>
+		{ static const Type result = Type::Farm; };
+	template <> struct GetType <City>
+		{ static const Type result = Type::City; };
+	template <> struct GetType <Quarry>
+		{ static const Type result = Type::Quarry; };
+	template <> struct GetType <LumberCamp>
+		{ static const Type result = Type::LumberCamp; };
+	template <> struct GetType <Army>
+		{ static const Type result = Type::Army; };
+	template <> struct GetType <Structure>
+		{ static const Type result = Type::Structure; };
+	template <> struct GetType <Wall>
+		{ static const Type result = Type::Wall; };
+
+	struct Nothing {};
+	template < int T > struct GetClass
+		{ typedef Nothing result; };
+	template <> struct GetClass <0>
+		{ typedef Road result; };
+	template <> struct GetClass <1>
+		{ typedef Farm result; };
+	template <> struct GetClass <2>
+		{ typedef City result; };
+	template <> struct GetClass <3>
+		{ typedef Quarry result; };
+	template <> struct GetClass <4>
+		{ typedef LumberCamp result; };
+	template <> struct GetClass <5>
+		{ typedef Army result; };
+	template <> struct GetClass <6>
+		{ typedef Structure result; };
+	template <> struct GetClass <7>
+		{ typedef Wall result; };
+
+	template < int T > buffer< typename GetClass<T>::result >& GetBufferForType()
+	{
+		switch( (Type)T )
+		{
+			case Type::Road:
+				return roads;
+			case Type::Farm:
+				return farms;
+			case Type::City:
+				return cities;
+			case Type::Quarry:
+				return quarries;
+			case Type::LumberCamp:
+				return lumber_camps;
+			case Type::Structure:
+				return structures;
+			case Type::Army:
+				return armies;
+			case Type::Wall:
+				return walls;
+			case Type::Nothing
+				throw std::string("Can't get type of nothing");
+		}
+	}
+	template < class T > buffer< T >& GetBuffer()
+		{ throw std::string("Invalid buffer type"); }
+	template <> buffer< Road >& GetBuffer()
+		{ return roads; }
+	template <> buffer< Farm >& GetBuffer()
+		{ return farms; }
+	template <> buffer< City >& GetBuffer()
+		{ return cities; }
+	template <> buffer< Quarry >& GetBuffer()
+		{ return quarries; }
+	template <> buffer< LumberCamp >& GetBuffer()
+		{ return lumber_camps; }
+	template <> buffer< Structure >& GetBuffer()
+		{ return structures; }
+	template <> buffer< Army >& GetBuffer()
+		{ return armies; }
+	template <> buffer< Wall >& GetBuffer()
+		{ return walls; }
 public:
 	float food_per_person, population_increase;
 	static float L( float _x ) { return _x < 0 ? -_x: _x; }
+	
+	template < class T > buffer<T>& Get()
+		{ return GetBuffer<T>(); }
+
+	template < class T > buffer<T>& GetByIndex( int _index )
+		{ return GetBuffer<T>()[_index]; }
+
+	template < class T > buffer<T>& GetByPoint( int _point )
+		{ return GetBuffer<T>()[ GetPoint(_point).on_point[ GetType<T>::result ] ]; }
+
+	template < class T > int GetIndex( int _point )
+	{
+		std::map< Type, int >& p( GetPoint(_point).on_point );
+		if( p.find( GetType<T>::result ) == p.end() )
+			return -1;
+		else
+			return p[ Type::NAME ];
+	}
+	template <> int GetIndex<Army>( int _rectangle )
+	{
+		for( int i(0); i < armies.size(); i++ )
+			if( armies[i].used && armies[i].rectangle == _rectangle )
+				return i;
+		return -1;
+	}
+
+	template < class T > void Remove( int _point )
+	{
+		Type& t( GetType<T>::result );
+		std::map< Type, int >& p( GetPoint(_point).on_point );
+		if( p.find( t ) == p.end() )
+			return;
+		rectangles[ (int)t ].erase( p[ t ] );
+		LOWER_CASE.erase( p[ t ] );
+		p.erase( t );
+		if( p.empty() )
+			points.erase(_point);
+	}
+
+	Army& GetArmyByRectangle( int _rectangle )
+	{
+		for( int i(0); i < armies.size(); i++ )
+			if( armies[i].used && armies[i].rectangle == _rectangle )
+				return armies[i];
+		throw std::string("Could not find Army" );
+	}
+
+
+
+
+
+//
+//
+// START OF TO BE REMOVED
+//
+// 
+	buffer< Army >& GetArmies() { return armies; }
+	Army& GetArmyByIndex( int _i )
+	{
+		return armies[_i];
+	}
+	int GetArmyIndex( int _rectangle )
+	{
+		for( int i(0); i < armies.size(); i++ )
+			if( armies[i].used && armies[i].rectangle == _rectangle )
+				return i;
+		return -1;
+	}
+
 #define GET( NAME, PLURAL, LOWER_CASE ) \
 	buffer< NAME >& Get##PLURAL() { return LOWER_CASE; } \
 	NAME& Get##NAME##ByIndex( int _index ) \
@@ -85,25 +242,22 @@ public:
 	GET( City, Cities, cities )
 	GET( Structure, Structures, structures )
 #undef GEa
-	buffer< Army >& GetArmies() { return armies; }
-	Army& GetArmyByIndex( int _i )
-	{
-		return armies[_i];
-	}
-	Army& GetArmyByRectangle( int _rectangle )
-	{
-		for( int i(0); i < armies.size(); i++ )
-			if( armies[i].used && armies[i].rectangle == _rectangle )
-				return armies[i];
-		throw std::string("Could not find Army" );
-	}
-	int GetArmyIndex( int _rectangle )
-	{
-		for( int i(0); i < armies.size(); i++ )
-			if( armies[i].used && armies[i].rectangle == _rectangle )
-				return i;
-		return -1;
-	}
+
+	void ExpandFarm( int _point, float _scale );
+	void ExpandCity( int _point, float _scale );
+
+	bool OverLappingFarm( float _x, float _y, float _scale );
+	bool OverLappingCity( float _x, float _y, float _scale );
+//
+//
+// END OF TO BE REMOVED
+//
+//
+
+
+
+
+
 
 	buffer< Point >& GetPoints() { return points; }
 	Point& GetPoint( int _i ) { return points[_i]; }
@@ -126,23 +280,22 @@ public:
 	void ToggleCartProduction( int _rectangle );
 	void ToggleSoldierProduction( int _rectangle );
 
-	void BuildRoad( int _from, int _to );
-	void BuildFarm( float _x, float _y, float _scale );
-	void BuildCity( int _point, float _scale );
+
+	template < class T > void Build( int _from, int _to );
+	template < class T > void Build( float _x, float _y, float _scale );
+	template < class T > void Build( int _point, float _scale );
 
 	void ChangeRoad( Rectangle& _rectangle, int _from, int _to, int _point = -1 );
-	void ExpandFarm( int _point, float _scale );
-	void ExpandCity( int _point, float _scale );
+	template < class T> void Expand( int _point, float _scale );
 
 	float Distance( float _x, float _y, float __x, float __y );
 	std::pair< int, float > Closest( float _x, float _y );
 	std::pair< int, float > Closest( Type _type, float _x, float _y );
 	std::pair< int, float > ClosestArmy( float _x, float _y );
 
-	bool OverLappingFarm( float _x, float _y, float _scale );
-	bool OverLappingCity( float _x, float _y, float _scale );
+	template < class T > bool OverLapping( float _x, float _y, float _scale );
 
-	std::string GetInfo( int _point, Type _t );
+	template < class T > std::string GetInfo( int _point );
 	std::string GetArmyInfo( int _army );
 	void SetArmyState( int _army, Army::State _state );
 

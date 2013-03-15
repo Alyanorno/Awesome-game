@@ -7,6 +7,7 @@
 class Logic;
 struct LumberCamp
 {
+	typedef LumberCamp type_of;
 	int rectangle;
 	int point;
 

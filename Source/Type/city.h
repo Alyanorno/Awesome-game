@@ -9,6 +9,7 @@
 class Logic;
 struct City
 {
+	typedef City type_of;
 	int rectangle;
 	int point;
 	float food_storage, food_contained;

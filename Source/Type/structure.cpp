@@ -24,6 +24,12 @@ void Structure::Calculate()
 		case Type::City:
 			build_complete = 5 * size;
 			break;
+		case Type::Quarry:
+			build_complete = 5 * size;
+			break;
+		case Type::LumberCamp:
+			build_complete = 5 * size;
+			break;
 		default:
 			throw std::string( "Invalid type for construction: " + std::to_string( (int)type ) );
 	}
@@ -49,6 +55,20 @@ void Structure::CalculateExpansion( Logic& l )
 	{
 		City& c( l.GetCityByPoint( point ) );
 		Rectangle& r( rectangles[ (int)Type::City ][ c.rectangle ] );
+		size = s_size - 3.14159 * r.scale * r.scale;
+		build_complete = 5 * size;
+	}
+	else if( type == Type::Quarry )
+	{
+		Quarry& q( l.GetByPoint<Quarry>( point ) );
+		Rectangle& r( rectangles[ (int)Type::Quarry ][ q.rectangle ] );
+		size = s_size - 3.14159 * r.scale * r.scale;
+		build_complete = 5 * size;
+	}
+	else if( type == Type::LumberCamp )
+	{
+		LumberCamp& l( l.GetByPoint<LumberCamp>( point ) );
+		Rectangle& r( rectangles[ (int)Type::LumberCamp ][ l.rectangle ] );
 		size = s_size - 3.14159 * r.scale * r.scale;
 		build_complete = 5 * size;
 	}
@@ -116,6 +136,42 @@ void Structure::Update( Logic& l, float delta_time, int i )
 
 				l.GetFarmByIndex(t).population += population;
 				l.GetFarmByIndex(t).food += food_contained;
+				break;
+			case Type::Quarry:
+				if( expand )
+				{
+					t = l.GetIndex<Quarry>( point );
+					rectangles[ (int)Type::Quarry ][ l.GetByIndex<Quarry>(t).rectangle ].scale = sr.scale;
+					l.GetByIndex<Quarry>(t).Calculate();
+				}
+				else
+				{
+					t = rectangles[ (int)Type::Quarry ].insert( Rectangle( sr.x, sr.y, sr.scale ) );
+					t = l.Get<Quarry>().insert( Quarry( t, point ) );
+				}
+				p.erase( Type::Structure );
+				p[ Type::Quarry ] = t;
+
+				l.GetByIndex<Quarry>(t).population += population;
+				l.GetByIndex<Quarry>(t).food_contained += food_contained;
+				break;
+			case Type::LumberCamp:
+				if( expand )
+				{
+					t = l.GetIndex<LumberCamp>( point );
+					rectangles[ (int)Type::LumberCamp ][ l.GetByIndex<LumberCamp>(t).rectangle ].scale = sr.scale;
+					l.GetByIndex<LumberCamp>(t).Calculate();
+				}
+				else
+				{
+					t = rectangles[ (int)Type::LumberCamp ].insert( Rectangle( sr.x, sr.y, sr.scale ) );
+					t = l.Get<LumberCamp>().insert( LumberCamp( t, point ) );
+				}
+				p.erase( Type::Structure );
+				p[ Type::LumberCamp ] = t;
+
+				l.GetByIndex<LumberCamp>(t).population += population;
+				l.GetByIndex<LumberCamp>(t).food_contained += food_contained;
 				break;
 			case Type::City:
 				if( expand )

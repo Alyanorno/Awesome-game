@@ -215,9 +215,9 @@ std::pair< int, float > Logic::ClosestArmy( float _x, float _y )
 
 template < class T > bool Logic::OverLapping( float _x, float _y, float _scale )
 {
-	for each( GetClass<T>::result i in GetBuffer<T>::result )
+	for each( T i in GetBuffer<T>() )
 	{
-		Rectangle& r( rectangles[ (int)_t ][i.rectangle] );
+		Rectangle& r( rectangles[ (int)GetType<T>::result ][i.rectangle] );
 		if( r.x == _x && r.y == _y )
 			continue;
 		if( (_scale + r.scale) / 2 >= sqrt( pow( _x - r.x, 2) + pow( _y - r.y, 2 ) ) )
@@ -225,6 +225,8 @@ template < class T > bool Logic::OverLapping( float _x, float _y, float _scale )
 	}
 	return false;
 }
+template bool Logic::OverLapping<Quarry>( float _x, float _y, float _scale );
+template bool Logic::OverLapping<LumberCamp>( float _x, float _y, float _scale );
 bool Logic::OverLappingFarm( float _x, float _y, float _scale )
 {
 	for each( Farm f in farms )
@@ -375,6 +377,10 @@ void Logic::Update()
 		farms[i].Update( *this, delta_time );
 	for( int i(0); i < cities.size(); i++ )
 		cities[i].Update( *this, delta_time );
+	for( int i(0); i < quarries.size(); i++ )
+		quarries[i].Update( *this, delta_time );
+	for( int i(0); i < lumber_camps.size(); i++ )
+		lumber_camps[i].Update( *this, delta_time );
 	for( int i(0); i < structures.size(); i++ )
 		structures[i].Update( *this, delta_time, i );
 	for( int i(0); i < armies.size(); i++ )

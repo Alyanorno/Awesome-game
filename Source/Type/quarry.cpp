@@ -8,7 +8,7 @@ Quarry::Quarry( int _rectangle, int _point ) : rectangle(_rectangle), point(_poi
 Quarry::operator std::string ()
 {
 	std::stringstream s;
-	s << "LUMBER CAMP " << rectangle << std::endl
+	s << "QUARRY " << rectangle << std::endl
 	  << (int)(food_contained+.5f) << "/" << (int)(food_storage+.5f) << "#" << std::endl
 	  << (int)(stone_contained+.5f) << "/" << (int)(stone_storage+.5f) << "#" << std::endl
 	  << "+" << (int)(stone_production+.5f) << "#/S" << std::endl

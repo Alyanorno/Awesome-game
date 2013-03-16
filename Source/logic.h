@@ -139,14 +139,14 @@ private:
 public:
 	float food_per_person, population_increase;
 	static float L( float _x ) { return _x < 0 ? -_x: _x; }
-	
+
 	template < class T > buffer<T>& Get()
 		{ return GetBuffer<T>(); }
 
-	template < class T > buffer<T>& GetByIndex( int _index )
+	template < class T > T& GetByIndex( int _index )
 		{ return GetBuffer<T>()[_index]; }
 
-	template < class T > buffer<T>& GetByPoint( int _point )
+	template < class T > T& GetByPoint( int _point )
 		{ return GetBuffer<T>()[ GetPoint(_point).on_point[ GetType<T>::result ] ]; }
 
 	template < class T > int GetIndex( int _point )
@@ -155,7 +155,7 @@ public:
 		if( p.find( GetType<T>::result ) == p.end() )
 			return -1;
 		else
-			return p[ Type::NAME ];
+			return p[ GetType<T>::result ];
 	}
 	template <> int GetIndex<Army>( int _rectangle )
 	{
@@ -172,7 +172,7 @@ public:
 		if( p.find( t ) == p.end() )
 			return;
 		rectangles[ (int)t ].erase( p[ t ] );
-		LOWER_CASE.erase( p[ t ] );
+		GetBuffer<T>().erase( p[ t ] );
 		p.erase( t );
 		if( p.empty() )
 			points.erase(_point);

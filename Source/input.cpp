@@ -23,11 +23,15 @@ void Input::Select::Input( float _x, float _y )
 				;
 			else if( select == Type::City )
 				select = Type::Farm;
-			else if( select == Type::Structure )
+			else if( select == Type::Quarry )
 				select = Type::City;
+			else if( select == Type::LumberCamp )
+				select = Type::Quarry;
+			else if( select == Type::Structure )
+				select = Type::LumberCamp;
 			else if( select == Type::Army )
 				select = Type::Structure;
-	
+
 			if( select_rectangle != -1 )
 			{
 				graphic.RemoveRectangle( select_rectangle );
@@ -41,8 +45,12 @@ void Input::Select::Input( float _x, float _y )
 				;
 			else if( select == Type::Structure )
 				select = Type::Army;
-			else if( select == Type::City )
+			else if( select == Type::LumberCamp )
 				select = Type::Structure;
+			else if( select == Type::Quarry )
+				select = Type::LumberCamp;
+			else if( select == Type::City )
+				select = Type::Quarry;
 			else if( select == Type::Farm )
 				select = Type::City;
 
@@ -106,6 +114,34 @@ void Input::Select::Input( float _x, float _y )
 			lock_soldier_production = false;
 		if( lock_cart_production && !glfwGetKey( 'T' ) )
 			lock_cart_production = false;
+	}
+	else if( select == Type::Quarry )
+	{
+		closest = logic.Closest( Type::Quarry, _x, _y );
+		if( closest.first != - 1 && closest.second <= rectangles[ (int)Type::Quarry ][ logic.GetPoint( closest.first ).on_point[ Type::Quarry ] ].scale )
+		{
+			Point& p( logic.GetPoint( closest.first ) );
+			Rectangle& r( rectangles[ (int)Type::Quarry ][ p.on_point[ Type::Quarry ] ] );
+			temp = temp + logic.GetInfo<Quarry>( closest.first );
+			if( select_rectangle == -1 )
+				select_rectangle = graphic.AddRectangle( (int)Type::Structure, 0 ); // TODO: Add better texture
+			graphic.MoveRectangle( select_rectangle, p.x, p.y );
+			graphic.ResizeRectangle( select_rectangle, r.scale );
+		}
+	}
+	else if( select == Type::LumberCamp )
+	{
+		closest = logic.Closest( Type::LumberCamp, _x, _y );
+		if( closest.first != - 1 && closest.second <= rectangles[ (int)Type::LumberCamp ][ logic.GetPoint( closest.first ).on_point[ Type::LumberCamp ] ].scale )
+		{
+			Point& p( logic.GetPoint( closest.first ) );
+			Rectangle& r( rectangles[ (int)Type::LumberCamp ][ p.on_point[ Type::LumberCamp ] ] );
+			temp = temp + logic.GetInfo<LumberCamp>( closest.first );
+			if( select_rectangle == -1 )
+				select_rectangle = graphic.AddRectangle( (int)Type::Structure, 0 ); // TODO: Add better texture
+			graphic.MoveRectangle( select_rectangle, p.x, p.y );
+			graphic.ResizeRectangle( select_rectangle, r.scale );
+		}
 	}
 	else if( select == Type::Structure )
 	{
@@ -210,6 +246,10 @@ void Input::Select::Input( float _x, float _y )
 					logic.SetArmyState( army_selected, Army::DestroyFarm );
 				else if( select == Type::City )
 					logic.SetArmyState( army_selected, Army::DestroyCity );
+/*				else if( select == Type::Quarry )
+					logic.SetArmyState( army_selected, Army::DestroyQuarry );
+				else if( select == Type::LumberCamp )
+					logic.SetArmyState( army_selected, Army::DestroyLumberCamp ); */
 				else if( select == Type::Structure )
 					logic.SetArmyState( army_selected, Army::DestroyStructure );
 				DESELECT_ARMY;
@@ -484,9 +524,9 @@ void Input::BuildQuarry::Input( float _x, float _y )
 		graphic.ResizeRectangle( rectangle, scale );
 	}
 
-	if( logic.OverLappingFarm( _x, _y, scale ) )
+	if( logic.OverLapping<Quarry>( _x, _y, scale ) )
 	{
-		closest = logic.Closest( Type::Farm, _x, _y );
+		closest = logic.Closest( Type::Quarry, _x, _y );
 		_x = logic.GetPoint( closest.first ).x;
 		_y = logic.GetPoint( closest.first ).y;
 		expand = true;
@@ -531,9 +571,9 @@ void Input::BuildLumberCamp::Input( float _x, float _y )
 		graphic.ResizeRectangle( rectangle, scale );
 	}
 
-	if( logic.OverLappingFarm( _x, _y, scale ) )
+	if( logic.OverLapping<LumberCamp>( _x, _y, scale ) )
 	{
-		closest = logic.Closest( Type::Farm, _x, _y );
+		closest = logic.Closest( Type::LumberCamp, _x, _y );
 		_x = logic.GetPoint( closest.first ).x;
 		_y = logic.GetPoint( closest.first ).y;
 		expand = true;
@@ -594,6 +634,16 @@ void Input::Update()
 		{
 			state.reset();
 			state = std::unique_ptr<State>( new BuildCity( graphic, logic, mouse_wheel ) );
+		}
+		else if( glfwGetKey( '4' ) && !dynamic_cast<BuildQuarry*>( state.get() ) )
+		{
+			state.reset();
+			state = std::unique_ptr<State>( new BuildQuarry( graphic, logic, mouse_wheel ) );
+		}
+		else if( glfwGetKey( '5' ) && !dynamic_cast<BuildLumberCamp*>( state.get() ) )
+		{
+			state.reset();
+			state = std::unique_ptr<State>( new BuildLumberCamp( graphic, logic, mouse_wheel ) );
 		}
 	if( !glfwGetKey( GLFW_KEY_LCTRL ) )
 		graphic.Zoom( glfwGetMouseWheel() - mouse_wheel );

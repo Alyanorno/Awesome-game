@@ -43,51 +43,33 @@ private:
 		~Select();
 		void Input( float _x, float _y );
 	};
-	struct BuildRoad : public State
-	{
-		int from, to;
-		int rectangle;
-		bool expand;
-		BuildRoad( Graphic& _graphic, Logic& _logic, float& _mouse_wheel );
-		~BuildRoad();
-		void Input( float _x, float _y );
-	};
-	struct BuildFarm : public State
+	template < class T > struct Build : public State
 	{
 		float scale;
 		int rectangle;
 		bool expand;
-		BuildFarm( Graphic& _graphic, Logic& _logic, float& _mouse_wheel );
-		~BuildFarm();
+		Build( Graphic& _graphic, Logic& _logic, float& _mouse_wheel );
+		~Build();
 		void Input( float _x, float _y );
 	};
-	struct BuildCity : public State
+	template <> struct Build<Road> : public State
+	{
+		int from, to;
+		int rectangle;
+		bool expand;
+		Build( Graphic& _graphic, Logic& _logic, float& _mouse_wheel );
+		~Build();
+		void Input( float _x, float _y );
+	};
+	template <> struct Build<City> : public State
 	{
 		float scale;
 		int rectangle;
 		int farm;
 		bool expand;
 		int expand_size;
-		BuildCity( Graphic& _graphic, Logic& _logic, float& _mouse_wheel );
-		~BuildCity();
-		void Input( float _x, float _y );
-	};
-	struct BuildQuarry : public State
-	{
-		float scale;
-		int rectangle;
-		bool expand;
-		BuildQuarry( Graphic& _graphic, Logic& _logic, float& _mouse_wheel );
-		~BuildQuarry();
-		void Input( float _x, float _y );
-	};
-	struct BuildLumberCamp : public State
-	{
-		float scale;
-		int rectangle;
-		bool expand;
-		BuildLumberCamp( Graphic& _graphic, Logic& _logic, float& _mouse_wheel );
-		~BuildLumberCamp();
+		Build( Graphic& _graphic, Logic& _logic, float& _mouse_wheel );
+		~Build();
 		void Input( float _x, float _y );
 	};
 	std::unique_ptr< State > state;

@@ -5,7 +5,8 @@ void Graphic::Texture::LoadBmp( std::string name )
 {
 	std::fstream in;
 	in.open( name.c_str(), std::ios::in | std::ios::binary );
-	assert( in.is_open() );
+	if( !in.is_open() )
+		throw std::string("Failed to open " + name);
 
 	unsigned int offset;
 	int width, height, size;
@@ -306,7 +307,7 @@ void Graphic::Initialize()
 	shaderText = CreateShader( "Source/text.vertex", "Source/text.fragment" );
 
 	Texture t;
-	glGenTextures( 51, glTexture );
+	glGenTextures( (int)Type::Size + 43, glTexture );
 
 	int i = 0;
 
@@ -315,53 +316,21 @@ void Graphic::Initialize()
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST ); \
 		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, t.width, t.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &t[0] );
 
-	t.LoadBmp( "road.bmp" );
-	assert( i == (int)Type::Road );
-	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
+#define FOO( CLASS, ARRAY, NUMBER ) \
+	t.LoadBmp( #CLASS ".bmp" ); \
+	assert( i == NUMBER ); \
+	glBindTexture( GL_TEXTURE_2D, glTexture[i++] ); \
 	DEFAULT_TEXTURE_OPTIONS
-
-	t.LoadBmp( "farm.bmp" );
-	assert( i == (int)Type::Farm );
-	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
-	DEFAULT_TEXTURE_OPTIONS
-
-	t.LoadBmp( "city.bmp" );
-	assert( i == (int)Type::City );
-	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
-	DEFAULT_TEXTURE_OPTIONS
-
-	t.LoadBmp( "quarry.bmp" );
-	assert( i == (int)Type::Quarry );
-	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
-	DEFAULT_TEXTURE_OPTIONS
-
-	t.LoadBmp( "lumber_camp.bmp" );
-	assert( i == (int)Type::LumberCamp );
-	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
-	DEFAULT_TEXTURE_OPTIONS
-
-	t.LoadBmp( "army.bmp" );
-	assert( i == (int)Type::Army );
-	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
-	DEFAULT_TEXTURE_OPTIONS
-
-	t.LoadBmp( "structure.bmp" );
-	assert( i == (int)Type::Structure );
-	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
-	DEFAULT_TEXTURE_OPTIONS
-
-	t.LoadBmp( "wall.bmp" );
-	assert( i == (int)Type::Wall );
-	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
-	DEFAULT_TEXTURE_OPTIONS
+	TYPE_TABLE
+#undef FOO
 
 
-	t.LoadBmp( "mountain.bmp" );
+	t.LoadBmp( "Mountain.bmp" );
 	mountain = i;
 	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
 	DEFAULT_TEXTURE_OPTIONS
 
-	t.LoadBmp( "forest.bmp" );
+	t.LoadBmp( "Forest.bmp" );
 	forest = i;
 	glBindTexture( GL_TEXTURE_2D, glTexture[i++] );
 	DEFAULT_TEXTURE_OPTIONS

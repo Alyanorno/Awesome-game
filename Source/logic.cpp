@@ -130,28 +130,10 @@ template < class T > void Logic::Expand( int _point, float _scale )
 	int t = rectangles[ (int)Type::Structure ].insert( Rectangle( p.x, p.y, _scale ) );
 	p.on_point[ Type::Structure ] = structures.insert( Structure( *this, t, type, _point, true ) );
 }
-template void Logic::Expand<Farm>( int _point, float _scale );
-template void Logic::Expand<City>( int _point, float _scale );
-template void Logic::Expand<Quarry>( int _point, float _scale );
-template void Logic::Expand<LumberCamp>( int _point, float _scale );
-void Logic::ExpandFarm( int _point, float _scale )
-{
-	Point& p( points[_point] );
-	float scale = rectangles[ (int)Type::Farm ][ farms[ p.on_point[ Type::Farm ] ].rectangle ].scale;
-	if( _scale <= scale )
-		return;
-	int t = rectangles[ (int)Type::Structure ].insert( Rectangle( p.x, p.y, _scale ) );
-	p.on_point[ Type::Structure ] = structures.insert( Structure( *this, t, Type::Farm, _point, true ) );
-}
-void Logic::ExpandCity( int _point, float _scale )
-{
-	Point& p( points[_point] );
-	float scale = rectangles[ (int)Type::City ][ cities[ p.on_point[ Type::City ] ].rectangle ].scale;
-	if( _scale <= scale )
-		return;
-	int t = rectangles[ (int)Type::Structure ].insert( Rectangle( p.x, p.y, _scale ) );
-	p.on_point[ Type::Structure ] = structures.insert( Structure( *this, t, Type::City, _point, true ) );
-}
+#define FOO( CLASS, ARRAY, NUMBER ) \
+	template void Logic::Expand<CLASS>( int _point, float _scale );
+	TYPE_TABLE
+#undef FOO
 
 
 float Logic::Distance( float _x, float _y, float __x, float __y )
@@ -225,41 +207,20 @@ template < class T > bool Logic::OverLapping( float _x, float _y, float _scale )
 	}
 	return false;
 }
-template bool Logic::OverLapping<Quarry>( float _x, float _y, float _scale );
-template bool Logic::OverLapping<LumberCamp>( float _x, float _y, float _scale );
-bool Logic::OverLappingFarm( float _x, float _y, float _scale )
-{
-	for each( Farm f in farms )
-	{
-		Rectangle& r( rectangles[ (int)Type::Farm ][f.rectangle] );
-		if( (_scale + r.scale) / 2 >= sqrt( pow( _x - r.x, 2) + pow( _y - r.y, 2 ) ) )
-			return true;
-	}
-	return false;
-}
-bool Logic::OverLappingCity( float _x, float _y, float _scale )
-{
-	for each( City c in cities )
-	{
-		Rectangle& r( rectangles[ (int)Type::City ][c.rectangle] );
-		if( r.x == _x && r.y == _y )
-			continue;
-		if( (_scale + r.scale) / 2 >= sqrt( pow( _x - r.x, 2) + pow( _y - r.y, 2 ) ) )
-			return true;
-	}
-	return false;
-}
+#define FOO( CLASS, ARRAY, NUMBER ) \
+	template bool Logic::OverLapping<CLASS>( float _x, float _y, float _scale );
+	TYPE_TABLE
+#undef FOO
 
 
 template < class T > std::string Logic::GetInfo( int _point )
 {
 	return GetBuffer<T>()[ (int)points[_point].on_point[ GetType<T>::result ] ];
 }
-template std::string Logic::GetInfo<Farm>( int _point );
-template std::string Logic::GetInfo<City>( int _point );
-template std::string Logic::GetInfo<Quarry>( int _point );
-template std::string Logic::GetInfo<LumberCamp>( int _point );
-template std::string Logic::GetInfo<Structure>( int _point );
+#define FOO( CLASS, ARRAY, NUMBER ) \
+	template std::string Logic::GetInfo<CLASS>( int _point );
+	TYPE_TABLE
+#undef FOO
 std::string Logic::GetArmyInfo( int _army )
 {
 	return armies[_army];

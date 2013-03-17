@@ -4,7 +4,21 @@
 #include <functional>
 
 
-enum class Type { Road, Farm, City, Quarry, LumberCamp, Army, Structure, Wall, Size };
+#define TYPE_TABLE \
+	FOO( Road, roads, 0 ) \
+	FOO( Farm, farms, 1 ) \
+	FOO( City, cities, 2 ) \
+	FOO( Quarry, quarries, 3 ) \
+	FOO( LumberCamp, lumber_camps, 4 ) \
+	FOO( Army, armies, 5 ) \
+	FOO( Structure, structures, 6 ) \
+	FOO( Wall, walls, 7 )
+
+#define FOO( CLASS, ARRAY, NUMBER ) \
+	CLASS = NUMBER,
+enum class Type{ TYPE_TABLE Size };
+#undef FOO
+
 enum class Resource { Nothing, Stone, Wood, Food, Gold };
 
 

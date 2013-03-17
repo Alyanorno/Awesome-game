@@ -26,6 +26,7 @@ struct Road
 {
 	typedef Road type_of;
 	Road( int _rectangle, int _from, int _to ) : rectangle(_rectangle), from(_from), to(_to) {}
+	operator std::string () { return "Road"; }
 	int rectangle;
 	int from, to;
 	float length;
@@ -34,109 +35,64 @@ struct Road
 struct Wall
 {
 	Wall( int _rectangle, int _point ) : rectangle(_rectangle), point(_point) {}
+	operator std::string () { return "Wall"; }
 	int rectangle, point;
 	bool used;
 };
 class Logic
 {
 private:
-	buffer< Road > roads;
-	buffer< Farm > farms;
-	buffer< City > cities;
-	buffer< Quarry > quarries;
-	buffer< LumberCamp > lumber_camps;
-	buffer< Structure > structures;
-	buffer< Army > armies;
-	buffer< Wall > walls;
+
+#define FOO( CLASS, ARRAY, NUMBER ) \
+	buffer< CLASS > ARRAY;
+	TYPE_TABLE
+#undef FOO 
 
 	buffer< Point > points;
 
 	double last_time;
 
 
-
-	template < class T > struct GetType
-		{ static const Type result = Type::Size; };
-	template <> struct GetType <Road>
-		{ static const Type result = Type::Road; };
-	template <> struct GetType <Farm>
-		{ static const Type result = Type::Farm; };
-	template <> struct GetType <City>
-		{ static const Type result = Type::City; };
-	template <> struct GetType <Quarry>
-		{ static const Type result = Type::Quarry; };
-	template <> struct GetType <LumberCamp>
-		{ static const Type result = Type::LumberCamp; };
-	template <> struct GetType <Army>
-		{ static const Type result = Type::Army; };
-	template <> struct GetType <Structure>
-		{ static const Type result = Type::Structure; };
-	template <> struct GetType <Wall>
-		{ static const Type result = Type::Wall; };
-
 	struct Nothing {};
 	template < int T > struct GetClass
 		{ typedef Nothing result; };
-	template <> struct GetClass <0>
-		{ typedef Road result; };
-	template <> struct GetClass <1>
-		{ typedef Farm result; };
-	template <> struct GetClass <2>
-		{ typedef City result; };
-	template <> struct GetClass <3>
-		{ typedef Quarry result; };
-	template <> struct GetClass <4>
-		{ typedef LumberCamp result; };
-	template <> struct GetClass <5>
-		{ typedef Army result; };
-	template <> struct GetClass <6>
-		{ typedef Structure result; };
-	template <> struct GetClass <7>
-		{ typedef Wall result; };
+#define FOO( CLASS, ARRAY, NUMBER ) \
+	template <> struct GetClass <NUMBER> \
+		{ typedef CLASS result; };
+	TYPE_TABLE
+#undef FOO
 
 	template < int T > buffer< typename GetClass<T>::result >& GetBufferForType()
 	{
 		switch( (Type)T )
 		{
-			case Type::Road:
-				return roads;
-			case Type::Farm:
-				return farms;
-			case Type::City:
-				return cities;
-			case Type::Quarry:
-				return quarries;
-			case Type::LumberCamp:
-				return lumber_camps;
-			case Type::Structure:
-				return structures;
-			case Type::Army:
-				return armies;
-			case Type::Wall:
-				return walls;
+		#define FOO( CLASS, ARRAY, NUMBER ) \
+			case Type::CLASS: \
+					  return ARRAY;
+			TYPE_TABLE
+		#undef FOO
 			case Type::Nothing
 				throw std::string("Can't get type of nothing");
 		}
 	}
+
 	template < class T > buffer< T >& GetBuffer()
 		{ throw std::string("Invalid buffer type"); }
-	template <> buffer< Road >& GetBuffer()
-		{ return roads; }
-	template <> buffer< Farm >& GetBuffer()
-		{ return farms; }
-	template <> buffer< City >& GetBuffer()
-		{ return cities; }
-	template <> buffer< Quarry >& GetBuffer()
-		{ return quarries; }
-	template <> buffer< LumberCamp >& GetBuffer()
-		{ return lumber_camps; }
-	template <> buffer< Structure >& GetBuffer()
-		{ return structures; }
-	template <> buffer< Army >& GetBuffer()
-		{ return armies; }
-	template <> buffer< Wall >& GetBuffer()
-		{ return walls; }
+#define FOO( CLASS, ARRAY, NUMBER ) \
+	template <> buffer< CLASS >& GetBuffer() \
+		{ return ARRAY; }
+	TYPE_TABLE
+#undef FOO
+
 public:
+	template < class T > struct GetType
+		{ static const Type result = Type::Size; };
+#define FOO( CLASS, ARRAY, NUMBER ) \
+	template <> struct GetType <CLASS> \
+		{ static const Type result = Type::CLASS; };
+	TYPE_TABLE
+#undef FOO
+
 	float food_per_person, population_increase;
 	static float L( float _x ) { return _x < 0 ? -_x: _x; }
 
@@ -243,11 +199,6 @@ public:
 	GET( Structure, Structures, structures )
 #undef GEa
 
-	void ExpandFarm( int _point, float _scale );
-	void ExpandCity( int _point, float _scale );
-
-	bool OverLappingFarm( float _x, float _y, float _scale );
-	bool OverLappingCity( float _x, float _y, float _scale );
 //
 //
 // END OF TO BE REMOVED

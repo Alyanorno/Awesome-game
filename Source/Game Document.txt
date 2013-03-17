@@ -1,8 +1,8 @@
 Step 1: Base
 DONE: Add textures for quarry, lumber camp and wall
+DONE: Need to restructure the program to take advantage of the new generality
 Take food/people from other types on same point for structure
 Add pathfinding and faster or only movement if on road
-Need to restructure the program to take advantage of the new generality
 
 
 Step 2: System

@@ -72,91 +72,56 @@ void Input::Select::Input( float _x, float _y )
 		temp = std::to_string(army_selected) + '\n';
 
 
-	if( select == Type::Farm )
+	auto foo = [&]( Type _t, std::function<void(int)> _f )
 	{
-		closest = logic.Closest( Type::Farm, _x, _y );
-		if( closest.first != - 1 && closest.second <= rectangles[ (int)Type::Farm ][ logic.GetPoint( closest.first ).on_point[ Type::Farm ] ].scale )
-		{
-			Point& p( logic.GetPoint( closest.first ) );
-			Rectangle& r( rectangles[ (int)Type::Farm ][ p.on_point[ Type::Farm ] ] );
-			temp = temp + logic.GetInfo<Farm>( closest.first );
-			if( select_rectangle == -1 )
-				select_rectangle = graphic.AddRectangle( (int)Type::Structure, 0 ); // TODO: Add better texture
-			graphic.MoveRectangle( select_rectangle, p.x, p.y );
-			graphic.ResizeRectangle( select_rectangle, r.scale );
-		}
-	}
-	else if( select == Type::City )
-	{
-		closest = logic.Closest( Type::City, _x, _y );
-		if( closest.first != - 1 && closest.second <= rectangles[ (int)Type::City ][ logic.GetPoint( closest.first ).on_point[ Type::City ] ].scale )
-		{
-			Point& p( logic.GetPoint( closest.first ) );
-			Rectangle& r( rectangles[ (int)Type::City ][ p.on_point[ Type::City ] ] );
-			temp = temp + logic.GetInfo<City>( closest.first );
-			if( !lock_soldier_production && glfwGetKey( 'R' ) )
-			{
-				logic.ToggleSoldierProduction( closest.first );
-				lock_soldier_production = true;
-			}
-			if( !lock_cart_production && glfwGetKey( 'T' ) )
-			{
-				logic.ToggleCartProduction( closest.first );
-				lock_cart_production = true;
-			}
+		closest = logic.Closest( _t, _x, _y );
+		if( closest.first == - 1 )
+			return;
 
+		Point& p( logic.GetPoint( closest.first ) );
+		Rectangle& r( rectangles[ (int)_t ][ p.on_point[ _t ] ] );
+		if( closest.second <= r.scale )
+		{
+			_f( closest.first );
 			if( select_rectangle == -1 )
 				select_rectangle = graphic.AddRectangle( (int)Type::Structure, 0 ); // TODO: Add better texture
 			graphic.MoveRectangle( select_rectangle, p.x, p.y );
 			graphic.ResizeRectangle( select_rectangle, r.scale );
 		}
-		if( lock_soldier_production && !glfwGetKey( 'R' ) )
-			lock_soldier_production = false;
-		if( lock_cart_production && !glfwGetKey( 'T' ) )
-			lock_cart_production = false;
-	}
+	};
+	if( select == Type::Farm )
+		foo( Type::Farm, [&](int i) { temp = temp + logic.GetInfo<Farm>( i ); } );
+	else if( select == Type::City )
+		foo( Type::City, [&](int i)
+		{
+			temp = temp + logic.GetInfo<City>( i );
+			if( glfwGetKey('R') )
+			{
+				if( !lock_soldier_production )
+				{
+					logic.ToggleSoldierProduction( closest.first );
+					lock_soldier_production = true;
+				}
+			}
+			else if( lock_soldier_production )
+				lock_soldier_production = false;
+			if( glfwGetKey( 'T' ) )
+			{
+				if( !lock_cart_production )
+				{
+					logic.ToggleCartProduction( closest.first );
+					lock_cart_production = true;
+				}
+			}
+			else if( lock_cart_production )
+				lock_cart_production = false;
+		} );
 	else if( select == Type::Quarry )
-	{
-		closest = logic.Closest( Type::Quarry, _x, _y );
-		if( closest.first != - 1 && closest.second <= rectangles[ (int)Type::Quarry ][ logic.GetPoint( closest.first ).on_point[ Type::Quarry ] ].scale )
-		{
-			Point& p( logic.GetPoint( closest.first ) );
-			Rectangle& r( rectangles[ (int)Type::Quarry ][ p.on_point[ Type::Quarry ] ] );
-			temp = temp + logic.GetInfo<Quarry>( closest.first );
-			if( select_rectangle == -1 )
-				select_rectangle = graphic.AddRectangle( (int)Type::Structure, 0 ); // TODO: Add better texture
-			graphic.MoveRectangle( select_rectangle, p.x, p.y );
-			graphic.ResizeRectangle( select_rectangle, r.scale );
-		}
-	}
+		foo( Type::Quarry, [&](int i) { temp = temp + logic.GetInfo<Quarry>( i ); } );
 	else if( select == Type::LumberCamp )
-	{
-		closest = logic.Closest( Type::LumberCamp, _x, _y );
-		if( closest.first != - 1 && closest.second <= rectangles[ (int)Type::LumberCamp ][ logic.GetPoint( closest.first ).on_point[ Type::LumberCamp ] ].scale )
-		{
-			Point& p( logic.GetPoint( closest.first ) );
-			Rectangle& r( rectangles[ (int)Type::LumberCamp ][ p.on_point[ Type::LumberCamp ] ] );
-			temp = temp + logic.GetInfo<LumberCamp>( closest.first );
-			if( select_rectangle == -1 )
-				select_rectangle = graphic.AddRectangle( (int)Type::Structure, 0 ); // TODO: Add better texture
-			graphic.MoveRectangle( select_rectangle, p.x, p.y );
-			graphic.ResizeRectangle( select_rectangle, r.scale );
-		}
-	}
+		foo( Type::LumberCamp, [&](int i) { temp = temp + logic.GetInfo<LumberCamp>( i ); } );
 	else if( select == Type::Structure )
-	{
-		closest = logic.Closest( Type::Structure, _x, _y );
-		if( closest.first != - 1 && closest.second <= rectangles[ (int)Type::Structure ][ logic.GetPoint( closest.first ).on_point[ Type::Structure ] ].scale )
-		{
-			Point& p( logic.GetPoint( closest.first ) );
-			Rectangle& r( rectangles[ (int)Type::Structure ][ p.on_point[ Type::Structure ] ] );
-			temp = temp + logic.GetInfo<Structure>( closest.first );
-			if( select_rectangle == -1 )
-				select_rectangle = graphic.AddRectangle( (int)Type::Structure, 0 ); // TODO: Add better texture
-			graphic.MoveRectangle( select_rectangle, p.x, p.y );
-			graphic.ResizeRectangle( select_rectangle, r.scale );
-		}
-	}
+		foo( Type::Structure, [&](int i) { temp = temp + logic.GetInfo<Structure>( i ); } );
 	else if( select == Type::Army )
 	{
 		closest = logic.ClosestArmy( _x, _y );
@@ -309,17 +274,64 @@ void Input::Select::Input( float _x, float _y )
 	graphic.MoveTopText( _x, _y );
 }
 
-Input::BuildRoad::BuildRoad( Graphic& _graphic, Logic& _logic, float& _mouse_wheel )
+
+template < class T> Input::Build<T>::Build( Graphic& _graphic, Logic& _logic, float& _mouse_wheel )
+	: State( _graphic, _logic, _mouse_wheel ), scale(1.f), expand(false)
+{
+	mouse_wheel = glfwGetMouseWheel() - graphic.GetZoom();
+	scale = 1 + mouse_wheel / 10;
+	rectangle = graphic.AddRectangle( (int)Logic::GetType<T>::result, scale );
+}
+template < class T> Input::Build<T>::~Build()
+	{ graphic.RemoveRectangle( rectangle ); }
+template < class T> void Input::Build<T>::Input( float _x, float _y )
+{
+	std::pair<int,float> closest;
+	if( glfwGetKey( GLFW_KEY_LCTRL ) )
+	{
+		mouse_wheel = glfwGetMouseWheel() - graphic.GetZoom();
+		scale = 1 + mouse_wheel / 10;
+		graphic.ResizeRectangle( rectangle, scale );
+	}
+
+	if( logic.OverLapping<T>( _x, _y, scale ) )
+	{
+		closest = logic.Closest( Logic::GetType<T>::result, _x, _y );
+		_x = logic.GetPoint( closest.first ).x;
+		_y = logic.GetPoint( closest.first ).y;
+		expand = true;
+	}
+	else
+		expand = false;
+
+	graphic.MoveRectangle( rectangle, _x, _y );
+
+	if( glfwGetMouseButton( GLFW_MOUSE_BUTTON_1 ) )
+	{
+		if( !create )
+		{
+			if( !expand )
+				logic.Build<T>( _x, _y, scale );
+			else
+				logic.Expand<T>( closest.first, scale );
+			create = true;
+		}
+	}
+	else
+		create = false;
+}
+
+Input::Build<Road>::Build( Graphic& _graphic, Logic& _logic, float& _mouse_wheel )
 	: State( _graphic, _logic, _mouse_wheel ), rectangle(-1)
 {}
-Input::BuildRoad::~BuildRoad()
+Input::Build<Road>::~Build()
 {
 	if( create )
 		logic.RemoveTopLine();
 	if( rectangle != -1 )
 		graphic.RemoveRectangle( rectangle );
 }
-void Input::BuildRoad::Input( float _x, float _y )
+void Input::Build<Road>::Input( float _x, float _y )
 {
 	std::pair<int,float> closest;
 
@@ -387,63 +399,16 @@ void Input::BuildRoad::Input( float _x, float _y )
 	}
 }
 
-Input::BuildFarm::BuildFarm( Graphic& _graphic, Logic& _logic, float& _mouse_wheel )
-	: State( _graphic, _logic, _mouse_wheel ), scale(1.f), expand(false)
-{
-	mouse_wheel = glfwGetMouseWheel() - graphic.GetZoom();
-	scale = 1 + mouse_wheel / 10;
-	rectangle = graphic.AddRectangle( (int)Type::Farm, scale );
-}
-Input::BuildFarm::~BuildFarm()
-	{ graphic.RemoveRectangle( rectangle ); }
-void Input::BuildFarm::Input( float _x, float _y )
-{
-	std::pair<int,float> closest;
-	if( glfwGetKey( GLFW_KEY_LCTRL ) )
-	{
-		mouse_wheel = glfwGetMouseWheel() - graphic.GetZoom();
-		scale = 1 + mouse_wheel / 10;
-		graphic.ResizeRectangle( rectangle, scale );
-	}
-
-	if( logic.OverLappingFarm( _x, _y, scale ) )
-	{
-		closest = logic.Closest( Type::Farm, _x, _y );
-		_x = logic.GetPoint( closest.first ).x;
-		_y = logic.GetPoint( closest.first ).y;
-		expand = true;
-	}
-	else
-		expand = false;
-
-	// Draw not completed farm
-	graphic.MoveRectangle( rectangle, _x, _y );
-
-	if( glfwGetMouseButton( GLFW_MOUSE_BUTTON_1 ) )
-	{
-		if( !create )
-		{
-			if( !expand )
-				logic.Build<Farm>( _x, _y, scale );
-			else
-				logic.Expand<Farm>( closest.first, scale );
-			create = true;
-		}
-	}
-	else
-		create = false;
-}
-
-Input::BuildCity::BuildCity( Graphic& _graphic, Logic& _logic, float& _mouse_wheel )
+Input::Build<City>::Build( Graphic& _graphic, Logic& _logic, float& _mouse_wheel )
 	: State( _graphic, _logic, _mouse_wheel ), scale(1.f), expand(false)
 {
 	mouse_wheel = glfwGetMouseWheel() - graphic.GetZoom();
 	scale = 1 + mouse_wheel / 10;
 	rectangle = graphic.AddRectangle( (int)Type::City, scale );
 }
-Input::BuildCity::~BuildCity()
+Input::Build<City>::~Build()
 	{ if( rectangle != -1 ) graphic.RemoveRectangle( rectangle ); }
-void Input::BuildCity::Input( float _x, float _y )
+void Input::Build<City>::Input( float _x, float _y )
 {
 	bool overlapping;
 	std::pair<int,float> closest;
@@ -467,7 +432,7 @@ void Input::BuildCity::Input( float _x, float _y )
 
 		_x = logic.GetPoint( farm ).x;
 		_y = logic.GetPoint( farm ).y;
-		if( !logic.OverLappingCity( _x, _y, scale ) )
+		if( !logic.OverLapping<City>( _x, _y, scale ) )
 		{
 			if( rectangle == -1 )
 				rectangle = graphic.AddRectangle( (int)Type::City, scale );
@@ -505,100 +470,6 @@ void Input::BuildCity::Input( float _x, float _y )
 		create = false;
 }
 
-Input::BuildQuarry::BuildQuarry( Graphic& _graphic, Logic& _logic, float& _mouse_wheel )
-	: State( _graphic, _logic, _mouse_wheel ), scale(1.f), expand(false)
-{
-	mouse_wheel = glfwGetMouseWheel() - graphic.GetZoom();
-	scale = 1 + mouse_wheel / 10;
-	rectangle = graphic.AddRectangle( (int)Type::Quarry, scale );
-}
-Input::BuildQuarry::~BuildQuarry()
-	{ graphic.RemoveRectangle( rectangle ); }
-void Input::BuildQuarry::Input( float _x, float _y )
-{
-	std::pair<int,float> closest;
-	if( glfwGetKey( GLFW_KEY_LCTRL ) )
-	{
-		mouse_wheel = glfwGetMouseWheel() - graphic.GetZoom();
-		scale = 1 + mouse_wheel / 10;
-		graphic.ResizeRectangle( rectangle, scale );
-	}
-
-	if( logic.OverLapping<Quarry>( _x, _y, scale ) )
-	{
-		closest = logic.Closest( Type::Quarry, _x, _y );
-		_x = logic.GetPoint( closest.first ).x;
-		_y = logic.GetPoint( closest.first ).y;
-		expand = true;
-	}
-	else
-		expand = false;
-
-	// Draw not completed farm
-	graphic.MoveRectangle( rectangle, _x, _y );
-
-	if( glfwGetMouseButton( GLFW_MOUSE_BUTTON_1 ) )
-	{
-		if( !create )
-		{
-			if( !expand )
-				logic.Build<Quarry>( _x, _y, scale );
-			else
-				logic.Expand<Quarry>( closest.first, scale );
-			create = true;
-		}
-	}
-	else
-		create = false;
-}
-
-Input::BuildLumberCamp::BuildLumberCamp( Graphic& _graphic, Logic& _logic, float& _mouse_wheel )
-	: State( _graphic, _logic, _mouse_wheel ), scale(1.f), expand(false)
-{
-	mouse_wheel = glfwGetMouseWheel() - graphic.GetZoom();
-	scale = 1 + mouse_wheel / 10;
-	rectangle = graphic.AddRectangle( (int)Type::LumberCamp, scale );
-}
-Input::BuildLumberCamp::~BuildLumberCamp()
-	{ graphic.RemoveRectangle( rectangle ); }
-void Input::BuildLumberCamp::Input( float _x, float _y )
-{
-	std::pair<int,float> closest;
-	if( glfwGetKey( GLFW_KEY_LCTRL ) )
-	{
-		mouse_wheel = glfwGetMouseWheel() - graphic.GetZoom();
-		scale = 1 + mouse_wheel / 10;
-		graphic.ResizeRectangle( rectangle, scale );
-	}
-
-	if( logic.OverLapping<LumberCamp>( _x, _y, scale ) )
-	{
-		closest = logic.Closest( Type::LumberCamp, _x, _y );
-		_x = logic.GetPoint( closest.first ).x;
-		_y = logic.GetPoint( closest.first ).y;
-		expand = true;
-	}
-	else
-		expand = false;
-
-	// Draw not completed farm
-	graphic.MoveRectangle( rectangle, _x, _y );
-
-	if( glfwGetMouseButton( GLFW_MOUSE_BUTTON_1 ) )
-	{
-		if( !create )
-		{
-			if( !expand )
-				logic.Build<LumberCamp>( _x, _y, scale );
-			else
-				logic.Expand<LumberCamp>( closest.first, scale );
-			create = true;
-		}
-	}
-	else
-		create = false;
-}
-
 
 
 Input::Input( Graphic& _graphic, Logic& _logic ) : graphic(_graphic), logic(_logic), mouse_wheel(0)
@@ -620,30 +491,30 @@ void Input::Update()
 			state.reset();
 			state = std::unique_ptr<State>( new Select( graphic, logic, mouse_wheel ) );
 		}
-		else if( glfwGetKey( '1' ) && !dynamic_cast<BuildRoad*>( state.get() ) )
+		else if( glfwGetKey( '1' ) && !dynamic_cast<Build<Road>*>( state.get() ) )
 		{
 			state.reset();
-			state = std::unique_ptr<State>( new BuildRoad( graphic, logic, mouse_wheel ) );
+			state = std::unique_ptr<State>( new Build<Road>( graphic, logic, mouse_wheel ) );
 		}
-		else if( glfwGetKey( '2' ) && !dynamic_cast<BuildFarm*>( state.get() ) )
+		else if( glfwGetKey( '2' ) && !dynamic_cast<Build<Farm>*>( state.get() ) )
 		{
 			state.reset();
-			state = std::unique_ptr<State>( new BuildFarm( graphic, logic, mouse_wheel ) );
+			state = std::unique_ptr<State>( new Build<Farm>( graphic, logic, mouse_wheel ) );
 		}
-		else if( glfwGetKey( '3' ) && !dynamic_cast<BuildCity*>( state.get() ) )
+		else if( glfwGetKey( '3' ) && !dynamic_cast<Build<City>*>( state.get() ) )
 		{
 			state.reset();
-			state = std::unique_ptr<State>( new BuildCity( graphic, logic, mouse_wheel ) );
+			state = std::unique_ptr<State>( new Build<City>( graphic, logic, mouse_wheel ) );
 		}
-		else if( glfwGetKey( '4' ) && !dynamic_cast<BuildQuarry*>( state.get() ) )
+		else if( glfwGetKey( '4' ) && !dynamic_cast<Build<Quarry>*>( state.get() ) )
 		{
 			state.reset();
-			state = std::unique_ptr<State>( new BuildQuarry( graphic, logic, mouse_wheel ) );
+			state = std::unique_ptr<State>( new Build<Quarry>( graphic, logic, mouse_wheel ) );
 		}
-		else if( glfwGetKey( '5' ) && !dynamic_cast<BuildLumberCamp*>( state.get() ) )
+		else if( glfwGetKey( '5' ) && !dynamic_cast<Build<LumberCamp>*>( state.get() ) )
 		{
 			state.reset();
-			state = std::unique_ptr<State>( new BuildLumberCamp( graphic, logic, mouse_wheel ) );
+			state = std::unique_ptr<State>( new Build<LumberCamp>( graphic, logic, mouse_wheel ) );
 		}
 	if( !glfwGetKey( GLFW_KEY_LCTRL ) )
 		graphic.Zoom( glfwGetMouseWheel() - mouse_wheel );

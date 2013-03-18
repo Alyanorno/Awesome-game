@@ -19,11 +19,11 @@ Add resource system
 		Stone
 		#Iron
 		#Fertile soil
-	Implement quarry
-		In logic
+	DONE: Implement quarry
+		DONE: In logic
 		DONE: In input
-	Implement lumber camp
-		In logic
+	DONE: Implement lumber camp
+		DONE: In logic
 		DONE: In input
 Limit construction further
 	No farm/city on mountain
@@ -97,10 +97,10 @@ Rules
 	City require labor
 	City constructs units
 #	Unit construction require labor
-#	Quarry generate stone
+	Quarry generate stone
 #	Quarry require labor
 #	Quarry require mountain
-#	Lumber camp generate wood
+	Lumber camp generate wood
 #	Lumber camp require labor
 #	Lumber camp require forest
 

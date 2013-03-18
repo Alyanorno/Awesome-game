@@ -39,7 +39,14 @@ void LumberCamp::Update( Logic& l, float delta_time )
 	if( wood_contained > wood_storage )
 		wood_contained = wood_storage;
 
-	// TODO: Reduce forests
+	// Reduce forests
+	// Temporal solution
+	auto& v( height_map.square_contained );
+	auto i = std::find( v.begin(), v.end(), Resource::Wood );
+	auto& resource( height_map.square_amount[ i - v.begin() ] );
+	resource -=  wood_production * delta_time * efficency;
+	if( resource <= 0 )
+		height_map.Remove( i - v.begin() );
 
 	l.PopulationCalculations( food_contained, population, hunger, delta_time );
 }

@@ -39,7 +39,15 @@ void Quarry::Update( Logic& l, float delta_time )
 	if( stone_contained > stone_storage )
 		stone_contained = stone_storage;
 
-	// TODO: Reduce mountain / or make it more require more effort to extract more stone
+	// Reduce mountain maeby change to require more effort to extract more stone
+	// Temporal solution
+	auto& v( height_map.square_contained );
+	auto i = std::find( v.begin(), v.end(), Resource::Stone );
+	auto& resource( height_map.square_amount[ i - v.begin() ] );
+	resource -=  stone_production * delta_time * efficency;
+	if( resource <= 0 )
+		height_map.Remove( i - v.begin() );
+
 
 	l.PopulationCalculations( food_contained, population, hunger, delta_time );
 }

@@ -19,7 +19,7 @@
 enum class Type{ TYPE_TABLE Size };
 #undef FOO
 
-enum class Resource { Nothing, Stone, Wood, Food, Gold };
+enum class Resource { Nothing, Stone, Wood, Food, Iron, Gold };
 
 
 struct HeightMap
@@ -36,6 +36,11 @@ struct HeightMap
 	void Update( float delta_time );
 	int begin() { return 0; }
 	int end() { return square_contained.size(); }
+	void Remove( int _i )
+	{
+		square_contained[_i] = Resource::Nothing;
+		square_amount[_i] = 0;
+	}
 };
 extern HeightMap height_map;
 
@@ -115,7 +120,6 @@ namespace utility
 {
 	template < class T, class Function > void map( T& t, Function f )
 		{ map( t.begin(), t.end(), f ); }
-
 	template < class Iterator, class Function > void map( Iterator first, Iterator last, Function f )
 	{
 		Iterator i( first );
@@ -126,7 +130,6 @@ namespace utility
 
 	template < class T, class Function > typename T::value_type fold( T& t, Function f )
 		{ return fold< T >( t.begin(), t.end(), f ); }
-
 	template < class T, class Iterator, class Function > typename T::value_type fold( Iterator first, Iterator last, Function f )
 	{
 		typename T::value_type result(0);
@@ -138,7 +141,6 @@ namespace utility
 
 	template < class T, class Function > void func( T& t, Function f )
 		{ func( t.begin(), t.end(), f ); }
-
 	template < class Iterator, class Function > void func( Iterator first, Iterator last, Function f )
 	{
 		Iterator i( first );

@@ -14,7 +14,7 @@ HeightMap::HeightMap( int _size_x, int _size_y, float _square_size )
 	for( int i(0); i < 15; i++ )
 	{
 		square_contained[i] = Resource::Wood;
-		square_amount[i] = 100;
+		square_amount[i] = 10;
 	}
 	for( int i(15); i < 30; i++ )
 	{
@@ -24,12 +24,12 @@ HeightMap::HeightMap( int _size_x, int _size_y, float _square_size )
 	for( int i(30); i < 45; i++ )
 	{
 		square_contained[i] = Resource::Stone;
-		square_amount[i] = 100;
+		square_amount[i] = 10;
 	}
 	for( int i(45); i < 75; i++ )
 	{
 		square_contained[i] = Resource::Wood;
-		square_amount[i] = 100;
+		square_amount[i] = 10;
 	}
 	for( int i(75); i < 100; i++ )
 	{

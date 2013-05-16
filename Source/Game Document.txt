@@ -1,17 +1,10 @@
 Step 1: Base
-DONE: Add textures for quarry, lumber camp and wall
-DONE: Need to restructure the program to take advantage of the new generality
 Take food/people from other types on same point for structure
 Add pathfinding and faster or only movement if on road
 
 
 Step 2: System
 Add resource system
-	DONE: Add map
-	DONE: Draw map
-	DONE: Add textures for resources on map
-	DONE: Add forest
-	DONE: Add mountain
 	Implement generation of resources on map
 	Have forests expand over time
 	Resources
@@ -19,20 +12,13 @@ Add resource system
 		Stone
 		#Iron
 		#Fertile soil
-	DONE: Implement quarry
-		DONE: In logic
-		DONE: In input
-	DONE: Implement lumber camp
-		DONE: In logic
-		DONE: In input
 Limit construction further
 	No farm/city on mountain
 	No road on mountain
-Population system
-	#Solve inbalances by migration -- Manually instead?
+Solve inbalances by migration
 #Seasons
-#Add moral system -- Not needed?
 #Water
+#Add moral system -- Not needed?
 
 
 Graphic
@@ -61,10 +47,10 @@ Logic
 			Food generation
 		City field
 			Have population
-			Food storage
+#			General storage
 			Unit production
 		Wall
-			Made of wood/stone
+#			Made of wood/stone
 		Quarry
 			Have population
 			Limited food storage
@@ -74,7 +60,7 @@ Logic
 			Limited food storage
 			Wood generation
 		Road
-			Can be made of stone
+#			Can be made of stone
 		Army
 			Soldiers
 				Limited food storage

@@ -33,6 +33,8 @@ struct HeightMap
 
 
 	HeightMap( int _size_x, int _size_y, float _square_size );
+	float PosX( int i ) { return x + (i % size_x) * square_size; }
+	float PosY( int i ) { return y + (i / size_x % size_y) * square_size; }
 	void Update( float delta_time );
 	int begin() { return 0; }
 	int end() { return square_contained.size(); }

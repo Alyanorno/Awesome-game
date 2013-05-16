@@ -35,19 +35,42 @@ void LumberCamp::Update( Logic& l, float delta_time )
 	if( efficency > 1.f )
 		efficency = 1.f;
 
-	wood_contained += wood_production * delta_time * efficency;
-	if( wood_contained > wood_storage )
+	l.PopulationCalculations( food_contained, population, hunger, delta_time );
+
+	if( wood_contained >= wood_storage )
+	{
 		wood_contained = wood_storage;
+		return;
+	}
 
 	// Reduce forests
-	// Temporal solution
 	auto& v( height_map.square_contained );
 	auto i = std::find( v.begin(), v.end(), Resource::Wood );
-	auto& resource( height_map.square_amount[ i - v.begin() ] );
-	resource -=  wood_production * delta_time * efficency;
-	if( resource <= 0 )
-		height_map.Remove( i - v.begin() );
-
-	l.PopulationCalculations( food_contained, population, hunger, delta_time );
+	auto closest = i;
+	auto& r( rectangles[ (int)Type::LumberCamp ][rectangle] );
+	auto size = r.scale;
+	auto closest_length = size;
+	while(true)
+	{
+		if( i == v.end() )
+		{
+			if( closest_length != size )
+			{
+				auto& resource( height_map.square_amount[ closest - v.begin() ] );
+				wood_contained += wood_production * delta_time * efficency;
+				resource -= wood_production * delta_time * efficency;
+				if( resource <= 0 )
+					height_map.Remove( closest - v.begin() );
+			}
+			break;
+		}
+		auto s = sqrt( pow( r.x - height_map.PosX( i - v.begin() ), 2 ) + pow( r.y - height_map.PosY( i - v.begin() ), 2 ) );
+		if( s < closest_length )
+		{
+			closest_length = s;
+			closest = i;
+		}
+		i = std::find( ++i, v.end(), Resource::Wood );
+	}
 }
 

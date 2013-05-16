@@ -449,7 +449,7 @@ void Graphic::Update()
 			glBindTexture( GL_TEXTURE_2D, glTexture[ forest ] );
 		else
 			return;
-		Rectangle r( m.x + (i % m.size_x) * m.square_size, m.y + (i / m.size_x % m.size_y) * m.square_size, m.square_size );
+		Rectangle r( m.PosX(i), m.PosY(i), m.square_size );
 		DrawRectangle( r );
 	} );
 	deapth = 0;

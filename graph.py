@@ -54,6 +54,11 @@ for line in out_text:
 		else:
 			total += added + removed;
 			week_text.append( str(week) + '\t' + str(added) + '\t' + str(removed) + '\t' + str(total) + '\n' )
+			if w - week > 1:
+				print( "lost months\n" )
+				for t in range( week + 1, w ):
+					week_text.append( str(t) + "\t0\t0\t" + str(total) + "\n" )
+					print( "adding lost month " + str(t) + "\n" )
 			week = w;
 			added = int(i[3])
 			removed = -int(i[4])

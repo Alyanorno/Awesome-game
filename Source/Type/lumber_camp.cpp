@@ -48,7 +48,7 @@ void LumberCamp::Update( Logic& l, float delta_time )
 	auto i = std::find( v.begin(), v.end(), Resource::Wood );
 	auto closest = i;
 	auto& r( rectangles[ (int)Type::LumberCamp ][rectangle] );
-	auto size = r.scale;
+	auto size = 5; // TODO: Move value to a config balance file
 	auto closest_length = size;
 	while(true)
 	{

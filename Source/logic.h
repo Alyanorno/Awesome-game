@@ -236,7 +236,7 @@ public:
 	template < class T > void Build( float _x, float _y, float _scale );
 	template < class T > void Build( int _point, float _scale );
 
-	void ChangeRoad( Rectangle& _rectangle, int _from, int _to, int _point = -1 );
+	void ChangeRoad( Rectangle& _rectangle, int _from, int _to );
 	template < class T> void Expand( int _point, float _scale );
 
 	float Distance( float _x, float _y, float __x, float __y );
@@ -244,7 +244,8 @@ public:
 	std::pair< int, float > Closest( Type _type, float _x, float _y );
 	std::pair< int, float > ClosestArmy( float _x, float _y );
 
-	template < class T > bool OverLapping( float _x, float _y, float _scale );
+	std::pair< bool, Type > OverLapping( float _x, float _y, float _scale );
+	bool OverLappingCity( float _x, float _y, float _scale );
 
 	template < class T > std::string GetInfo( int _point );
 	std::string GetArmyInfo( int _army );

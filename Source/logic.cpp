@@ -77,10 +77,20 @@ void Logic::ToggleSoldierProduction( int _point )
 template < class T > void Logic::Build( int _from, int _to ) {}
 template <> void Logic::Build<Road>( int _from, int _to )
 {
+	if( _from == _to )
+		return;
+
+	// Check if road already exists
+	auto roads = Get<Road>();
+	if( roads.contains( [_from,_to]( Road& r ) -> bool
+	{ 
+		return (r.from == _from && r.to == _to) || (r.from == _to && r.to == _from);
+	} ))
+		return;
+
 	int t = rectangles[ (int)Type::Structure ].insert( Rectangle( 0, 0, 0 ) );
-	int t2 = points.insert( Point( 0, 0 ) );
-	ChangeRoad( rectangles[ (int)Type::Structure][t], _from, _to, t2 );
-	points[t2].on_point[ Type::Structure ] = structures.insert( Structure( *this, t, Type::Road, t2, false, _from, _to ) );
+	ChangeRoad( rectangles[ (int)Type::Structure][t], _from, _to );
+	structures.insert( Structure( *this, t, Type::Road, 0, false, _from, _to ) );
 }
 template < class T > void Logic::Build( float _x, float _y, float _scale )
 {
@@ -100,7 +110,7 @@ template <> void Logic::Build<City>( int _point, float _scale )
 }
 
 
-void Logic::ChangeRoad( Rectangle& _rectangle, int _from, int _to, int _point )
+void Logic::ChangeRoad( Rectangle& _rectangle, int _from, int _to )
 {
 	Rectangle& r( _rectangle );
 	Point& from_p( points[_from] );
@@ -108,11 +118,6 @@ void Logic::ChangeRoad( Rectangle& _rectangle, int _from, int _to, int _point )
 
 	r.x = (to_p.x + from_p.x) / 2;
 	r.y = (to_p.y + from_p.y) / 2;
-	if( _point != -1 )
-	{
-		points[_point].x = r.x;
-		points[_point].y = r.y;
-	}
 
 	float length = sqrt( pow( Logic::L(to_p.x - from_p.x), 2 ) + pow( Logic::L(to_p.y - from_p.y), 2 ) );
 	r.scale_x = length;
@@ -195,22 +200,34 @@ std::pair< int, float > Logic::ClosestArmy( float _x, float _y )
 }
 
 
-template < class T > bool Logic::OverLapping( float _x, float _y, float _scale )
+std::pair< bool, Type > Logic::OverLapping( float _x, float _y, float _scale )
 {
-	for each( T i in GetBuffer<T>() )
+#define FOO( CLASS, ARRAY, NUMBER ) \
+	if( GetType<CLASS>::result != Type::Road && GetType<CLASS>::result != Type::Army && GetType<CLASS>::result != Type::Wall ) \
+		for each( CLASS i in GetBuffer<CLASS>() ) \
+		{ \
+			Rectangle& r( rectangles[ (int)GetType<CLASS>::result ][i.rectangle] ); \
+			if( r.x == _x && r.y == _y ) \
+				continue; \
+			if( (_scale + r.scale) / 2 >= sqrt( pow( _x - r.x, 2) + pow( _y - r.y, 2 ) ) ) \
+				return std::make_pair( true, GetType<CLASS>::result ); \
+		}
+	TYPE_TABLE
+#undef FOO
+	return std::make_pair( false, Type::Size );
+}
+bool Logic::OverLappingCity( float _x, float _y, float _scale )
+{
+	for each( City i in GetBuffer<City>() )
 	{
-		Rectangle& r( rectangles[ (int)GetType<T>::result ][i.rectangle] );
-		if( r.x == _x && r.y == _y )
-			continue;
-		if( (_scale + r.scale) / 2 >= sqrt( pow( _x - r.x, 2) + pow( _y - r.y, 2 ) ) )
-			return true;
+		Rectangle& r( rectangles[ (int)Type::City ][i.rectangle] );
+			if( r.x == _x && r.y == _y )
+				continue;
+					if( (_scale + r.scale) / 2 >= sqrt( pow( _x - r.x, 2) + pow( _y - r.y, 2 ) ) )
+						return true;
 	}
 	return false;
 }
-#define FOO( CLASS, ARRAY, NUMBER ) \
-	template bool Logic::OverLapping<CLASS>( float _x, float _y, float _scale );
-	TYPE_TABLE
-#undef FOO
 
 
 template < class T > std::string Logic::GetInfo( int _point )

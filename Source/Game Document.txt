@@ -13,8 +13,10 @@ Add resource system
 		#Iron
 		#Fertile soil
 Limit construction further
-	No farm/city on mountain
+	DONE: No constructions on mountains and forests
 	No road on mountain
+DONE: Fix more general roads
+Update army transport code
 Solve inbalances by migration
 #Seasons
 #Water

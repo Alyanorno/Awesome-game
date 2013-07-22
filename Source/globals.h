@@ -86,6 +86,13 @@ public:
 			if( v[i].used && _foo( v[i] ) )
 				return v[i];
 	}
+	bool contains( std::function<bool(T&)> _foo )
+	{
+		for( int i(0); i < v.size(); i++ )
+			if( v[i].used && _foo( v[i] ) )
+				return true;
+		return false;
+	}
 
 	typename std::vector<T>::iterator begin() { return v.begin(); }
 	typename std::vector<T>::const_iterator begin() const { return v.begin(); }

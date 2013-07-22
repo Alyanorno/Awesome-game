@@ -47,8 +47,8 @@ void Quarry::Update( Logic& l, float delta_time )
 	auto& v( height_map.square_contained );
 	auto i = std::find( v.begin(), v.end(), Resource::Stone );
 	auto closest = i;
-	auto& r( rectangles[ (int)Type::LumberCamp ][rectangle] );
-	auto size = r.scale;
+	auto& r( rectangles[ (int)Type::Quarry ][rectangle] );
+	auto size = 5; // TODO: Move value to a config file
 	auto closest_length = size;
 	while(true)
 	{
@@ -64,7 +64,7 @@ void Quarry::Update( Logic& l, float delta_time )
 			}
 			break;
 		}
-		auto s = sqrt( pow( r.x - height_map.PosX( i - v.begin() ), 2 ) + pow( r.y - height_map.PosY( i - v.begin() ), 2 ) );
+		auto s = sqrt( pow( r.x - height_map.PosX( i - v.begin() ), 2 ) + pow( r.y - height_map.PosY( i - v.begin() ), 2 ) ); // TODO: Mabye remove v.begin()
 		if( s < closest_length )
 		{
 			closest_length = s;

@@ -283,7 +283,10 @@ template < class T> Input::Build<T>::Build( Graphic& _graphic, Logic& _logic, fl
 	rectangle = graphic.AddRectangle( (int)Logic::GetType<T>::result, scale );
 }
 template < class T> Input::Build<T>::~Build()
-	{ graphic.RemoveRectangle( rectangle ); }
+{
+	if( rectangle != -1 )
+		graphic.RemoveRectangle( rectangle );
+}
 template < class T> void Input::Build<T>::Input( float _x, float _y )
 {
 	std::pair<int,float> closest;
@@ -291,18 +294,52 @@ template < class T> void Input::Build<T>::Input( float _x, float _y )
 	{
 		mouse_wheel = glfwGetMouseWheel() - graphic.GetZoom();
 		scale = 1 + mouse_wheel / 10;
-		graphic.ResizeRectangle( rectangle, scale );
+		if( rectangle != -1 )
+			graphic.ResizeRectangle( rectangle, scale );
 	}
 
-	if( logic.OverLapping<T>( _x, _y, scale ) )
+	// Check if it overlapps any forests or mountains
+	auto& m = height_map.square_contained;
+	for( int i(0); i < m.size(); i++ )
+	{
+		if( m[i] == Resource::Nothing )
+			continue;
+		// Calculate distance
+		auto s = sqrt( pow( _x - height_map.PosX( i ), 2 ) + pow( _y - height_map.PosY( i ), 2 ) );
+		if( s < scale && s != 0 )
+		{
+			// It overlapps
+			if( rectangle != -1 )
+			{
+				graphic.RemoveRectangle( rectangle );
+				rectangle = -1;
+			}
+			return;
+		}
+	}
+
+	auto t = logic.OverLapping( _x, _y, scale );
+	if( t.first && t.second == Logic::GetType<T>::result )
 	{
 		closest = logic.Closest( Logic::GetType<T>::result, _x, _y );
 		_x = logic.GetPoint( closest.first ).x;
 		_y = logic.GetPoint( closest.first ).y;
 		expand = true;
 	}
+	else if( t.first )
+	{
+		if( rectangle != -1 )
+		{
+			graphic.RemoveRectangle( rectangle );
+			rectangle = -1;
+		}
+		return;
+	}
 	else
 		expand = false;
+
+	if( rectangle == -1 )
+		rectangle = graphic.AddRectangle( (int)Logic::GetType<T>::result, scale );
 
 	graphic.MoveRectangle( rectangle, _x, _y );
 
@@ -310,10 +347,9 @@ template < class T> void Input::Build<T>::Input( float _x, float _y )
 	{
 		if( !create )
 		{
-			if( !expand )
+			expand?
+				logic.Expand<T>( closest.first, scale ):
 				logic.Build<T>( _x, _y, scale );
-			else
-				logic.Expand<T>( closest.first, scale );
 			create = true;
 		}
 	}
@@ -326,8 +362,6 @@ Input::Build<Road>::Build( Graphic& _graphic, Logic& _logic, float& _mouse_wheel
 {}
 Input::Build<Road>::~Build()
 {
-	if( create )
-		logic.RemoveTopLine();
 	if( rectangle != -1 )
 		graphic.RemoveRectangle( rectangle );
 }
@@ -337,10 +371,9 @@ void Input::Build<Road>::Input( float _x, float _y )
 
 	if( create )
 	{
-		closest = logic.Closest( Type::Farm, _x, _y );
+		closest = logic.Closest( _x, _y );
 		if( closest.first == -1 )
 		{
-			logic.RemoveTopLine();
 			if( rectangle != -1 )
 			{
 				graphic.RemoveRectangle( rectangle );
@@ -351,7 +384,6 @@ void Input::Build<Road>::Input( float _x, float _y )
 		else
 		{
 			to = closest.first;
-			logic.MoveTopLine( logic.GetPoint(to).x, logic.GetPoint(to).y );
 			if( rectangle == -1 )
 				rectangle = graphic.AddRectangle( (int)Type::Road, 0 );
 			logic.ChangeRoad( graphic.GetRectangle( rectangle ), from, to );
@@ -362,7 +394,6 @@ void Input::Build<Road>::Input( float _x, float _y )
 	{
 		if( create )
 		{
-			logic.RemoveTopLine();
 			if( rectangle != -1 )
 				graphic.RemoveRectangle( rectangle );
 			create = false;
@@ -372,11 +403,10 @@ void Input::Build<Road>::Input( float _x, float _y )
 	{
 		if( !create )
 		{
-			closest = logic.Closest( Type::Farm, _x, _y );
+			closest = logic.Closest( _x, _y );
 			if( closest.first != -1 )
 			{
 				from = closest.first;
-				logic.AddLine( logic.GetPoint(from).x, logic.GetPoint(from).y, 0, 0 );
 			}
 		}
 		create = true;
@@ -385,10 +415,7 @@ void Input::Build<Road>::Input( float _x, float _y )
 	{
 		if( create )
 		{
-			if( logic.TopLineFromEqualsTo() || logic.TopLineEqualsOtherLine() )
-				logic.RemoveTopLine();
-			else
-				logic.Build<Road>( from, to );
+			logic.Build<Road>( from, to );
 			if( rectangle != -1 )
 			{
 				graphic.RemoveRectangle( rectangle );
@@ -432,7 +459,7 @@ void Input::Build<City>::Input( float _x, float _y )
 
 		_x = logic.GetPoint( farm ).x;
 		_y = logic.GetPoint( farm ).y;
-		if( !logic.OverLapping<City>( _x, _y, scale ) )
+		if( !logic.OverLappingCity( _x, _y, scale ) )
 		{
 			if( rectangle == -1 )
 				rectangle = graphic.AddRectangle( (int)Type::City, scale );

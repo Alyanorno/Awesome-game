@@ -111,13 +111,15 @@ void Structure::Update( Logic& l, float delta_time, int i )
 			case Type::Road:
 				t = rectangles[ (int)Type::Road ].insert( Rectangle( 0, 0, 0 ) );
 				l.ChangeRoad( rectangles[ (int)Type::Road ][t], from, to );
-				t = l.GetRoads().insert( Road( t, from, to ) );
-				l.GetRoadByIndex( t ).length = sqrt( pow( Logic::L(l.GetPoint(to).x - l.GetPoint(from).x), 2 ) + pow( Logic::L(l.GetPoint(to).y - l.GetPoint(from).y), 2 ) );
+				t = l.Get<Road>().insert( Road( t, from, to ) );
+
+				l.GetByIndex<Road>( t ).length = sqrt( pow( Logic::L(l.GetPoint(to).x - l.GetPoint(from).x), 2 ) + pow( Logic::L(l.GetPoint(to).y - l.GetPoint(from).y), 2 ) );
 				p.erase( Type::Structure );
 				p[ Type::Road ] = t;
 
-				l.GetFarmByPoint(from).population += population;
-				l.GetFarmByPoint(from).food += food_contained;
+				// TODO: Create migration group
+				// population;
+				// food_contained;
 				break;
 			case Type::Farm:
 				if( expand )

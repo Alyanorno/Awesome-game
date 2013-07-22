@@ -102,9 +102,6 @@ void Graphic::DrawText( glm::mat4& projectionMatrix )
 
 	glUniformMatrix4fv( glGetUniformLocation(shaderText, "projectionMatrix"), 1, GL_FALSE, &projectionMatrix[0][0] );
 
-	glEnableVertexAttribArray(3);
-	glDisableVertexAttribArray(1);
-
 	for( int i(0); i < texts.size(); i++ )
 	{
 		Text& t( texts[i] );
@@ -140,9 +137,6 @@ void Graphic::DrawText( glm::mat4& projectionMatrix )
 			glDrawArrays( GL_TRIANGLE_STRIP, 0, 4 );
 		}
 	}
-
-	glEnableVertexAttribArray(1);
-	glDisableVertexAttribArray(3);
 
 	glUseProgram( 0 );
 }
@@ -283,6 +277,7 @@ void Graphic::Initialize()
 
 	glfwOpenWindow( 800, 600, 0, 0, 0, 0, 0, 0, GLFW_WINDOW );
 
+	glewExperimental = GL_TRUE;
 	glewInit();
 
 	glfwSetWindowTitle( "Hej!" );

@@ -57,6 +57,7 @@ private:
 		int from, to;
 		int rectangle;
 		bool expand;
+		bool dont_build;
 		Build( Graphic& _graphic, Logic& _logic, float& _mouse_wheel );
 		~Build();
 		void Input( float _x, float _y );

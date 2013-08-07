@@ -1,3 +1,9 @@
+Main tasks:
+	Resource expansion (generation/transportation/storage)
+	Migration system (including structure building)
+	Update army system
+	Pathfinding
+
 Step 1: Base
 Take food/people from other types on same point for structure
 Add pathfinding and faster or only movement if on road
@@ -11,10 +17,12 @@ Add resource system
 		Wood
 		Stone
 		#Iron
-		#Fertile soil
 Limit construction further
 	DONE: No constructions on mountains and forests
-	No road on mountain
+	#No road on mountain -- Cost more?
+Check if road already exists before building
+#No roads overlapping but build into the crossing road?
+DONE: Roads to anywhere
 DONE: Fix more general roads
 Update army transport code
 Solve inbalances by migration
@@ -39,8 +47,8 @@ Input
 	Right	  -> regret
 	Q/E  -> select farm<->city<->structure<->army
 	Numbers
-		1 -> build road (must start from center of city)
-		2 -> build farm (must be on end of road)
+		1 -> build road
+		2 -> build farm
 		3 -> build city (must be on center of a farm)
 Logic
 	Entitys
@@ -51,8 +59,6 @@ Logic
 			Have population
 #			General storage
 			Unit production
-		Wall
-#			Made of wood/stone
 		Quarry
 			Have population
 			Limited food storage
@@ -84,17 +90,14 @@ Rules
 	City collects food
 	City require labor
 	City constructs units
-#	Unit construction require labor
+#	Unit construction increases population_needed
 	Quarry generate stone
-#	Quarry require labor
-#	Quarry require mountain
+	Quarry require mountain
 	Lumber camp generate wood
-#	Lumber camp require labor
-#	Lumber camp require forest
+	Lumber camp require forest
 
 	Construction require labor
 #	City construction require tree
-#	Wall construction require wood or stone
 #	Road construction may require stone
 
 	Population/Units consume food

@@ -112,18 +112,29 @@ template <> void Logic::Build<City>( int _point, float _scale )
 
 void Logic::ChangeRoad( Rectangle& _rectangle, int _from, int _to )
 {
-	Rectangle& r( _rectangle );
 	Point& from_p( points[_from] );
 	Point& to_p( points[_to] );
 
-	r.x = (to_p.x + from_p.x) / 2;
-	r.y = (to_p.y + from_p.y) / 2;
+	ChangeRoad( _rectangle, from_p, to_p );
+}
+void Logic::ChangeRoad( Rectangle& _rectangle, int _from, float _x, float _y )
+{
+	Point& from_p( points[_from] );
+	Point to_p( _x, _y );
+	ChangeRoad( _rectangle, from_p, to_p );
+}
+void Logic::ChangeRoad( Rectangle& _rectangle, Point& _from, Point& _to )
+{
+	Rectangle& r( _rectangle );
 
-	float length = sqrt( pow( Logic::L(to_p.x - from_p.x), 2 ) + pow( Logic::L(to_p.y - from_p.y), 2 ) );
+	r.x = (_to.x + _from.x) / 2;
+	r.y = (_to.y + _from.y) / 2;
+
+	float length = sqrt( pow( Logic::L(_to.x - _from.x), 2 ) + pow( Logic::L(_to.y - _from.y), 2 ) );
 	r.scale_x = length;
 	r.scale = 0.5f;
 
-	r.rotation = atan2( (to_p.x - from_p.x), (to_p.y - from_p.y) ) * (180 / 3.14159);
+	r.rotation = atan2( (_to.x - _from.x), (_to.y - _from.y) ) * (180 / 3.14159);
 }
 template < class T > void Logic::Expand( int _point, float _scale )
 {

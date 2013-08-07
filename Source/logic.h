@@ -32,6 +32,7 @@ struct Road
 	float length;
 	bool used;
 };
+// Abandoned for now
 struct Wall
 {
 	Wall( int _rectangle, int _point ) : rectangle(_rectangle), point(_point) {}
@@ -237,6 +238,8 @@ public:
 	template < class T > void Build( int _point, float _scale );
 
 	void ChangeRoad( Rectangle& _rectangle, int _from, int _to );
+	void ChangeRoad( Rectangle& _rectangle, int _from, float _x, float _y );
+	void ChangeRoad( Rectangle& _rectangle, Point& _from, Point& _to );
 	template < class T> void Expand( int _point, float _scale );
 
 	float Distance( float _x, float _y, float __x, float __y );

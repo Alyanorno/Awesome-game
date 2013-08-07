@@ -372,7 +372,21 @@ void Input::Build<Road>::Input( float _x, float _y )
 	if( create )
 	{
 		closest = logic.Closest( _x, _y );
-		if( closest.first == -1 )
+		if( closest.first != -1 && closest.first != from && closest.second < 3 )
+		{
+			to = closest.first;
+			if( rectangle == -1 )
+				rectangle = graphic.AddRectangle( (int)Type::Road, 0 );
+			logic.ChangeRoad( graphic.GetRectangle( rectangle ), from, to );
+		}
+		else if( closest.first != -1 && closest.second >= 3 )
+		{
+			to = -1;
+			if( rectangle == -1 )
+				rectangle = graphic.AddRectangle( (int)Type::Road, 0 );
+			logic.ChangeRoad( graphic.GetRectangle( rectangle ), from, _x, _y );
+		}
+		else
 		{
 			if( rectangle != -1 )
 			{
@@ -380,13 +394,6 @@ void Input::Build<Road>::Input( float _x, float _y )
 				rectangle = -1;
 			}
 			create = false;
-		}
-		else
-		{
-			to = closest.first;
-			if( rectangle == -1 )
-				rectangle = graphic.AddRectangle( (int)Type::Road, 0 );
-			logic.ChangeRoad( graphic.GetRectangle( rectangle ), from, to );
 		}
 	}
 
@@ -397,6 +404,7 @@ void Input::Build<Road>::Input( float _x, float _y )
 			if( rectangle != -1 )
 				graphic.RemoveRectangle( rectangle );
 			create = false;
+			dont_build = true;
 		}
 	}
 	else if( glfwGetMouseButton( GLFW_MOUSE_BUTTON_1 ) )
@@ -413,8 +421,12 @@ void Input::Build<Road>::Input( float _x, float _y )
 	}
 	else
 	{
-		if( create )
+		if( create && !dont_build )
 		{
+			if( to == -1 )
+			{
+				to = logic.AddPointOn( _x, _y );
+			}
 			logic.Build<Road>( from, to );
 			if( rectangle != -1 )
 			{
@@ -423,6 +435,7 @@ void Input::Build<Road>::Input( float _x, float _y )
 			}
 		}
 		create = false;
+		dont_build = false;
 	}
 }
 
